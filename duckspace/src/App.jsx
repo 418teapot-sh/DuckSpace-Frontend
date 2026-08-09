@@ -1,14 +1,26 @@
 import { useState } from 'react'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import NavBar from "./components/NavBar";
+
+import Home from "./pages/Home";
+import Search from "./pages/Search";
+import DuckTalk from "./pages/DuckTalk";
+import Display from "./pages/Display";
 
 function App() {
   
 
   return (
-    <div className="App">
-      <h1 className="text-3xl font-bold underline">
-        Hello world!
-      </h1>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/ducktalk" element={<DuckTalk />} />
+        <Route path="/display" element={<Display />} />
+      </Routes>
+
+      <NavBar />
+    </BrowserRouter>
   )
 }
 
