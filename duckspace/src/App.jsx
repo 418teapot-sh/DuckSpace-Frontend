@@ -27,6 +27,7 @@ function App() {
         <Route path="/create/text" element={<PostTextPages />} />
         <Route path="/create/exchange" element={<PostExchangePages />} />
       </Routes>
+      
     </BrowserRouter>
   );
 }
