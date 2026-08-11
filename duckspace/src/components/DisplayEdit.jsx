@@ -1,11 +1,19 @@
-import { Stage, Layer, Image, Transformer } from "react-konva";
+import { Stage, Layer, Image, Transformer, Circle, Group } from "react-konva";
 import { useEffect, useRef, useState } from "react";
+
 import useImage from "use-image";
+import displayMockData from "../data/displayMockData";
 import displayBackImg from "../assets/displaybackgrounds/display_back.png";
 
-function DraggableImage({ item, onChange, isEditing, isSelected, setIsSelected }) {  const [image] = useImage("/favicon.svg");
-  const imageRef = useRef(null);
-  const transformerRef = useRef(null);
+
+import closeIcon from "../assets/displayIcon/close.svg";
+import addIcon from "../assets/displayIcon/add.svg";
+import saveIcon from "../assets/displayIcon/save.svg";
+
+function DraggableImage({ item, onChange, isEditing, isSelected, onSelect, }) {  
+    const [image] = useImage(item.src);
+    const imageRef = useRef(null);
+    const transformerRef = useRef(null);
 
   useEffect(() => {
     if (isSelected && imageRef.current && transformerRef.current) {
@@ -34,12 +42,12 @@ function DraggableImage({ item, onChange, isEditing, isSelected, setIsSelected }
         // 이미지 클릭하면 선택
         onClick={() => {
           if (isEditing) {
-            setIsSelected(true);
+            onSelect();
           }
         }}
         onTap={() => {
           if (isEditing) {
-            setIsSelected(true);
+            onSelect();
           }
         }}
         onDragEnd={(e) => {
@@ -92,35 +100,79 @@ function DraggableImage({ item, onChange, isEditing, isSelected, setIsSelected }
   );
 }
 
+function CircleButton({ x, y, icon, onClick }) {
+  return (
+    <Group
+      x={x}
+      y={y}
+      onClick={onClick}
+      onTap={onClick}
+      onMouseEnter={(e) => {
+        const stage = e.target.getStage();
+        stage.container().style.cursor = "pointer";
+      }}
+      onMouseLeave={(e) => {
+        const stage = e.target.getStage();
+        stage.container().style.cursor = "default";
+      }}
+    >
+      <Circle
+        radius={30}
+        fill="rgba(255, 255, 255, 0.75)"
+      />
+
+      <Image
+        image={icon}
+        width={28}
+        height={28}
+        x={-14}
+        y={-14}
+      />
+    </Group>
+  );
+}
+
 function DisplayEdit() {
-  const [displayBack] = useImage(displayBackImg);
+    const [displayBack] = useImage(displayBackImg);
 
-  const [item, setItem] = useState(() => {
-    const saved = localStorage.getItem("displayData");
+    const [closeImage] = useImage(closeIcon);
+    const [addImage] = useImage(addIcon);
+    const [saveImage] = useImage(saveIcon);
 
-    return saved
-      ? JSON.parse(saved)
-      : {
-          id: 1,
-          src: "/favicon.svg",
-          x: 100,
-          y: 100,
-          width: 50,
-          height: 50,
-          rotation: 0,
+    const [items, setItems] = useState(() => {
+        const saved = localStorage.getItem("displayItems");
+
+        return saved
+            ? JSON.parse(saved)
+            : [];
+        });
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [selectedId, setSelectedId] = useState(null);
+
+    const handleAddItem = (good) => {
+        const newItem = {
+            id: Date.now(),
+            goodsId: good.id,
+            src: good.imageUrl,
+            x: 100,
+            y: 100,
+            width: 70,
+            height: 70,
+            rotation: 0,
         };
-  });
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSelected, setIsSelected] = useState(false);
-  const handleSave = () => {
-    localStorage.setItem(
-      "displayData",
-      JSON.stringify(item)
-    );
-    setIsEditing(false);
-    setIsSelected(false);
-  };
+        setItems((prevItems) => [...prevItems, newItem]);
+        setSelectedId(newItem.id);
+    };
+    const handleSave = () => {
+        localStorage.setItem(
+        "displayItems",
+        JSON.stringify(items)
+        );
+        setIsEditing(false);
+        setSelectedId(null);
+    };
 
   return (
     <div>
@@ -128,32 +180,76 @@ function DisplayEdit() {
         <Layer listening={false}>
           <Image image={displayBack} width={360} height={400} />
         </Layer>
-        <Layer>
-          <DraggableImage
-              item={item}
-              onChange={setItem}
-              isEditing={isEditing}
-              isSelected={isSelected}
-              setIsSelected={setIsSelected}
-            />
-        </Layer>
-      </Stage>
 
-      {!isEditing ? (
-        <button
-          onClick={() => setIsEditing(true)}
-          className="mt-4 h-12 w-12 cursor-pointer rounded-full bg-[#5791FB] text-2xl text-white"
-        >
-          +
-        </button>
-      ) : (
-        <button
-          onClick={handleSave}
-          className="mt-4 cursor-pointer rounded-lg bg-[#5791FB] px-6 py-3 text-white"
-        >
-          저장
-        </button>
-      )}
+        <Layer>
+            {items.map((item) => (
+                <DraggableImage
+                    key={item.id}
+                    item={item}
+                    isEditing={isEditing}
+                    isSelected={selectedId === item.id}
+                    onSelect={() => setSelectedId(item.id)}
+                    onChange={(updatedItem) => {
+                        setItems((prevItems) =>
+                        prevItems.map((prevItem) =>
+                            prevItem.id === updatedItem.id 
+                                ? updatedItem
+                                : prevItem
+                            )
+                        );
+                    }}
+                />
+            ))}
+        </Layer>
+
+        {/* 버튼 */}
+        <Layer>
+            {!isEditing ? (
+                <CircleButton
+                    x={320}
+                    y={360}
+                    icon={addImage}
+                    onClick={() => {
+                        setIsEditing(true);
+                        setSelectedId(null);
+                    }}
+                />
+            ) : (
+                <>
+                    {/* 저장 안 하고 나가기 */}
+                    <CircleButton
+                        x={320}
+                        y={225}
+                        icon={closeImage}
+                        onClick={() => {
+                            setIsEditing(false);
+                            setSelectedId(null);
+                        }}
+                    />
+
+                    {/* 객체 추가 */}
+                    <CircleButton
+                        x={320}
+                        y={295}
+                        icon={addImage}
+                        onClick={() => {
+                            console.log("객체 추가");
+                            handleAddItem(displayMockData[0])
+                        }}
+                    />
+                    {/* 저장 */}
+                    <CircleButton
+                        x={320}
+                        y={365}
+                        icon={saveImage}
+                        onClick={handleSave}
+                    />
+                </>
+            )}
+        </Layer>
+
+      </Stage>
+      
     </div>
   );
 }

@@ -54,8 +54,8 @@ function Display() {
       </section>
 
       {/* 탭 영역 */}
-      <section className="px-7">
-        <div className="flex border-b border-[#EEEEEE]">
+      <section className="px-7 ">
+        <div className="flex border-b border-[#EEEEEE] ">
           {/* 장식장 1 */}
           <button
             onClick={() => setActiveTab("display")}
@@ -64,6 +64,7 @@ function Display() {
               py-3
               text-[16px]
               font-medium
+              cursor-pointer
               ${
                 activeTab === "display"
                   ? "border-b-2 border-[#5791FB] text-[#5791FB]"
@@ -81,6 +82,7 @@ function Display() {
               flex-1
               py-3
               text-[26px]
+              cursor-pointer
               ${
                 activeTab === "add"
                   ? "border-b-2 border-[#5791FB] text-[#5791FB]"
