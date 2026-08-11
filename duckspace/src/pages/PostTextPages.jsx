@@ -1,150 +1,185 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { IoChevronBack, IoClose, IoAdd } from 'react-icons/io5';
+import React, { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function PostTextPage() {
+const MAX_IMAGES = 4;
+const MAX_LENGTH = 500;
+
+export default function PostTextPages() {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
-  // 1. 상태 관리 (사진, 본문, 해시태그)
   const [images, setImages] = useState([]);
-  const [content, setContent] = useState('');
-  const [hashtag, setHashtag] = useState('');
+  const [content, setContent] = useState("");
+  const [hashtag, setHashtag] = useState("");
 
-  // 2. 사진 업로드 핸들러 (최대 4장 제한)
-  const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    if (images.length + files.length > 4) {
-      alert('사진은 최대 4장까지 등록할 수 있습니다.');
+  const handleAddImages = (e) => {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+
+    setImages((prev) => {
+      const remaining = MAX_IMAGES - prev.length;
+      const next = files.slice(0, remaining).map((file) => ({
+        id: `${file.name}-${file.lastModified}-${Math.random()}`,
+        url: URL.createObjectURL(file),
+      }));
+      return [...prev, ...next];
+    });
+
+    e.target.value = "";
+  };
+
+  const handleRemoveImage = (id) => {
+    setImages((prev) => {
+      const target = prev.find((image) => image.id === id);
+      if (target) URL.revokeObjectURL(target.url);
+      return prev.filter((image) => image.id !== id);
+    });
+  };
+
+  const handleSubmit = () => {
+    if (!content.trim()) {
+      alert("글을 작성해주세요.");
       return;
     }
-
-    const newImageUrls = files.map((file) => URL.createObjectURL(file));
-    setImages((prev) => [...prev, ...newImageUrls]);
-  };
-
-  // 3. 사진 삭제 핸들러
-  const handleRemoveImage = (index) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  // 4. 완료 버튼 활성화 조건 (본문 1자 이상 입력 시)
-  const isValid = content.trim().length > 0;
-
-  // 5. 완료 제출 핸들러
-  const handleSubmit = () => {
-    if (!isValid) return;
-
-    // 백엔드 API 연동 위치
-    console.log('제출 데이터:', { images, content, hashtag });
-    alert('잡담 글이 작성되었습니다!');
-    navigate(-1); // 작성 완료 후 이전 화면(덕톡라운지)으로 이동
+    alert("잡담 글이 작성되었습니다!");
+    navigate(-1);
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white max-w-md mx-auto relative border-x border-gray-100">
-      {/* ------------------- 상단 헤더 ------------------- */}
-      <header className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100 bg-white sticky top-0 z-10">
-        <button
-          onClick={() => navigate(-1)}
-          className="text-2xl text-gray-800 p-1 -ml-1 focus:outline-none"
-          aria-label="뒤로가기"
-        >
-          <IoChevronBack />
-        </button>
-        <h1 className="text-base font-bold text-gray-900">잡담 글 작성</h1>
-        <div className="w-8" /> {/* 좌우 대칭 레이아웃용 빈 공간 */}
-      </header>
-
-      {/* ------------------- 메인 폼 영역 ------------------- */}
-      <main className="flex-1 px-5 py-6 space-y-6 overflow-y-auto">
-        {/* 📸 사진 첨부 섹션 */}
+    <div className="flex min-h-screen justify-center bg-gray-100 sm:py-8">
+      {/* 피그마 프레임 규격: 402px, 배경 #FCFCFC */}
+      <div className="flex w-full max-w-[402px] flex-col justify-between bg-white sm:min-h-[874px] sm:rounded-3xl sm:shadow-xl border border-gray-100 overflow-hidden">
+        
         <div>
-          <label className="block text-sm font-bold text-gray-800 mb-2">
-            사진 <span className="text-gray-400 font-normal text-xs">(최대 4장)</span>
-          </label>
+          {/* 1. 상단 헤더 (높이 60px, 폰트 18px 600 #171617) */}
+          <header className="flex h-[60px] items-center justify-between px-5 bg-white">
+            <button
+              type="button"
+              aria-label="뒤로 가기"
+              onClick={() => navigate(-1)}
+              className="p-1 -ml-1 text-[#171617] hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+            <h1 className="text-[18px] font-semibold text-[#171617]">잡담 글 작성</h1>
+            <div className="w-6" />
+          </header>
 
-          <div className="flex gap-3 overflow-x-auto pb-1">
-            {/* 숨겨진 File Input */}
-            <input
-              type="file"
-              id="image-upload"
-              multiple
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
-            />
-
-            {/* 사진 추가 버튼 (+ 아이콘) */}
-            {images.length < 4 && (
-              <label
-                htmlFor="image-upload"
-                className="w-20 h-20 border border-blue-400 rounded-2xl flex items-center justify-center text-blue-500 bg-white cursor-pointer flex-shrink-0 hover:bg-blue-50 transition-colors"
-              >
-                <IoAdd className="text-3xl" />
-              </label>
-            )}
-
-            {/* 업로드된 이미지 미리보기 리스트 */}
-            {images.map((imgUrl, index) => (
-              <div key={index} className="w-20 h-20 rounded-2xl relative flex-shrink-0 overflow-hidden border border-gray-100">
-                <img src={imgUrl} alt={`미리보기 ${index + 1}`} className="w-full h-full object-cover" />
-                <button
-                  type="button"
-                  onClick={() => handleRemoveImage(index)}
-                  className="absolute top-1 right-1 bg-gray-700/70 text-white rounded-full p-0.5 text-xs hover:bg-gray-800"
-                >
-                  <IoClose />
-                </button>
+          {/* 2. 메인 입력 영역 (패딩 20px, 요소 간격 20px) */}
+          <main className="p-[20px] space-y-[20px]">
+            
+            {/* 📸 사진 섹션 */}
+            <section className="space-y-[8px]">
+              <div className="flex items-center gap-[10px] h-[25px]">
+                <span className="text-[18px] font-semibold text-[#171617]">사진</span>
+                <span className="text-[16px] font-normal text-[#A2A2A2]">(최대4장)</span>
               </div>
-            ))}
-          </div>
+
+              {/* 사진 리스트 (피그마 지정 160px × 160px 카드) */}
+              <div className="flex items-center gap-[12px] overflow-x-auto pb-1">
+                {images.map((image) => (
+                  <div
+                    key={image.id}
+                    className="relative w-[160px] h-[160px] shrink-0 rounded-[8px] bg-[#DEDEDE] overflow-hidden"
+                  >
+                    <img
+                      src={image.url}
+                      alt="첨부 이미지"
+                      className="h-full w-full object-cover"
+                    />
+                    {/* 이미지 삭제 버블 버튼 (피그마 좌표 계산 적용) */}
+                    <button
+                      type="button"
+                      aria-label="이미지 삭제"
+                      onClick={() => handleRemoveImage(image.id)}
+                      className="absolute right-[8px] top-[8px] flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#171617]/30 text-[#FCFCFC] hover:bg-[#171617]/60 transition-colors"
+                    >
+                      <svg width="10.5" height="10.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+
+                {/* + 사진 추가 버튼 (160px × 160px, 테두리 #2F78FD, 배경 #FCFCFC) */}
+                {images.length < MAX_IMAGES && (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    aria-label="사진 추가"
+                    className="flex w-[160px] h-[160px] shrink-0 items-center justify-center rounded-[8px] border border-[#2F78FD] bg-[#FCFCFC] hover:bg-blue-50/30 transition-colors"
+                  >
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                      <path d="M20 8V32M8 20H32" stroke="#2F78FD" strokeWidth="3" strokeLinecap="round" />
+                    </svg>
+                  </button>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleAddImages}
+                />
+              </div>
+            </section>
+
+            {/* 📝 글 작성 섹션 */}
+            <section className="space-y-[8px]">
+              <div className="flex items-center gap-[10px] h-[25px]">
+                <span className="text-[18px] font-semibold text-[#171617]">글 작성</span>
+              </div>
+              <div className="flex flex-col items-end gap-[4px]">
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value.slice(0, MAX_LENGTH))}
+                  placeholder="글을 작성해주세요. (최대 500자)"
+                  className="w-full h-[112px] resize-none rounded-[8px] bg-[#FCFCFC] p-[12px] text-[14px] text-[#171617] placeholder:text-[#A2A2A2] border border-[#EEEEEE] focus:border-[#2F78FD] focus:outline-none transition-all"
+                />
+                <span className="text-[14px] text-[#A2A2A2]">
+                  {content.length}/{MAX_LENGTH}
+                </span>
+              </div>
+            </section>
+
+            {/* #️⃣ 해시태그 섹션 */}
+            <section className="space-y-[8px]">
+              <div className="flex items-center gap-[10px] h-[25px]">
+                <span className="text-[18px] font-semibold text-[#171617]">해시태그 (선택)</span>
+              </div>
+              <input
+                type="text"
+                value={hashtag}
+                onChange={(e) => setHashtag(e.target.value)}
+                placeholder="# 해시태그를 입력해주세요."
+                className="w-full rounded-[8px] bg-[#FCFCFC] p-[12px] text-[14px] text-[#171617] placeholder:text-[#A2A2A2] border border-[#EEEEEE] focus:border-[#2F78FD] focus:outline-none transition-all"
+              />
+            </section>
+          </main>
         </div>
 
-        {/* 📝 글 작성 영역 */}
-        <div>
-          <label className="block text-sm font-bold text-gray-800 mb-2">글 작성</label>
-          <div className="relative">
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              maxLength={500}
-              placeholder="글을 작성해주세요. (최대 500자)"
-              className="w-full h-40 bg-gray-50 rounded-2xl p-4 text-sm text-gray-800 resize-none focus:outline-none focus:ring-1 focus:ring-blue-400 placeholder-gray-400 border border-transparent focus:bg-white transition-all"
-            />
-            <span className="absolute bottom-3 right-4 text-xs text-gray-400 select-none">
-              {content.length}/500
-            </span>
-          </div>
-        </div>
+        {/* 3. 하단 완료 버튼 (높이 48px, 패딩 20px, #2F78FD) */}
+        <footer className="p-[20px] bg-white">
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!content.trim()}
+            className={`w-full h-[48px] rounded-[8px] text-[14px] font-semibold text-[#FCFCFC] transition-all duration-200 ${
+              content.trim()
+                ? "bg-[#2F78FD] hover:bg-blue-600 active:scale-[0.99] shadow-md shadow-blue-100"
+                : "bg-[#5791FB] opacity-80 cursor-not-allowed border border-[#2F78FD]"
+            }`}
+          >
+            완료
+          </button>
+        </footer>
 
-        {/* #️⃣ 해시태그 영역 */}
-        <div>
-          <label className="block text-sm font-bold text-gray-800 mb-2">해시태그 (선택)</label>
-          <input
-            type="text"
-            value={hashtag}
-            onChange={(e) => setHashtag(e.target.value)}
-            placeholder="# 해시태그를 입력해주세요."
-            className="w-full bg-gray-50 rounded-2xl px-4 py-3.5 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-400 placeholder-gray-400 border border-transparent focus:bg-white transition-all"
-          />
-        </div>
-      </main>
-
-      {/* ------------------- 하단 완료 버튼 ------------------- */}
-      <footer className="p-5 bg-white">
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={!isValid}
-          className={`w-full py-3.5 rounded-2xl text-white font-semibold text-sm transition-all duration-200 ${
-            isValid
-              ? 'bg-blue-500 hover:bg-blue-600 active:scale-[0.99] shadow-md shadow-blue-100'
-              : 'bg-blue-300 cursor-not-allowed'
-          }`}
-        >
-          완료
-        </button>
-      </footer>
+      </div>
     </div>
   );
 }
