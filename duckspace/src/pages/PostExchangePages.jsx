@@ -1,467 +1,472 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { IoChevronBack, IoClose, IoAdd, IoCheckmark } from 'react-icons/io5';
+import React, { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function PostExchangePages() {
   const navigate = useNavigate();
+  const myFileInputRef = useRef(null);
+  const wantFileInputRef = useRef(null);
 
-  // 현재 입력 단계 (1: 기본 정보, 2: 교환 품목, 3: 교환 정보, 4: 등록 완료)
+  // 현재 작성 단계 (1: 기본 정보, 2: 교환 품목, 3: 교환 정보, 4: 완료)
   const [step, setStep] = useState(1);
 
-  // --- Step 1 상태 (기본 정보) ---
-  const [exchangeType, setExchangeType] = useState('direct'); // 'direct' | 'delivery'
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  // 1단계: 기본 정보 State
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [popupName, setPopupName] = useState("");
+  const [preferredDate, setPreferredDate] = useState("");
+  const [preferredTime, setPreferredTime] = useState("");
 
-  // --- Step 2 상태 (내가 가진 굿즈) ---
-  const [goodsImages, setGoodsImages] = useState([]);
-  const [goodsName, setGoodsName] = useState('');
-  const [brand, setBrand] = useState('');
-  const [condition, setCondition] = useState(''); // '미개봉' | '개봉(사용감 적음)' | '사용감 있음'
+  // 2단계: 교환 품목 (내가 가진 굿즈) State
+  const [myImages, setMyImages] = useState([]);
+  const [myGoodsName, setMyGoodsName] = useState("");
+  const [myGoodsBrand, setMyGoodsBrand] = useState("");
+  const [myGoodsCondition, setMyGoodsCondition] = useState(""); // 미개봉, 사용감 적음, 사용감 있음
 
-  // --- Step 3 상태 (원하는 굿즈) ---
-  const [wantGoodsImages, setWantGoodsImages] = useState([]);
-  const [wantGoodsName, setWantGoodsName] = useState('');
-  const [wantBrand, setWantBrand] = useState('');
-  const [extraCondition, setExtraCondition] = useState('');
+  // 3단계: 교환 정보 (내가 원하는 굿즈) State
+  const [wantImages, setWantImages] = useState([]);
+  const [wantGoodsName, setWantGoodsName] = useState("");
+  const [wantGoodsBrand, setWantGoodsBrand] = useState("");
+  const [additionalCondition, setAdditionalCondition] = useState("");
 
-  // 유효성 검사
-  const isValidStep1 = title.trim().length > 0;
-  const isValidStep2 = goodsName.trim().length > 0;
-  const isValidStep3 = wantGoodsName.trim().length > 0;
-
-  // Step 2 이미지 업로드
-  const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    if (goodsImages.length + files.length > 4) {
-      alert('사진은 최대 4장까지 등록할 수 있습니다.');
-      return;
-    }
-    const newImageUrls = files.map((file) => URL.createObjectURL(file));
-    setGoodsImages((prev) => [...prev, ...newImageUrls]);
+  // 이미지 추가/삭제 핸들러 (내가 가진 굿즈)
+  const handleAddMyImages = (e) => {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    const next = files.slice(0, 4 - myImages.length).map((file) => ({
+      id: `${file.name}-${file.lastModified}-${Math.random()}`,
+      url: URL.createObjectURL(file),
+    }));
+    setMyImages((prev) => [...prev, ...next]);
+    e.target.value = "";
   };
 
-  const handleRemoveImage = (index) => {
-    setGoodsImages((prev) => prev.filter((_, i) => i !== index));
+  const handleRemoveMyImage = (id) => {
+    setMyImages((prev) => prev.filter((img) => img.id !== id));
   };
 
-  // Step 3 이미지 업로드
-  const handleWantImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    if (wantGoodsImages.length + files.length > 4) {
-      alert('사진은 최대 4장까지 등록할 수 있습니다.');
-      return;
-    }
-    const newImageUrls = files.map((file) => URL.createObjectURL(file));
-    setWantGoodsImages((prev) => [...prev, ...newImageUrls]);
+  // 이미지 추가/삭제 핸들러 (원하는 굿즈)
+  const handleAddWantImages = (e) => {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    const next = files.slice(0, 4 - wantImages.length).map((file) => ({
+      id: `${file.name}-${file.lastModified}-${Math.random()}`,
+      url: URL.createObjectURL(file),
+    }));
+    setWantImages((prev) => [...prev, ...next]);
+    e.target.value = "";
   };
 
-  const handleWantRemoveImage = (index) => {
-    setWantGoodsImages((prev) => prev.filter((_, i) => i !== index));
+  const handleRemoveWantImage = (id) => {
+    setWantImages((prev) => prev.filter((img) => img.id !== id));
   };
 
-  // 최종 등록 제출
-  const handleSubmit = () => {
-    if (!isValidStep3) return;
-    // 백엔드 API 연동 위치
-    console.log('최종 등록 데이터:', {
-      exchangeType,
-      title,
-      content,
-      goodsImages,
-      goodsName,
-      brand,
-      condition,
-      wantGoodsImages,
-      wantGoodsName,
-      wantBrand,
-      extraCondition,
-    });
-    // 완료 화면(4단계)으로 이동
-    setStep(4);
-  };
+  // 각 단계별 필수값 입력 여부
+  const isStep1Valid = title.trim().length > 0;
+  const isStep2Valid = myGoodsName.trim().length > 0;
+  const isStep3Valid = wantGoodsName.trim().length > 0;
 
-  // ================= STEP 4: 교환 글 등록 완료 화면 =================
-  if (step === 4) {
-    return (
-      <div className="flex flex-col min-h-screen bg-white max-w-md mx-auto relative border-x border-gray-100">
-        {/* 상단 헤더 */}
-        <header className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100 bg-white sticky top-0 z-10">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-2xl text-gray-800 p-1 -ml-1 focus:outline-none"
-            aria-label="뒤로가기"
-          >
-            <IoChevronBack />
-          </button>
-          <h1 className="text-base font-bold text-gray-900">완료</h1>
-          <div className="w-8" />
-        </header>
-
-        {/* 중앙 완료 아이콘 및 텍스트 */}
-        <main className="flex-1 flex flex-col items-center justify-center px-5 pb-20">
-          <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center text-white text-4xl mb-6 shadow-lg shadow-blue-100">
-            <IoCheckmark />
-          </div>
-          <h2 className="text-xl font-bold text-gray-900">교환 글 등록 완료</h2>
-        </main>
-
-        {/* 하단 버튼 2개 */}
-        <footer className="p-5 bg-white space-y-3">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="w-full py-3.5 rounded-2xl border border-blue-400 text-blue-500 font-semibold text-sm hover:bg-blue-50 transition-all"
-          >
-            글 보러가기
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="w-full py-3.5 rounded-2xl bg-blue-500 hover:bg-blue-600 text-white font-semibold text-sm transition-all shadow-md shadow-blue-100"
-          >
-            덕톡 라운지로
-          </button>
-        </footer>
-      </div>
-    );
-  }
-
-  // ================= STEP 1 ~ 3: 작성 폼 화면 =================
   return (
-    <div className="flex flex-col min-h-screen bg-white max-w-md mx-auto relative border-x border-gray-100">
-      {/* ------------------- 상단 헤더 ------------------- */}
-      <header className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100 bg-white sticky top-0 z-10">
-        <button
-          onClick={() => {
-            if (step > 1) {
-              setStep((prev) => prev - 1);
-            } else {
-              navigate(-1);
-            }
-          }}
-          className="text-2xl text-gray-800 p-1 -ml-1 focus:outline-none"
-          aria-label="뒤로가기"
-        >
-          <IoChevronBack />
-        </button>
-        <h1 className="text-base font-bold text-gray-900">교환 글 작성</h1>
-        <div className="w-8" />
-      </header>
-
-      {/* ------------------- 스텝 표시 인디케이터 ------------------- */}
-      <div className="flex justify-center items-center gap-6 py-5 border-b border-gray-50">
-        {[
-          { num: 1, label: '기본 정보' },
-          { num: 2, label: '교환 품목' },
-          { num: 3, label: '교환 정보' },
-        ].map((item) => (
-          <div key={item.num} className="flex flex-col items-center gap-1">
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                step === item.num
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-400'
-              }`}
-            >
-              {item.num}
-            </div>
-            <span
-              className={`text-xs ${
-                step === item.num ? 'text-blue-500 font-bold' : 'text-gray-400'
-              }`}
-            >
-              {item.label}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {/* ------------------- 메인 폼 영역 ------------------- */}
-      <main className="flex-1 px-5 py-6 overflow-y-auto">
-        {/* ================= STEP 1: 기본 정보 ================= */}
-        {step === 1 && (
-          <div className="space-y-6">
+    <div className="flex min-h-screen justify-center bg-gray-100 sm:py-8">
+      {/* 피그마 규격: 402px 프레임 */}
+      <div className="flex w-full max-w-[402px] flex-col justify-between bg-white sm:min-h-[874px] sm:rounded-3xl sm:shadow-xl border border-gray-100 overflow-hidden">
+        
+        {/* ==================== 1 ~ 3단계 화면 ==================== */}
+        {step < 4 && (
+          <>
             <div>
-              <label className="block text-sm font-bold text-gray-800 mb-2">교환 방식 선택</label>
-              <div className="grid grid-cols-2 gap-3">
+              {/* 상단 헤더 */}
+              <header className="flex h-[60px] items-center justify-between px-5 bg-white">
                 <button
                   type="button"
-                  onClick={() => setExchangeType('direct')}
-                  className={`py-3.5 rounded-xl text-sm font-medium transition-all ${
-                    exchangeType === 'direct'
-                      ? 'bg-blue-50 text-blue-600 border-2 border-blue-500 font-bold'
-                      : 'bg-gray-100 text-gray-600 border-2 border-transparent'
-                  }`}
+                  aria-label="뒤로 가기"
+                  onClick={() => (step === 1 ? navigate(-1) : setStep(step - 1))}
+                  className="p-1 -ml-1 text-[#171617] hover:bg-gray-100 rounded-full transition-colors"
                 >
-                  직접 전달
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setExchangeType('delivery')}
-                  className={`py-3.5 rounded-xl text-sm font-medium transition-all ${
-                    exchangeType === 'delivery'
-                      ? 'bg-blue-50 text-blue-600 border-2 border-blue-500 font-bold'
-                      : 'bg-gray-100 text-gray-600 border-2 border-transparent'
-                  }`}
-                >
-                  택배 교환
-                </button>
-              </div>
-            </div>
+                <h1 className="text-[18px] font-semibold text-[#171617]">교환 글 작성</h1>
+                <div className="w-6" />
+              </header>
 
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-2">제목(필수)</label>
-              <div className="relative">
-                <textarea
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  maxLength={50}
-                  placeholder="글을 작성해주세요. (최대 50자)"
-                  className="w-full h-28 bg-gray-50 rounded-2xl p-4 text-sm text-gray-800 resize-none focus:outline-none focus:ring-1 focus:ring-blue-400 placeholder-gray-400 border border-transparent focus:bg-white transition-all"
-                />
-                <span className="absolute bottom-3 right-4 text-xs text-gray-400 select-none">
-                  {title.length}/50
-                </span>
-              </div>
-            </div>
+              {/* 메인 콘텐츠 영역 */}
+              <main className="p-[20px] space-y-[20px]">
+                
+                {/* 📌 단계 인디케이터 */}
+                <div className="flex justify-center items-center gap-[12px] py-1">
+                  {/* Step 1 */}
+                  <div className="flex flex-col items-center gap-[8px] w-[59px]">
+                    <div className={`flex items-center justify-center w-[24px] h-[24px] rounded-full text-[12px] font-semibold ${step === 1 ? "bg-[#2F78FD] text-[#FCFCFC]" : "bg-[#FCFCFC] border border-[#DEDEDE] text-[#A2A2A2]"}`}>
+                      1
+                    </div>
+                    <span className={`text-[12px] font-semibold ${step === 1 ? "text-[#2F78FD]" : "text-[#858485]"}`}>기본 정보</span>
+                  </div>
 
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-2">내용 실행(선택)</label>
-              <div className="relative">
-                <textarea
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  maxLength={200}
-                  placeholder="글을 작성해주세요. (최대 200자)"
-                  className="w-full h-36 bg-gray-50 rounded-2xl p-4 text-sm text-gray-800 resize-none focus:outline-none focus:ring-1 focus:ring-blue-400 placeholder-gray-400 border border-transparent focus:bg-white transition-all"
-                />
-                <span className="absolute bottom-3 right-4 text-xs text-gray-400 select-none">
-                  {content.length}/200
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
+                  {/* Step 2 */}
+                  <div className="flex flex-col items-center gap-[8px] w-[59px]">
+                    <div className={`flex items-center justify-center w-[24px] h-[24px] rounded-full text-[12px] font-semibold ${step === 2 ? "bg-[#2F78FD] text-[#FCFCFC]" : "bg-[#FCFCFC] border border-[#DEDEDE] text-[#A2A2A2]"}`}>
+                      2
+                    </div>
+                    <span className={`text-[12px] font-semibold ${step === 2 ? "text-[#2F78FD]" : "text-[#858485]"}`}>교환 품목</span>
+                  </div>
 
-        {/* ================= STEP 2: 교환 품목 ================= */}
-        {step === 2 && (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-2">내가 가진 굿즈</label>
-              <div className="flex gap-3 overflow-x-auto pb-1">
-                <input
-                  type="file"
-                  id="goods-image-upload"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
+                  {/* Step 3 */}
+                  <div className="flex flex-col items-center gap-[8px] w-[59px]">
+                    <div className={`flex items-center justify-center w-[24px] h-[24px] rounded-full text-[12px] font-semibold ${step === 3 ? "bg-[#2F78FD] text-[#FCFCFC]" : "bg-[#FCFCFC] border border-[#DEDEDE] text-[#A2A2A2]"}`}>
+                      3
+                    </div>
+                    <span className={`text-[12px] font-semibold ${step === 3 ? "text-[#2F78FD]" : "text-[#858485]"}`}>교환 정보</span>
+                  </div>
+                </div>
 
-                {goodsImages.length < 4 && (
-                  <label
-                    htmlFor="goods-image-upload"
-                    className="w-24 h-24 border-2 border-blue-400 rounded-2xl flex items-center justify-center text-blue-500 bg-white cursor-pointer flex-shrink-0 hover:bg-blue-50 transition-colors"
-                  >
-                    <IoAdd className="text-3xl" />
-                  </label>
+                {/* ---------------- 1단계: 기본 정보 ---------------- */}
+                {step === 1 && (
+                  <div className="space-y-[20px]">
+                    {/* 제목 (필수) */}
+                    <section className="space-y-[8px]">
+                      <h2 className="text-[18px] font-semibold text-[#171617]">제목(필수)</h2>
+                      <div className="flex flex-col items-end gap-[4px]">
+                        <textarea
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value.slice(0, 50))}
+                          placeholder="글을 작성해주세요. (최대 50자)"
+                          className="w-full h-[112px] resize-none rounded-[8px] bg-[#FCFCFC] p-[12px] text-[14px] text-[#171617] placeholder:text-[#A2A2A2] border border-[#EEEEEE] focus:border-[#2F78FD] focus:outline-none transition-all"
+                        />
+                        <span className="text-[14px] text-[#A2A2A2]">{title.length}/50</span>
+                      </div>
+                    </section>
+
+                    {/* 내용 (선택) */}
+                    <section className="space-y-[8px]">
+                      <h2 className="text-[18px] font-semibold text-[#171617]">내용(선택)</h2>
+                      <div className="flex flex-col items-end gap-[4px]">
+                        <textarea
+                          value={content}
+                          onChange={(e) => setContent(e.target.value.slice(0, 200))}
+                          placeholder="글을 작성해주세요. (최대 200자)"
+                          className="w-full h-[112px] resize-none rounded-[8px] bg-[#FCFCFC] p-[12px] text-[14px] text-[#171617] placeholder:text-[#A2A2A2] border border-[#EEEEEE] focus:border-[#2F78FD] focus:outline-none transition-all"
+                        />
+                        <span className="text-[14px] text-[#A2A2A2]">{content.length}/200</span>
+                      </div>
+                    </section>
+
+                    {/* 교환할 팝업 이름 */}
+                    <section className="space-y-[8px]">
+                      <h2 className="text-[18px] font-semibold text-[#171617]">교환할 팝업 이름(선택)</h2>
+                      <div className="flex items-center gap-[4px] rounded-[8px] bg-[#FCFCFC] p-[12px] border border-[#EEEEEE] focus-within:border-[#2F78FD]">
+                        <span className={`text-[14px] ${popupName ? "text-[#2F78FD]" : "text-[#545454]"}`}>#</span>
+                        <input
+                          type="text"
+                          value={popupName}
+                          onChange={(e) => setPopupName(e.target.value)}
+                          placeholder="이름을 작성해주세요."
+                          className="w-full bg-transparent text-[14px] text-[#2F78FD] placeholder:text-[#A2A2A2] focus:outline-none"
+                        />
+                      </div>
+                    </section>
+
+                    {/* 선호 날짜 */}
+                    <section className="space-y-[8px]">
+                      <h2 className="text-[18px] font-semibold text-[#171617]">선호 날짜(선택)</h2>
+                      <div className="flex items-center gap-[4px] rounded-[8px] bg-[#FCFCFC] p-[12px] border border-[#EEEEEE] focus-within:border-[#2F78FD]">
+                        <span className={`text-[14px] ${preferredDate ? "text-[#2F78FD]" : "text-[#545454]"}`}>#</span>
+                        <input
+                          type="text"
+                          value={preferredDate}
+                          onChange={(e) => setPreferredDate(e.target.value)}
+                          placeholder="날짜를 작성해주세요. (예: 260809)"
+                          className="w-full bg-transparent text-[14px] text-[#2F78FD] placeholder:text-[#A2A2A2] focus:outline-none"
+                        />
+                      </div>
+                    </section>
+
+                    {/* 선호 시간 */}
+                    <section className="space-y-[8px]">
+                      <h2 className="text-[18px] font-semibold text-[#171617]">선호 시간(선택)</h2>
+                      <div className="flex items-center gap-[4px] rounded-[8px] bg-[#FCFCFC] p-[12px] border border-[#EEEEEE] focus-within:border-[#2F78FD]">
+                        <span className={`text-[14px] ${preferredTime ? "text-[#2F78FD]" : "text-[#545454]"}`}>#</span>
+                        <input
+                          type="text"
+                          value={preferredTime}
+                          onChange={(e) => setPreferredTime(e.target.value)}
+                          placeholder="시간을 작성해주세요. (예: 12시부터14시까지)"
+                          className="w-full bg-transparent text-[14px] text-[#2F78FD] placeholder:text-[#A2A2A2] focus:outline-none"
+                        />
+                      </div>
+                    </section>
+                  </div>
                 )}
 
-                {goodsImages.map((imgUrl, index) => (
-                  <div
-                    key={index}
-                    className="w-24 h-24 rounded-2xl relative flex-shrink-0 overflow-hidden border border-gray-100 bg-gray-100"
-                  >
-                    <img
-                      src={imgUrl}
-                      alt={`굿즈 미리보기 ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(index)}
-                      className="absolute top-1.5 right-1.5 bg-gray-800/60 text-white rounded-full p-1 text-xs hover:bg-gray-900"
-                    >
-                      <IoClose />
-                    </button>
+                {/* ---------------- 2단계: 교환 품목 ---------------- */}
+                {step === 2 && (
+                  <div className="space-y-[20px]">
+                    {/* 내가 가진 굿즈 이미지 */}
+                    <section className="space-y-[8px]">
+                      <h2 className="text-[18px] font-semibold text-[#171617]">내가 가진 굿즈</h2>
+                      <div className="flex items-center gap-[12px] overflow-x-auto pb-1">
+                        {myImages.map((img) => (
+                          <div key={img.id} className="relative w-[160px] h-[160px] shrink-0 rounded-[8px] bg-[#DEDEDE] overflow-hidden">
+                            <img src={img.url} alt="굿즈" className="h-full w-full object-cover" />
+                            <button
+                              type="button"
+                              aria-label="삭제"
+                              onClick={() => handleRemoveMyImage(img.id)}
+                              className="absolute right-[8px] top-[8px] flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#171617]/30 text-[#FCFCFC]"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                        {myImages.length < 4 && (
+                          <button
+                            type="button"
+                            aria-label="사진 추가"
+                            onClick={() => myFileInputRef.current?.click()}
+                            className="flex w-[160px] h-[160px] shrink-0 items-center justify-center rounded-[8px] border border-[#2F78FD] bg-[#FCFCFC]"
+                          >
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                              <path d="M20 8V32M8 20H32" stroke="#2F78FD" strokeWidth="3" strokeLinecap="round" />
+                            </svg>
+                          </button>
+                        )}
+                        <input ref={myFileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleAddMyImages} />
+                      </div>
+                    </section>
+
+                    {/* 굿즈 이름 (필수) */}
+                    <section className="space-y-[8px]">
+                      <h2 className="text-[18px] font-semibold text-[#171617]">굿즈 이름 (필수)</h2>
+                      <div className="flex items-center gap-[4px] rounded-[8px] bg-[#FCFCFC] p-[12px] border border-[#EEEEEE] focus-within:border-[#2F78FD]">
+                        <span className={`text-[14px] ${myGoodsName ? "text-[#2F78FD]" : "text-[#545454]"}`}>#</span>
+                        <input
+                          type="text"
+                          value={myGoodsName}
+                          onChange={(e) => setMyGoodsName(e.target.value)}
+                          placeholder="굿즈 이름을 입력해주세요."
+                          className="w-full bg-transparent text-[14px] text-[#2F78FD] placeholder:text-[#A2A2A2] focus:outline-none"
+                        />
+                      </div>
+                    </section>
+
+                    {/* 브랜드/시리즈 (선택) */}
+                    <section className="space-y-[8px]">
+                      <h2 className="text-[18px] font-semibold text-[#171617]">브랜드/시리즈 (선택)</h2>
+                      <div className="flex items-center gap-[4px] rounded-[8px] bg-[#FCFCFC] p-[12px] border border-[#EEEEEE] focus-within:border-[#2F78FD]">
+                        <span className="text-[14px] text-[#545454]">#</span>
+                        <input
+                          type="text"
+                          value={myGoodsBrand}
+                          onChange={(e) => setMyGoodsBrand(e.target.value)}
+                          placeholder="브랜드나 시리즈를 작성해주세요."
+                          className="w-full bg-transparent text-[14px] text-[#171617] placeholder:text-[#A2A2A2] focus:outline-none"
+                        />
+                      </div>
+                    </section>
+
+                    {/* 상태 (선택) */}
+                    <section className="space-y-[8px]">
+                      <h2 className="text-[18px] font-semibold text-[#171617]">상태 (선택)</h2>
+                      <div className="grid grid-cols-3 gap-[8px]">
+                        {["미개봉", "사용감 적음", "사용감 있음"].map((cond) => (
+                          <button
+                            key={cond}
+                            type="button"
+                            onClick={() => setMyGoodsCondition(cond === myGoodsCondition ? "" : cond)}
+                            className={`h-[48px] rounded-[8px] text-[14px] font-semibold transition-all ${
+                              myGoodsCondition === cond
+                                ? "bg-[#FCFCFC] border border-[#A6C3F8] text-[#2F78FD]"
+                                : "bg-[#F4F4F4] border border-[#DEDEDE] text-[#858485]"
+                            }`}
+                          >
+                            {cond}
+                          </button>
+                        ))}
+                      </div>
+                    </section>
                   </div>
-                ))}
-              </div>
+                )}
+
+                {/* ---------------- 3단계: 교환 정보 ---------------- */}
+                {step === 3 && (
+                  <div className="space-y-[20px]">
+                    {/* 내가 원하는 굿즈 이미지 */}
+                    <section className="space-y-[8px]">
+                      <h2 className="text-[18px] font-semibold text-[#171617]">내가 원하는 굿즈 (선택)</h2>
+                      <div className="flex items-center gap-[12px] overflow-x-auto pb-1">
+                        {wantImages.map((img) => (
+                          <div key={img.id} className="relative w-[160px] h-[160px] shrink-0 rounded-[8px] bg-[#DEDEDE] overflow-hidden">
+                            <img src={img.url} alt="원하는 굿즈" className="h-full w-full object-cover" />
+                            <button
+                              type="button"
+                              aria-label="삭제"
+                              onClick={() => handleRemoveWantImage(img.id)}
+                              className="absolute right-[8px] top-[8px] flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#171617]/30 text-[#FCFCFC]"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                        {wantImages.length < 4 && (
+                          <button
+                            type="button"
+                            aria-label="사진 추가"
+                            onClick={() => wantFileInputRef.current?.click()}
+                            className="flex w-[160px] h-[160px] shrink-0 items-center justify-center rounded-[8px] border border-[#2F78FD] bg-[#FCFCFC]"
+                          >
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                              <path d="M20 8V32M8 20H32" stroke="#2F78FD" strokeWidth="3" strokeLinecap="round" />
+                            </svg>
+                          </button>
+                        )}
+                        <input ref={wantFileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleAddWantImages} />
+                      </div>
+                    </section>
+
+                    {/* 굿즈 이름 (필수) */}
+                    <section className="space-y-[8px]">
+                      <h2 className="text-[18px] font-semibold text-[#171617]">굿즈 이름 (필수)</h2>
+                      <div className="flex items-center gap-[4px] rounded-[8px] bg-[#FCFCFC] p-[12px] border border-[#EEEEEE] focus-within:border-[#2F78FD]">
+                        <input
+                          type="text"
+                          value={wantGoodsName}
+                          onChange={(e) => setWantGoodsName(e.target.value)}
+                          placeholder="굿즈 이름을 입력해주세요."
+                          className="w-full bg-transparent text-[14px] text-[#171617] placeholder:text-[#A2A2A2] focus:outline-none"
+                        />
+                      </div>
+                    </section>
+
+                    {/* 브랜드/시리즈 (선택) */}
+                    <section className="space-y-[8px]">
+                      <h2 className="text-[18px] font-semibold text-[#171617]">브랜드/시리즈 (선택)</h2>
+                      <div className="flex items-center gap-[4px] rounded-[8px] bg-[#FCFCFC] p-[12px] border border-[#EEEEEE] focus-within:border-[#2F78FD]">
+                        <span className="text-[14px] text-[#545454]">#</span>
+                        <input
+                          type="text"
+                          value={wantGoodsBrand}
+                          onChange={(e) => setWantGoodsBrand(e.target.value)}
+                          placeholder="브랜드나 시리즈를 작성해주세요."
+                          className="w-full bg-transparent text-[14px] text-[#171617] placeholder:text-[#A2A2A2] focus:outline-none"
+                        />
+                      </div>
+                    </section>
+
+                    {/* 추가 조건 (선택) */}
+                    <section className="space-y-[8px]">
+                      <h2 className="text-[18px] font-semibold text-[#171617]">추가 조건 (선택)</h2>
+                      <div className="flex flex-col items-end gap-[4px]">
+                        <textarea
+                          value={additionalCondition}
+                          onChange={(e) => setAdditionalCondition(e.target.value.slice(0, 200))}
+                          placeholder="글을 작성해주세요. (최대 200자)"
+                          className="w-full h-[112px] resize-none rounded-[8px] bg-[#FCFCFC] p-[12px] text-[14px] text-[#171617] placeholder:text-[#A2A2A2] border border-[#EEEEEE] focus:border-[#2F78FD] focus:outline-none transition-all"
+                        />
+                        <span className="text-[14px] text-[#A2A2A2]">{additionalCondition.length}/200</span>
+                      </div>
+                    </section>
+                  </div>
+                )}
+
+              </main>
             </div>
 
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-2">굿즈 이름 (필수)</label>
-              <input
-                type="text"
-                value={goodsName}
-                onChange={(e) => setGoodsName(e.target.value)}
-                placeholder="굿즈 이름을 입력해주세요."
-                className="w-full bg-gray-50 rounded-2xl px-4 py-3.5 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-400 placeholder-gray-400 border border-transparent focus:bg-white transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-2">브랜드/시리즈 (선택)</label>
-              <input
-                type="text"
-                value={brand}
-                onChange={(e) => setBrand(e.target.value)}
-                placeholder="브랜드나 시리즈를 입력해주세요."
-                className="w-full bg-gray-50 rounded-2xl px-4 py-3.5 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-400 placeholder-gray-400 border border-transparent focus:bg-white transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-2">상태 (선택)</label>
-              <div className="grid grid-cols-3 gap-2">
-                {['미개봉', '개봉(사용감 적음)', '사용감 있음'].map((option) => (
+            {/* 하단 버튼 영역 (1~3단계 공통) */}
+            <footer className="p-[20px] bg-white border-t border-gray-50">
+              {step === 1 ? (
+                <button
+                  type="button"
+                  onClick={() => isStep1Valid && setStep(2)}
+                  disabled={!isStep1Valid}
+                  className={`w-full h-[48px] rounded-[8px] text-[14px] font-semibold transition-all ${
+                    isStep1Valid
+                      ? "bg-[#2F78FD] text-[#FCFCFC] hover:bg-blue-600 shadow-md shadow-blue-100"
+                      : "bg-[#F4F4F4] text-[#858485] border border-[#DEDEDE] cursor-not-allowed"
+                  }`}
+                >
+                  다음
+                </button>
+              ) : (
+                <div className="flex gap-[10px]">
                   <button
-                    key={option}
                     type="button"
-                    onClick={() => setCondition(condition === option ? '' : option)}
-                    className={`py-3 px-2 rounded-xl text-xs font-medium transition-all ${
-                      condition === option
-                        ? 'bg-white text-blue-600 border-2 border-blue-500 font-bold shadow-sm'
-                        : 'bg-gray-100 text-gray-600 border-2 border-transparent'
+                    onClick={() => setStep(step - 1)}
+                    className="flex-1 h-[48px] rounded-[8px] bg-[#FCFCFC] border border-[#A6C3F8] text-[14px] font-semibold text-[#2F78FD] hover:bg-blue-50/50"
+                  >
+                    이전
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (step === 2 && isStep2Valid) setStep(3);
+                      if (step === 3 && isStep3Valid) setStep(4);
+                    }}
+                    disabled={step === 2 ? !isStep2Valid : !isStep3Valid}
+                    className={`flex-1 h-[48px] rounded-[8px] text-[14px] font-semibold transition-all ${
+                      (step === 2 ? isStep2Valid : isStep3Valid)
+                        ? "bg-[#2F78FD] text-[#FCFCFC] hover:bg-blue-600 shadow-md shadow-blue-100"
+                        : "bg-[#F4F4F4] text-[#858485] border border-[#DEDEDE] cursor-not-allowed"
                     }`}
                   >
-                    {option}
+                    다음
                   </button>
-                ))}
+                </div>
+              )}
+            </footer>
+          </>
+        )}
+
+        {/* ==================== 4단계: 완료 화면 ==================== */}
+        {step === 4 && (
+          <div className="flex flex-col justify-between h-full bg-white min-h-[874px]">
+            {/* 완료 헤더 */}
+            <header className="flex h-[60px] items-center justify-between px-5 bg-white">
+              <div className="w-6" />
+              <h1 className="text-[18px] font-semibold text-[#171617]">완료</h1>
+              <button
+                type="button"
+                aria-label="닫기"
+                onClick={() => navigate(-1)}
+                className="p-1 -mr-1 text-[#171617] hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </header>
+
+            {/* 완료 본문 메시지 */}
+            <main className="flex flex-col items-center justify-center flex-1 px-5">
+              <div className="flex items-center justify-center w-[70px] h-[70px] rounded-full bg-[#2F78FD] mb-[20px] shadow-lg shadow-blue-200">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#FCFCFC" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
               </div>
-            </div>
+              <h2 className="text-[22px] font-bold text-[#171617]">교환 글 등록 완료</h2>
+            </main>
+
+            {/* 완료 하단 버튼 2개 */}
+            <footer className="p-[20px] space-y-[10px]">
+              <button
+                type="button"
+                onClick={() => alert("글 상세 페이지로 이동")}
+                className="w-full h-[48px] rounded-[8px] bg-[#FCFCFC] border border-[#A6C3F8] text-[14px] font-semibold text-[#2F78FD] hover:bg-blue-50/50 transition-all"
+              >
+                글 보러가기
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/")}
+                className="w-full h-[48px] rounded-[8px] bg-[#2F78FD] text-[14px] font-semibold text-[#FCFCFC] hover:bg-blue-600 transition-all shadow-md shadow-blue-100"
+              >
+                덕톡 라운지로
+              </button>
+            </footer>
           </div>
         )}
 
-        {/* ================= STEP 3: 교환 정보 (원하는 굿즈) ================= */}
-        {step === 3 && (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-2">내가 원하는 굿즈 (선택)</label>
-              <div className="flex gap-3 overflow-x-auto pb-1">
-                <input
-                  type="file"
-                  id="want-goods-image-upload"
-                  multiple
-                  accept="image/*"
-                  onChange={handleWantImageUpload}
-                  className="hidden"
-                />
-
-                {wantGoodsImages.length < 4 && (
-                  <label
-                    htmlFor="want-goods-image-upload"
-                    className="w-24 h-24 border-2 border-blue-400 rounded-2xl flex items-center justify-center text-blue-500 bg-white cursor-pointer flex-shrink-0 hover:bg-blue-50 transition-colors"
-                  >
-                    <IoAdd className="text-3xl" />
-                  </label>
-                )}
-
-                {wantGoodsImages.map((imgUrl, index) => (
-                  <div
-                    key={index}
-                    className="w-24 h-24 rounded-2xl relative flex-shrink-0 overflow-hidden border border-gray-100 bg-gray-100"
-                  >
-                    <img
-                      src={imgUrl}
-                      alt={`원하는 굿즈 미리보기 ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleWantRemoveImage(index)}
-                      className="absolute top-1.5 right-1.5 bg-gray-800/60 text-white rounded-full p-1 text-xs hover:bg-gray-900"
-                    >
-                      <IoClose />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-2">굿즈 이름 (필수)</label>
-              <input
-                type="text"
-                value={wantGoodsName}
-                onChange={(e) => setWantGoodsName(e.target.value)}
-                placeholder="굿즈 이름을 입력해주세요."
-                className="w-full bg-gray-50 rounded-2xl px-4 py-3.5 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-400 placeholder-gray-400 border border-transparent focus:bg-white transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-2">브랜드/시리즈 (선택)</label>
-              <input
-                type="text"
-                value={wantBrand}
-                onChange={(e) => setWantBrand(e.target.value)}
-                placeholder="브랜드나 시리즈를 입력해주세요."
-                className="w-full bg-gray-50 rounded-2xl px-4 py-3.5 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-400 placeholder-gray-400 border border-transparent focus:bg-white transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-2">추가 조건 (선택)</label>
-              <div className="relative">
-                <textarea
-                  value={extraCondition}
-                  onChange={(e) => setExtraCondition(e.target.value)}
-                  maxLength={200}
-                  placeholder="글을 작성해주세요. (최대 200자)"
-                  className="w-full h-32 bg-gray-50 rounded-2xl p-4 text-sm text-gray-800 resize-none focus:outline-none focus:ring-1 focus:ring-blue-400 placeholder-gray-400 border border-transparent focus:bg-white transition-all"
-                />
-                <span className="absolute bottom-3 right-4 text-xs text-gray-400 select-none">
-                  {extraCondition.length}/200
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
-
-      {/* ------------------- 하단 버튼 영역 ------------------- */}
-      <footer className="p-5 bg-white border-t border-gray-50">
-        {step === 1 && (
-          <button
-            type="button"
-            onClick={() => setStep(2)}
-            disabled={!isValidStep1}
-            className={`w-full py-3.5 rounded-2xl text-white font-semibold text-sm transition-all duration-200 ${
-              isValidStep1
-                ? 'bg-blue-500 hover:bg-blue-600 active:scale-[0.99] shadow-md shadow-blue-100'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            다음
-          </button>
-        )}
-
-        {(step === 2 || step === 3) && (
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => setStep((prev) => prev - 1)}
-              className="w-1/3 py-3.5 rounded-2xl font-semibold text-sm border border-blue-400 text-blue-500 hover:bg-blue-50 transition-all"
-            >
-              이전
-            </button>
-            <button
-              type="button"
-              onClick={step === 2 ? () => setStep(3) : handleSubmit}
-              disabled={step === 2 ? !isValidStep2 : !isValidStep3}
-              className={`w-2/3 py-3.5 rounded-2xl text-white font-semibold text-sm transition-all duration-200 ${
-                (step === 2 && isValidStep2) || (step === 3 && isValidStep3)
-                  ? 'bg-blue-500 hover:bg-blue-600 active:scale-[0.99] shadow-md shadow-blue-100'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              다음
-            </button>
-          </div>
-        )}
-      </footer>
+      </div>
     </div>
   );
 }
