@@ -152,6 +152,14 @@ function DisplayEdit() {
 
     const [selectedId, setSelectedId] = useState(null);
 
+    useEffect(() => {
+        const saved = localStorage.getItem("displayItems");
+
+        if (saved) {
+            setItems(JSON.parse(saved));
+        }
+    }, []);
+
     const handleAddItem = (good) => {
         const newItem = {
             id: Date.now(),
@@ -174,7 +182,7 @@ function DisplayEdit() {
         );
 
         alert("저장되었습니다.")
-        
+
         setIsEditing(false);
         setSelectedId(null);
     };
