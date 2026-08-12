@@ -188,7 +188,7 @@ function DisplayEdit() {
     };
 
   return (
-    <div>
+    <div className="flex justify-center">
       <Stage width={360} height={400}>
         <Layer listening={false}>
           <Image image={displayBack} width={360} height={400} />
