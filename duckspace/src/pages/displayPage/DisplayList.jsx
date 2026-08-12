@@ -1,5 +1,5 @@
 import { IoChevronBack, IoAdd, IoSearch } from "react-icons/io5";
-import displayMockData from "../../data/displayMockData";
+import { useGoodsStore } from "../../store/goodsStore";
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDisplayStore } from "../../store/displayStore";
@@ -9,6 +9,7 @@ function DisplayList() {
     const navigate = useNavigate();
     const addItem = useDisplayStore((state) => state.addItem);
     const mode = location.state?.mode || "view";
+    const goods = useGoodsStore((state) => state.goods);
 
     const handleSelectItem = (good) => {
         const newItem = {
@@ -60,7 +61,7 @@ function DisplayList() {
 
       {/* 굿즈 리스트 */}
       <div className="flex flex-col gap-4">
-        {displayMockData.map((item) => (
+        {goods.map((item) => (
             <div
                 key={item.id}
                 onClick={() => {

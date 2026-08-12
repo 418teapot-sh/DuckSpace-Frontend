@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import useImage from "use-image";
-import displayMockData from "../data/displayMockData";
 import displayBackImg from "../assets/displaybackgrounds/display_back.png";
 import { useDisplayStore } from "../store/displayStore";
 
@@ -145,7 +144,6 @@ function DisplayEdit() {
 
     const items = useDisplayStore((state) => state.editingItems);
     const setItems = useDisplayStore((state) => state.setEditingItems);
-    const addItem = useDisplayStore((state) => state.addItem);
     const updateItem = useDisplayStore((state) => state.updateItem);
     const isEditing = useDisplayStore((state) => state.isEditing);
     const setIsEditing = useDisplayStore((state) => state.setIsEditing);
@@ -153,28 +151,17 @@ function DisplayEdit() {
     const [selectedId, setSelectedId] = useState(null);
 
     useEffect(() => {
+        if (isEditing) return;
         const saved = localStorage.getItem("displayItems");
 
         if (saved) {
             setItems(JSON.parse(saved));
+        } else{
+            setItems([]);
         }
     }, []);
 
-    const handleAddItem = (good) => {
-        const newItem = {
-            id: Date.now(),
-            goodsId: good.id,
-            src: good.imageUrl,
-            x: 100,
-            y: 100,
-            width: 70,
-            height: 70,
-            rotation: 0,
-        };
-
-        addItem(newItem);
-        setSelectedId(newItem.id);
-    };
+    
     const handleSave = () => {
         localStorage.setItem(
         "displayItems",

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import DisplayEdit from "../components/DisplayEdit";
+import DisplayGoods from "../components/DisplayGoods";
 import NavBar from "../components/NavBar";
 
 function Display() {
@@ -106,6 +107,11 @@ function Display() {
         <span className="text-[15px] text-[#555555]">
           2(기능 구현 예정)
         </span>
+      </section>
+
+      {/* 전시된 굿즈 */}
+      <section className="px-7">
+        <DisplayGoods />
       </section>
 
       {/* 하단 네브바 */}
