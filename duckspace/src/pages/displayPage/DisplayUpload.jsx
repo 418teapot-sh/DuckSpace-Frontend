@@ -1,0 +1,158 @@
+import { useState } from "react";
+import { IoChevronBack, IoAdd } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
+import { useGoodsStore } from "../../store/goodsStore";
+
+function DisplayUpload() {
+    const navigate = useNavigate();
+
+    const [name, setName] = useState("");
+    const [price, setPrice] = useState("");
+    const [comment, setComment] = useState("");
+
+    const [imageFile, setImageFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState("");
+    const addGoods = useGoodsStore((state) => state.addGoods);
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+
+        if (!file) return;
+
+        setImageFile(file);
+
+        const imageUrl = URL.createObjectURL(file);
+        setPreviewUrl(imageUrl);
+    };
+
+    const handleSubmit = () => {
+        if (!imageFile) {
+            alert("굿즈 이미지를 등록해주세요.");
+            return;
+        }
+
+        if (!name.trim()) {
+            alert("굿즈 이름을 입력해주세요.");
+            return;
+        }
+
+        const newGood = {
+            id: Date.now(),
+            name: name.trim(),
+            category: comment.trim() || "새 굿즈",
+            price: price ? Number(price) : 0,
+            date: new Date().toLocaleDateString("ko-KR"),
+            imageUrl: previewUrl,
+        };
+
+        addGoods(newGood);
+
+        alert("굿즈가 등록되었습니다.");
+
+        navigate("/display");
+    };
+
+  return (
+    <div className="min-h-screen bg-white px-6 pt-6 pb-24">
+      {/* 헤더 */}
+      <div className="mb-8 flex items-center justify-between">
+        <button
+          onClick={() => navigate(-1)}
+          className="cursor-pointer text-2xl"
+        >
+          <IoChevronBack />
+        </button>
+
+        <h1 className="text-xl font-bold">굿즈 추가</h1>
+
+        {/* 가운데 정렬 맞추기용 */}
+        <div className="w-6" />
+      </div>
+
+      {/* 이미지 업로드 */}
+      <label className="mb-8 flex h-[220px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-[8px] bg-[#F7F7F7]">
+        {previewUrl ? (
+            <img
+                src={previewUrl}
+                alt="굿즈 미리보기"
+                className="h-full w-full object-contain"
+            />
+            ) : (
+                <IoAdd size={42} className="text-[#A2A2A2]" />
+            )}
+
+            <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+            />
+        </label>
+
+      {/* 굿즈 이름 */}
+      <div className="mb-6">
+        <label className="mb-3 block text-base font-semibold">
+          굿즈 이름
+        </label>
+
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="굿즈 이름을 입력해주세요."
+          className="h-14 w-full rounded-[8px] bg-[#F7F7F7] px-4 outline-none placeholder:text-[#B5B5B5]"
+        />
+      </div>
+
+      {/* 굿즈 가격 */}
+      <div className="mb-6">
+        <label className="mb-3 block text-base font-semibold">
+          굿즈 가격 <span className="font-normal text-[#A2A2A2]">(선택)</span>
+        </label>
+
+        <input
+          type="number"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          placeholder="가격을 입력해주세요."
+          className="h-14 w-full rounded-[8px] bg-[#F7F7F7] px-4 outline-none placeholder:text-[#B5B5B5]"
+        />
+      </div>
+
+      {/* 코멘트 */}
+      <div className="mb-10">
+        <label className="mb-3 block text-base font-semibold">
+          코멘트
+        </label>
+
+        <div className="relative">
+          <textarea
+            value={comment}
+            onChange={(e) => {
+              if (e.target.value.length <= 20) {
+                setComment(e.target.value);
+              }
+            }}
+            placeholder="코멘트를 입력해주세요."
+            className="h-32 w-full resize-none rounded-[8px] bg-[#F7F7F7] px-4 py-4 outline-none placeholder:text-[#B5B5B5]"
+          />
+
+          <span className="absolute bottom-3 right-4 text-sm text-[#A2A2A2]">
+            {comment.length}/20
+          </span>
+        </div>
+      </div>
+
+      {/* 완료 */}
+      <button
+        type="button"
+        onClick={handleSubmit}
+        className="h-14 w-full cursor-pointer rounded-[8px] bg-[#5791FB] text-base font-semibold text-white"
+      >
+        완료
+      </button>
+    </div>
+  );
+}
+
+export default DisplayUpload;

@@ -13,6 +13,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import PostTextPages from './pages/PostTextPages';
 import PostExchangePages from './pages/PostExchangePages';
 import DisplayList from './pages/displayPage/DisplayList';
+import DisplayUpload from './pages/displayPage/DisplayUpload';
 
 function App() {
   return (
@@ -30,6 +31,8 @@ function App() {
 
         {/* 장식장 굿즈 선택 페이지 */}
         <Route path="/display/list" element={<DisplayList />} />
+        {/* 장식장 업로드 페이지 */}
+        <Route path="/display/upload" element={<DisplayUpload />} />
       </Routes>
       
     </BrowserRouter>
