@@ -1,9 +1,11 @@
 import { Stage, Layer, Image, Transformer, Circle, Group } from "react-konva";
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import useImage from "use-image";
 import displayMockData from "../data/displayMockData";
 import displayBackImg from "../assets/displaybackgrounds/display_back.png";
+import { useDisplayStore } from "../store/displayStore";
 
 
 import closeIcon from "../assets/displayIcon/close.svg";
@@ -133,21 +135,21 @@ function CircleButton({ x, y, icon, onClick }) {
 }
 
 function DisplayEdit() {
+
+    const navigate = useNavigate();
     const [displayBack] = useImage(displayBackImg);
 
     const [closeImage] = useImage(closeIcon);
     const [addImage] = useImage(addIcon);
     const [saveImage] = useImage(saveIcon);
 
-    const [items, setItems] = useState(() => {
-        const saved = localStorage.getItem("displayItems");
+    const items = useDisplayStore((state) => state.editingItems);
+    const setItems = useDisplayStore((state) => state.setEditingItems);
+    const addItem = useDisplayStore((state) => state.addItem);
+    const updateItem = useDisplayStore((state) => state.updateItem);
+    const isEditing = useDisplayStore((state) => state.isEditing);
+    const setIsEditing = useDisplayStore((state) => state.setIsEditing);
 
-        return saved
-            ? JSON.parse(saved)
-            : [];
-        });
-
-    const [isEditing, setIsEditing] = useState(false);
     const [selectedId, setSelectedId] = useState(null);
 
     const handleAddItem = (good) => {
@@ -162,7 +164,7 @@ function DisplayEdit() {
             rotation: 0,
         };
 
-        setItems((prevItems) => [...prevItems, newItem]);
+        addItem(newItem);
         setSelectedId(newItem.id);
     };
     const handleSave = () => {
@@ -170,6 +172,9 @@ function DisplayEdit() {
         "displayItems",
         JSON.stringify(items)
         );
+
+        alert("저장되었습니다.")
+        
         setIsEditing(false);
         setSelectedId(null);
     };
@@ -190,13 +195,7 @@ function DisplayEdit() {
                     isSelected={selectedId === item.id}
                     onSelect={() => setSelectedId(item.id)}
                     onChange={(updatedItem) => {
-                        setItems((prevItems) =>
-                        prevItems.map((prevItem) =>
-                            prevItem.id === updatedItem.id 
-                                ? updatedItem
-                                : prevItem
-                            )
-                        );
+                        updateItem(updatedItem);
                     }}
                 />
             ))}
@@ -210,6 +209,12 @@ function DisplayEdit() {
                     y={360}
                     icon={addImage}
                     onClick={() => {
+                        const saved = localStorage.getItem("displayItems");
+                        if (saved) {
+                            setItems(JSON.parse(saved));
+                        } else {
+                            setItems([]);
+                        }
                         setIsEditing(true);
                         setSelectedId(null);
                     }}
@@ -222,6 +227,12 @@ function DisplayEdit() {
                         y={225}
                         icon={closeImage}
                         onClick={() => {
+                            const saved = localStorage.getItem("displayItems");
+                            if (saved) {
+                                setItems(JSON.parse(saved));
+                            } else {
+                                setItems([]);
+                            }
                             setIsEditing(false);
                             setSelectedId(null);
                         }}
@@ -234,7 +245,9 @@ function DisplayEdit() {
                         icon={addImage}
                         onClick={() => {
                             console.log("객체 추가");
-                            handleAddItem(displayMockData[0])
+                            navigate("/display/list", {
+                                state: { mode: "select" },
+                            });
                         }}
                     />
                     {/* 저장 */}
@@ -243,6 +256,7 @@ function DisplayEdit() {
                         y={365}
                         icon={saveImage}
                         onClick={handleSave}
+                        
                     />
                 </>
             )}
