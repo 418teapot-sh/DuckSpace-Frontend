@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { IoChevronForward } from "react-icons/io5";
 import NavBar from "../components/NavBar";
 
@@ -6,6 +7,8 @@ import mainLogo from "../assets/duckspace_mainIcon.svg";
 import displayBack from "../assets/displaybackgrounds/display_back.png";
 
 const Home = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-white pb-28">
       {/* 1. 상단 로고 헤더 */}
@@ -40,7 +43,10 @@ const Home = () => {
           <h3 className="text-lg font-semibold text-[#171617]">
             다가오는 팝업
           </h3>
-          <button className="flex items-center text-sm text-[#A2A2A2] cursor-pointer">
+          <button
+            onClick={() => navigate("/popup")}
+            className="flex items-center text-sm text-[#A2A2A2] cursor-pointer"
+          >
             더보기
             <IoChevronForward size={16} />
           </button>
