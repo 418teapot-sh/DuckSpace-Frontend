@@ -1,7 +1,9 @@
+import { useNavigate } from "react-router-dom";
 import { IoChevronForward } from "react-icons/io5";
 import { homeMockData } from "../../data/homeMockData";
 
 function HomePopupCard() {
+  const navigate = useNavigate();
   const popupList = homeMockData.slice(0, 2);
 
   return (
@@ -14,7 +16,8 @@ function HomePopupCard() {
 
         <button
           type="button"
-          className="flex items-center text-[16px] text-[#A2A2A2]"
+          onClick={() => navigate("/popup")}
+          className="flex items-center text-[16px] text-[#A2A2A2] cursor-pointer"
         >
           더보기
           <IoChevronForward size={20} />
@@ -32,7 +35,9 @@ function HomePopupCard() {
               overflow-hidden
               rounded-[8px]
               bg-[#CDDCF7]
+              cursor-pointer
             "
+            onClick={() => navigate("/popup")}
           >
             <img
               src={popup.imageUrl}
