@@ -1,0 +1,114 @@
+import { IoChevronBack, IoAdd, IoSearch } from "react-icons/io5";
+import { useGoodsStore } from "../../store/goodsStore";
+
+import { useLocation, useNavigate } from "react-router-dom";
+import { useDisplayStore } from "../../store/displayStore";
+
+function DisplayList() {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const addItem = useDisplayStore((state) => state.addItem);
+    const mode = location.state?.mode || "view";
+    const goods = useGoodsStore((state) => state.goods);
+
+    const handleSelectItem = (good) => {
+        const newItem = {
+            id: Date.now(),
+            goodsId: good.id,
+            src: good.imageUrl,
+            x: 100,
+            y: 100,
+            width: 70,
+            height: 70,
+            rotation: 0,
+        };
+
+        addItem(newItem);
+        navigate("/display");
+    };
+
+  return (
+    <div className="min-h-screen bg-white px-6 pt-6 pb-24">
+      {/* 헤더 */}
+      <div className="mb-8 flex items-center justify-between">
+        <button
+          onClick={() => navigate(-1)}
+          className=" cursor-pointer text-2xl"
+        >
+          <IoChevronBack />
+        </button>
+
+        <h1 className="text-xl font-bold">장식장</h1>
+
+        <button>
+          <IoAdd size={32} />
+        </button>
+      </div>
+
+      {/* 검색창 */}
+      <div className="mb-4 flex h-14 items-center rounded-2xl bg-[#FAFAFA] px-4">
+        <IoSearch
+          size={26}
+          className="mr-3 text-[#D9D9D9]"
+        />
+
+        <input
+          type="text"
+          placeholder="키워드로 검색해보세요.(기능 구현 예정)"
+          className="w-full bg-transparent text-base outline-none placeholder:text-[#A2A2A2]"
+        />
+      </div>
+
+      {/* 굿즈 리스트 */}
+      <div className="flex flex-col gap-4">
+        {goods.map((item) => (
+            <div
+                key={item.id}
+                onClick={() => {
+                    if (mode === "select") {
+                        handleSelectItem(item);
+                    }
+                }}
+                className={`flex min-h-[220px] items-center rounded-2xl border border-[#EEEEEE] px-5 py-4 gap-8 ${
+                    mode === "select" ? "cursor-pointer" : ""
+                }`}          
+            >
+            {/* 이미지 */}
+            <div className="flex w-[45%] items-center justify-center">
+              <img
+                src={item.imageUrl}
+                alt={item.name}
+                className="h-36 w-36 object-contain"
+              />
+            </div>
+
+            {/* 굿즈 정보 */}
+            <div className="flex flex-1 flex-col items-start">
+              <div className="mb-4 rounded-tl-[16px] rounded-tr-[16px] rounded-br-[16px] rounded-bl-[0px] bg-[#2F78FD] px-4 py-2 text-sm font-medium text-white">
+                {item.category}
+              </div>
+
+              <p className="mb-1 text-base font-semibold">
+                ₩ {item.price.toLocaleString()}
+              </p>
+
+              <p className="mb-1 text-xl font-bold">
+                {item.name}
+              </p>
+
+              <p className="mb-5 text-sm text-[#666666]">
+                {item.date}
+              </p>
+
+              <button className="text-sm text-[#B5B5B5]">
+                수정하기 &gt;
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default DisplayList;
