@@ -1,5 +1,6 @@
 import duckBlue from "../assets/navbarIcon/duck_blue.png";
 import duckGray from "../assets/navbarIcon/duck_gray.png";
+import Logo from "../assets/DuckSpaceIcon.svg";
 
 export const displayMockData = [
   {
@@ -24,7 +25,7 @@ export const displayMockData = [
     category: "팝업스토어 굿즈",
     price: 15000,
     date: "2026.08.05",
-    imageUrl: duckBlue,
+    imageUrl: Logo,
   },
 ];
 

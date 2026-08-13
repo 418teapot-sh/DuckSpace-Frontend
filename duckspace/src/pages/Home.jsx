@@ -19,7 +19,9 @@ const Home = () => {
       </div>
 
       {/* 상단 팝업 슬라이드 */}
-      <HomeSlide/>
+      <div className="pt-4">
+        <HomeSlide/>
+      </div>
 
       {/* 다가오는 팝업 */}
       <HomePopupCard/>
