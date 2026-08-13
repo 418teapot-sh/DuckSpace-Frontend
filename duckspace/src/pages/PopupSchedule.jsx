@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoChevronBack, IoHeart, IoHeartOutline, IoSearch } from "react-icons/io5";
 
-// 전시장 배경 이미지 (프로젝트 에셋 경로)
+// 전시장 배경 이미지
 import displayBack from "../assets/displaybackgrounds/display_back.png";
 
 // 피그마 각 탭 시안을 완벽 구현하기 위한 목데이터
@@ -72,14 +72,11 @@ function PopupSchedule() {
   const getBadgeStyle = (status) => {
     switch (status) {
       case "ongoing":
-        // 진행중: var(--Main-Main60, #7EAAFA) / outline: #5791FB / text: #FCFCFC
         return "bg-[#7EAAFA] text-[#FCFCFC] border-[#5791FB]";
       case "upcoming":
-        // 예정: var(--White, #FCFCFC) / outline: #A6C3F8 / text: #2F78FD
         return "bg-[#FCFCFC] text-[#2F78FD] border-[#A6C3F8]";
       case "ended":
       default:
-        // 완료(종료): var(--Black-Gray20, #DEDEDE) / outline: #A2A2A2 / text: #858485
         return "bg-[#DEDEDE] text-[#858485] border-[#A2A2A2]";
     }
   };
@@ -97,7 +94,11 @@ function PopupSchedule() {
 
         <h1 className="text-[18px] font-semibold text-[#171617]">팝업 일정</h1>
 
-        <button className="absolute right-5 cursor-pointer text-2xl text-[#171617]">
+        {/* 팝업 위시리스트 페이지로 이동 */}
+        <button
+          onClick={() => navigate("/popup/wishlist")}
+          className="absolute right-5 cursor-pointer text-2xl text-[#171617]"
+        >
           <IoHeartOutline />
         </button>
       </header>
