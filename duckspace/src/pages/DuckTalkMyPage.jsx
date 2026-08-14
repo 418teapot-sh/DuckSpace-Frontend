@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { IoChevronBack, IoSwapHorizontal } from "react-icons/io5";
 
 import NavBar from "../components/NavBar";
+
+// duckTalkComponents 폴더 경로로 정확히 연결
 import DuckTalkProfile from "../components/duckTalkComponents/DuckTalkProfile";
 import DuckTalkChatCard from "../components/duckTalkComponents/DuckTalkChatCard";
 import DuckTalkExchangeCard from "../components/duckTalkComponents/DuckTalkExchangeCard";
