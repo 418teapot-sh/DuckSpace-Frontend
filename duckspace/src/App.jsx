@@ -9,6 +9,7 @@ import DuckTalk from "./pages/DuckTalk";
 import Display from "./pages/Display";
 import PopupSchedule from "./pages/PopupSchedule";
 import PopupWishlist from "./pages/PopupWishlist";
+import Login from "./pages/Login";
 
 import PostTextPages from './pages/PostTextPages';
 import PostExchangePages from './pages/PostExchangePages';
@@ -23,6 +24,9 @@ function App() {
         <Route path="/search" element={<Search />} />
         <Route path="/ducktalk" element={<DuckTalk />} />
         <Route path="/display" element={<Display />} />
+
+        {/* 로그인 라우트 */}
+        <Route path="/login" element={<Login />} />
 
         {/* 팝업 일정 및 위시리스트 라우트 */}
         <Route path="/popup" element={<PopupSchedule />} />
