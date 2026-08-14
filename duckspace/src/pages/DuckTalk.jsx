@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { IoChevronBack, IoPerson, IoSearch, IoAdd } from "react-icons/io5";
+import { IoChevronBack, IoSearch, IoAdd } from "react-icons/io5";
 
 import NavBar from "../components/NavBar";
 import DuckTalkModal from "../components/DuckTalkModal";
+
+// 덕톡 마이페이지 아이콘 불러오기
+import userIcon from "../assets/ducktalkIcon/userIcon.svg";
 
 function DuckTalk() {
   const navigate = useNavigate();
@@ -28,11 +31,13 @@ function DuckTalk() {
           덕톡라운지
         </h1>
 
+        {/* 우측 프로필 아이콘 클릭 시 마이페이지(내가 쓴 글)로 이동 */}
         <button
-          className="cursor-pointer"
+          onClick={() => navigate("/ducktalk/mypage")}
+          className="cursor-pointer flex items-center justify-center"
           aria-label="프로필"
         >
-          <IoPerson size={24} />
+          <img src={userIcon} alt="프로필" className="h-6 w-6 object-contain" />
         </button>
       </header>
 
