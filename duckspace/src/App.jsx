@@ -6,6 +6,7 @@ import NavBar from "./components/NavBar";
 import Home from "./pages/Home";
 import Search from "./pages/Search";
 import DuckTalk from "./pages/DuckTalk";
+import DuckTalkMyPage from "./pages/DuckTalkMyPage"; // 👈 마이페이지 import 추가!
 import Display from "./pages/Display";
 import PopupSchedule from "./pages/PopupSchedule";
 import PopupWishlist from "./pages/PopupWishlist";
@@ -23,6 +24,10 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/search" element={<Search />} />
         <Route path="/ducktalk" element={<DuckTalk />} />
+        
+        {/* 덕톡 마이페이지(내가 쓴 글) 라우트 */}
+        <Route path="/ducktalk/mypage" element={<DuckTalkMyPage />} />
+
         <Route path="/display" element={<Display />} />
 
         {/* 로그인 라우트 */}
