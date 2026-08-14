@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { IoChevronBack, IoSwapHorizontal } from "react-icons/io5";
 
 import NavBar from "../components/NavBar";
-import DuckTalkProfile from "../components/ducktalkComponents/DuckTalkProfile";
-import DuckTalkChatCard from "../components/ducktalkComponents/DuckTalkChatCard";
-import DuckTalkExchangeCard from "../components/ducktalkComponents/DuckTalkExchangeCard";
+import DuckTalkProfile from "../components/duckTalkComponents/DuckTalkProfile";
+import DuckTalkChatCard from "../components/duckTalkComponents/DuckTalkChatCard";
+import DuckTalkExchangeCard from "../components/duckTalkComponents/DuckTalkExchangeCard";
 
 // 분리된 목데이터 불러오기
 import {

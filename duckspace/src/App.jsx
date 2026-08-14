@@ -25,7 +25,7 @@ function App() {
         <Route path="/search" element={<Search />} />
         <Route path="/ducktalk" element={<DuckTalk />} />
         
-        {/* 덕톡 마이페이지(내가 쓴 글) 라우트 👈 추가! */}
+        {/* 덕톡 마이페이지(내가 쓴 글) 라우트 */}
         <Route path="/ducktalk/mypage" element={<DuckTalkMyPage />} />
 
         <Route path="/display" element={<Display />} />
