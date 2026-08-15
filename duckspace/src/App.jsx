@@ -13,6 +13,8 @@ import PopupWishlist from "./pages/PopupWishlist";
 import Login from "./pages/Login";
 import Chat from "./pages/Chat"; 
 
+import ChatRoom from "./pages/chatPage/ChatRoom"; 
+
 import PostTextPages from './pages/PostTextPages';
 import PostExchangePages from './pages/PostExchangePages';
 import DisplayList from './pages/displayPage/DisplayList';
@@ -26,6 +28,8 @@ function App() {
         <Route path="/search" element={<Search />} />
         <Route path="/ducktalk" element={<DuckTalk />} />
         <Route path="/chat" element={<Chat />} /> 
+
+        <Route path="/chat/:roomId" element={<ChatRoom />} />
 
         
         {/* 덕톡 마이페이지(내가 쓴 글) 라우트 */}
