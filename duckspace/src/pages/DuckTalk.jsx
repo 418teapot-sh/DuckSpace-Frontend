@@ -8,6 +8,12 @@ import DuckTalkModal from "../components/DuckTalkModal";
 // 덕톡 마이페이지 아이콘 불러오기
 import userIcon from "../assets/ducktalkIcon/userIcon.svg";
 
+import DuckTalkChatCard from "../components/duckTalkComponents/DuckTalkChatCard";
+import DuckTalkExchangeCard from "../components/duckTalkComponents/DuckTalkExchangeCard";
+
+import { myChatPostsData, myExchangePostsData } from "../data/duckTalkMockData";
+
+
 function DuckTalk() {
   const navigate = useNavigate();
 
@@ -94,14 +100,22 @@ function DuckTalk() {
       {/* 게시글 카드 영역 */}
       <main className="px-6">
         {activeTab === "chat" ? (
-          <div>
-            {/* 나중에 ChatTextCard 넣을 자리 */}
-            {/* <ChatTextCard /> */}
+          <div className="flex flex-col gap-4">
+            {myChatPostsData.map((post) => (
+              <DuckTalkChatCard
+                key={post.id}
+                post={post}
+              />
+            ))}
           </div>
         ) : (
-          <div>
-            {/* 나중에 ExchangeTextCard 넣을 자리 */}
-            {/* <ExchangeTextCard /> */}
+          <div className="flex flex-col gap-4">
+            {myExchangePostsData.map((post) => (
+              <DuckTalkExchangeCard 
+                key={post.id}
+                post={post}
+              />
+            ))}
           </div>
         )}
       </main>
