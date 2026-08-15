@@ -12,6 +12,9 @@ import ducktalkBlueIcon from "../assets/navbarIcon/ducktalk_blue.png";
 import duckGrayIcon from "../assets/navbarIcon/duck_gray.png";
 import duckBlueIcon from "../assets/navbarIcon/duck_blue.png";
 
+import chatGrayIcon from "../assets/navbarIcon/chat_gray.png";
+import chatBlueIcon from "../assets/navbarIcon/chat_blue.png";
+
 const navItems = [
   {
     label: "홈",
@@ -32,6 +35,12 @@ const navItems = [
     inactiveIcon: ducktalkGrayIcon,
   },
   {
+    label: "채팅",
+    path: "/chat",
+    activeIcon: chatBlueIcon,
+    inactiveIcon: chatGrayIcon,
+  },
+  {
     label: "장식장",
     path: "/display",
     activeIcon: duckBlueIcon,
@@ -41,7 +50,7 @@ const navItems = [
 
 function NavBar() {
   return (
-    <nav className="fixed bottom-0 z-50 grid w-full grid-cols-4 items-center bg-white px-5 py-4">
+    <nav className="fixed bottom-0 z-50 grid w-full grid-cols-5 items-center bg-white px-5 py-4">
       {navItems.map((item) => (
         <NavLink
           key={item.path}
@@ -51,7 +60,7 @@ function NavBar() {
         >
           {({ isActive }) => (
             <>
-              <div className="flex h-8 w-8 items-center justify-center">
+              <div className="flex h-6 w-6 items-center justify-center">
                 <img
                   src={isActive ? item.activeIcon : item.inactiveIcon}
                   alt={`${item.label} 아이콘`}
@@ -60,7 +69,7 @@ function NavBar() {
               </div>
 
               <span
-                className={`whitespace-nowrap text-base font-medium ${
+                className={`whitespace-nowrap text-[12px] font-normal ${
                   isActive
                     ? "text-[#2F78FD]"
                     : "text-[#858485]"
