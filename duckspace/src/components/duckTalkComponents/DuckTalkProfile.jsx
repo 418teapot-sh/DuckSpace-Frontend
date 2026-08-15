@@ -1,6 +1,10 @@
+import { useState } from "react";
 import { IoCheckmarkCircle } from "react-icons/io5";
 
 function DuckTalkProfile({ profile, isMe = true }) {
+  // 팔로우 상태 토글 (다른 사람 프로필용)
+  const [isFollowing, setIsFollowing] = useState(profile.isFollowing || false);
+
   return (
     <div className="flex flex-col items-center justify-center pt-5 pb-3 px-5">
       {/* 아바타 원 */}
@@ -35,7 +39,7 @@ function DuckTalkProfile({ profile, isMe = true }) {
         <span>팔로워 {profile.followerCount}</span>
       </div>
 
-      {/* 버튼 (내 글: 프로필 편집 / 타인 글: 팔로잉) */}
+      {/* 버튼 (내 글: 프로필 편집 / 타인 글: 팔로우/팔로잉 토글) */}
       <div>
         {isMe ? (
           <button
@@ -44,12 +48,21 @@ function DuckTalkProfile({ profile, isMe = true }) {
           >
             프로필 편집
           </button>
-        ) : (
+        ) : isFollowing ? (
           <button
             type="button"
+            onClick={() => setIsFollowing(false)}
             className="h-6 px-4 flex items-center justify-center rounded bg-[#FCFCFC] border border-[#A6C3F8] text-[11px] font-semibold leading-[17.6px] text-[#2F78FD] cursor-pointer"
           >
             팔로잉
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setIsFollowing(true)}
+            className="h-6 px-4 flex items-center justify-center rounded bg-[#5791FB] border border-[#2F78FD] text-[11px] font-semibold leading-[17.6px] text-white cursor-pointer"
+          >
+            팔로우
           </button>
         )}
       </div>

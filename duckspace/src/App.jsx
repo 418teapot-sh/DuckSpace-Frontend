@@ -6,7 +6,8 @@ import NavBar from "./components/NavBar";
 import Home from "./pages/Home";
 import Search from "./pages/Search";
 import DuckTalk from "./pages/DuckTalk";
-import DuckTalkMyPage from "./pages/DuckTalkMyPage"; // 👈 마이페이지 import 추가!
+import DuckTalkMyPage from "./pages/DuckTalkMyPage"; 
+import DuckTalkUserPage from "./pages/DuckTalkUserPage"; // 👈 다른사람 프로필 페이지 import
 import Display from "./pages/Display";
 import PopupSchedule from "./pages/PopupSchedule";
 import PopupWishlist from "./pages/PopupWishlist";
@@ -30,10 +31,12 @@ function App() {
         <Route path="/chat" element={<Chat />} /> 
 
         <Route path="/chat/:roomId" element={<ChatRoom />} />
-
         
         {/* 덕톡 마이페이지(내가 쓴 글) 라우트 */}
         <Route path="/ducktalk/mypage" element={<DuckTalkMyPage />} />
+
+        {/* 덕톡 다른사람 프로필 라우트 👈 추가! */}
+        <Route path="/ducktalk/user" element={<DuckTalkUserPage />} />
 
         <Route path="/display" element={<Display />} />
 

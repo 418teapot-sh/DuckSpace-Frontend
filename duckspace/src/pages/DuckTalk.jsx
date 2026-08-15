@@ -8,11 +8,12 @@ import DuckTalkModal from "../components/DuckTalkModal";
 // 덕톡 마이페이지 아이콘 불러오기
 import userIcon from "../assets/ducktalkIcon/userIcon.svg";
 
+// 소문자 duckTalkComponents 경로
 import DuckTalkChatCard from "../components/duckTalkComponents/DuckTalkChatCard";
 import DuckTalkExchangeCard from "../components/duckTalkComponents/DuckTalkExchangeCard";
 
-import { myChatPostsData, myExchangePostsData } from "../data/duckTalkMockData";
-
+// 메인 피드 목데이터 불러오기
+import { feedChatPostsData, feedExchangePostsData } from "../data/duckTalkMockData";
 
 function DuckTalk() {
   const navigate = useNavigate();
@@ -33,11 +34,9 @@ function DuckTalk() {
           <IoChevronBack size={24} />
         </button>
 
-        <h1 className="text-xl font-semibold">
-          덕톡라운지
-        </h1>
+        <h1 className="text-xl font-semibold">덕톡라운지</h1>
 
-        {/* 우측 프로필 아이콘 클릭 시 마이페이지(내가 쓴 글)로 이동 */}
+        {/* 우측 상단 사람 아이콘 -> 내 마이페이지로 이동 */}
         <button
           onClick={() => navigate("/ducktalk/mypage")}
           className="cursor-pointer flex items-center justify-center"
@@ -72,7 +71,6 @@ function DuckTalk() {
           }`}
         >
           교환
-
           {activeTab === "exchange" && (
             <div className="absolute bottom-0 left-0 h-[2px] w-full bg-[#5791FB]" />
           )}
@@ -82,10 +80,7 @@ function DuckTalk() {
       {/* 검색바 */}
       <div className="px-6 py-5">
         <div className="flex h-12 items-center rounded-xl bg-[#FAFAFA] px-4">
-          <IoSearch
-            size={24}
-            className="mr-3 shrink-0 text-[#D9D9D9]"
-          />
+          <IoSearch size={24} className="mr-3 shrink-0 text-[#D9D9D9]" />
 
           <input
             type="text"
@@ -101,20 +96,14 @@ function DuckTalk() {
       <main className="px-6">
         {activeTab === "chat" ? (
           <div className="flex flex-col gap-4">
-            {myChatPostsData.map((post) => (
-              <DuckTalkChatCard
-                key={post.id}
-                post={post}
-              />
+            {feedChatPostsData.map((post) => (
+              <DuckTalkChatCard key={post.id} post={post} />
             ))}
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            {myExchangePostsData.map((post) => (
-              <DuckTalkExchangeCard 
-                key={post.id}
-                post={post}
-              />
+            {feedExchangePostsData.map((post) => (
+              <DuckTalkExchangeCard key={post.id} post={post} mode="feed" />
             ))}
           </div>
         )}
@@ -123,32 +112,15 @@ function DuckTalk() {
       {/* 글쓰기 + 버튼 */}
       <button
         onClick={() => setIsModalOpen(true)}
-        className="
-          fixed
-          bottom-28
-          right-6
-          z-40
-          flex
-          h-16
-          w-16
-          cursor-pointer
-          items-center
-          justify-center
-          rounded-full
-          bg-[#2F78FD]
-          shadow-lg
-        "
+        className="fixed bottom-28 right-6 z-40 flex h-16 w-16 cursor-pointer items-center justify-center rounded-full bg-[#2F78FD] shadow-lg active:scale-95 transition-all"
         aria-label="글쓰기"
       >
         <IoAdd size={42} className="text-white" />
       </button>
 
       {/* 덕톡 글쓰기 모달 */}
-      {isModalOpen && (
-        <DuckTalkModal
-          onClose={() => setIsModalOpen(false)}
-        />
-      )}
+      {isModalOpen && <DuckTalkModal onClose={() => setIsModalOpen(false)} />}
+
       {/* 하단 네비게이션 */}
       <NavBar />
     </div>
