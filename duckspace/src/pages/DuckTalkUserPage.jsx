@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { IoChevronBack, IoStorefrontOutline } from "react-icons/io5";
 
 import NavBar from "../components/NavBar";
-import DuckTalkProfile from "../components/DuckTalkComponents/DuckTalkProfile";
-import DuckTalkChatCard from "../components/DuckTalkComponents/DuckTalkChatCard";
-import DuckTalkExchangeCard from "../components/DuckTalkComponents/DuckTalkExchangeCard";
+import DuckTalkProfile from "../components/duckTalkComponents/DuckTalkProfile";
+import DuckTalkChatCard from "../components/duckTalkComponents/DuckTalkChatCard";
+import DuckTalkExchangeCard from "../components/duckTalkComponents/DuckTalkExchangeCard";
 
 // 다른 사람 목데이터 불러오기
 import {
@@ -32,7 +32,7 @@ function DuckTalkUserPage() {
 
         <h1 className="text-[18px] font-semibold text-[#171617]">덕톡 라운지</h1>
 
-        {/* 우측 상단 유저 전시장(장식장) 보기 아이콘 */}
+        {/* 우측 상단 유저 장식장(전시장) 이동 아이콘 */}
         <button
           type="button"
           onClick={() => navigate("/display")}
