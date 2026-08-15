@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { IoChevronBack, IoStorefrontOutline } from "react-icons/io5";
+import { IoChevronBack } from "react-icons/io5";
 
 import NavBar from "../components/NavBar";
 import DuckTalkProfile from "../components/duckTalkComponents/DuckTalkProfile";
 import DuckTalkChatCard from "../components/duckTalkComponents/DuckTalkChatCard";
 import DuckTalkExchangeCard from "../components/duckTalkComponents/DuckTalkExchangeCard";
+import shelfIcon from "../assets/shelfIcon.svg";
 
 // 다른 사람 목데이터 불러오기
 import {
@@ -26,20 +27,21 @@ function DuckTalkUserPage() {
           type="button"
           onClick={() => navigate(-1)}
           className="absolute left-5 cursor-pointer text-2xl text-[#171617]"
+          aria-label="뒤로가기"
         >
           <IoChevronBack />
         </button>
 
         <h1 className="text-[18px] font-semibold text-[#171617]">덕톡 라운지</h1>
 
-        {/* 우측 상단 유저 장식장(전시장) 이동 아이콘 */}
+        {/* 우측 상단: 해당 유저 전시장(장식장) 이동 아이콘 */}
         <button
           type="button"
           onClick={() => navigate("/display")}
-          className="absolute right-5 cursor-pointer text-2xl text-[#171617]"
-          title="유저 전시장 보기"
+          className="absolute right-5 cursor-pointer flex items-center justify-center"
+          aria-label="유저 전시장 보기"
         >
-          <IoStorefrontOutline />
+          <img src={shelfIcon} alt="전시장 아이콘" className="h-6 w-6 object-contain" />
         </button>
       </header>
 
