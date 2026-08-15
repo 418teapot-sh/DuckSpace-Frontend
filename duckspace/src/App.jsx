@@ -11,6 +11,7 @@ import Display from "./pages/Display";
 import PopupSchedule from "./pages/PopupSchedule";
 import PopupWishlist from "./pages/PopupWishlist";
 import Login from "./pages/Login";
+import Chat from "./pages/Chat"; 
 
 import PostTextPages from './pages/PostTextPages';
 import PostExchangePages from './pages/PostExchangePages';
@@ -24,6 +25,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/search" element={<Search />} />
         <Route path="/ducktalk" element={<DuckTalk />} />
+        <Route path="/chat" element={<Chat />} /> 
+
         
         {/* 덕톡 마이페이지(내가 쓴 글) 라우트 */}
         <Route path="/ducktalk/mypage" element={<DuckTalkMyPage />} />
