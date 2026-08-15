@@ -4,7 +4,7 @@ import { IoChevronBack, IoSwapHorizontal } from "react-icons/io5";
 
 import NavBar from "../components/NavBar";
 
-// duckTalkComponents 폴더 경로로 정확히 연결
+// 소문자 duckTalkComponents 경로
 import DuckTalkProfile from "../components/duckTalkComponents/DuckTalkProfile";
 import DuckTalkChatCard from "../components/duckTalkComponents/DuckTalkChatCard";
 import DuckTalkExchangeCard from "../components/duckTalkComponents/DuckTalkExchangeCard";
@@ -22,7 +22,7 @@ function DuckTalkMyPage() {
 
   return (
     <div className="min-h-screen bg-white pb-28">
-      {/* 1. 헤더 */}
+      {/* 1. 상단 헤더 */}
       <header className="relative flex h-14 items-center justify-center px-5 border-b border-transparent">
         <button
           type="button"
@@ -79,7 +79,11 @@ function DuckTalkMyPage() {
           ))
         ) : (
           myExchangePostsData.map((post) => (
-            <DuckTalkExchangeCard key={post.id} post={post} />
+            <DuckTalkExchangeCard
+              key={post.id}
+              post={post}
+              mode="myPage"
+            />
           ))
         )}
       </main>
