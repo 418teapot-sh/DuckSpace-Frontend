@@ -15,7 +15,7 @@ function DuckTalkExchangeCard({ post, mode = "feed" }) {
     ? [post.tag]
     : [];
 
-  // 작성자 클릭 시 프로필 페이지로 이동
+  // 작성자 클릭 시 라우팅 분기
   const handleAuthorClick = () => {
     if (post.author === "다른사람") {
       navigate("/ducktalk/user");
@@ -26,7 +26,7 @@ function DuckTalkExchangeCard({ post, mode = "feed" }) {
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-[#F4F4F4] bg-white/75 p-5 shadow-[0_15px_40px_rgba(205,205,205,0.08)] backdrop-blur-[10px]">
-      {/* 1. 상단 작성자 정보 & 메뉴 버튼 */}
+      {/* 1. 상단 작성자 정보 (클릭 시 이동) */}
       <div className="flex items-center justify-between">
         <div
           onClick={handleAuthorClick}
@@ -63,7 +63,7 @@ function DuckTalkExchangeCard({ post, mode = "feed" }) {
         )}
       </div>
 
-      {/* 2. 교환 본문 및 태그 */}
+      {/* 2. 교환 본문 및 파란 해시태그 */}
       <div className="flex flex-col gap-2">
         <p className="text-[14px] leading-[21px] text-[#545454]">
           {post.content}
@@ -117,10 +117,9 @@ function DuckTalkExchangeCard({ post, mode = "feed" }) {
         </div>
       </div>
 
-      {/* 5. 피그마 지정 버튼 분기 (다른사람 / 마이페이지 / 피드) */}
+      {/* 5. 하단 버튼 분기 */}
       <div className="flex gap-4 pt-1">
         {mode === "otherUser" ? (
-          // 다른사람 교환 페이지 -> [교환하기] 버튼
           <button
             type="button"
             className="flex h-12 flex-1 items-center justify-center rounded-lg bg-[#5791FB] border border-[#2F78FD] text-[14px] font-semibold text-white shadow-sm hover:bg-[#2F78FD] cursor-pointer transition-all"
@@ -128,7 +127,6 @@ function DuckTalkExchangeCard({ post, mode = "feed" }) {
             교환하기
           </button>
         ) : mode === "myPage" ? (
-          // 마이페이지 케이스
           post.isCompleted ? (
             <div className="flex h-12 flex-1 items-center justify-center rounded-lg bg-[#F4F4F4] border border-[#DEDEDE] text-[14px] font-semibold text-[#858485]">
               교환 완료
@@ -162,7 +160,6 @@ function DuckTalkExchangeCard({ post, mode = "feed" }) {
             </>
           )
         ) : (
-          // 메인 피드 케이스
           post.isCompleted ? (
             <div className="flex h-12 flex-1 items-center justify-center rounded-lg bg-[#F4F4F4] border border-[#DEDEDE] text-[14px] font-semibold text-[#858485]">
               교환 완료

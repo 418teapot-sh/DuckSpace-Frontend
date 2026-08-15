@@ -9,7 +9,7 @@ function DuckTalkChatCard({ post }) {
   const navigate = useNavigate();
   const isMe = post.author === "나";
 
-  // 작성자 클릭 시 프로필 페이지로 이동
+  // 작성자 클릭 시 라우팅 분기
   const handleAuthorClick = () => {
     if (post.author === "다른사람") {
       navigate("/ducktalk/user");
@@ -20,7 +20,7 @@ function DuckTalkChatCard({ post }) {
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-[#F4F4F4] bg-white/75 p-5 shadow-[0_15px_40px_rgba(205,205,205,0.08)] backdrop-blur-[10px]">
-      {/* 1. 상단 작성자 정보 & 신고하기 */}
+      {/* 1. 상단 작성자 정보 (클릭 시 이동) */}
       <div className="flex items-center justify-between">
         <div
           onClick={handleAuthorClick}
@@ -54,7 +54,7 @@ function DuckTalkChatCard({ post }) {
         {post.content}
       </p>
 
-      {/* 3. 본문 첨부 이미지 (있을 때만 렌더링) */}
+      {/* 3. 본문 첨부 이미지 */}
       {post.image && (
         <div className="mt-1 w-[200px] h-[184px] overflow-hidden rounded-lg border border-[#EEEEEE]">
           <img
@@ -65,7 +65,7 @@ function DuckTalkChatCard({ post }) {
         </div>
       )}
 
-      {/* 4. 하단 좋아요 & 댓글 수 */}
+      {/* 4. 하단 좋아요 & 댓글 */}
       <div className="flex items-center gap-3 text-[#545454] pt-1">
         <div className="flex items-center gap-1.5">
           <IoHeartOutline size={20} className="text-[#545454]" />
