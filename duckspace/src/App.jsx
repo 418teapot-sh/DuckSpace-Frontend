@@ -7,7 +7,10 @@ import Home from "./pages/Home";
 import Search from "./pages/Search";
 import DuckTalk from "./pages/DuckTalk";
 import DuckTalkMyPage from "./pages/DuckTalkMyPage"; 
-import DuckTalkUserPage from "./pages/DuckTalkUserPage"; // 👈 다른사람 프로필 페이지 import
+import DuckTalkUserPage from "./pages/DuckTalkUserPage";
+import ExchangeApply from "./pages/ExchangeApply";
+import ExchangeList from "./pages/ExchangeList";       // 👈 교환 목록 페이지
+import ExchangeDetail from "./pages/ExchangeDetail";   // 👈 교환 상세 페이지
 import Display from "./pages/Display";
 import PopupSchedule from "./pages/PopupSchedule";
 import PopupWishlist from "./pages/PopupWishlist";
@@ -23,6 +26,7 @@ import DisplayUpload from './pages/displayPage/DisplayUpload';
 
 import LoginRoute from "./components/LoginRoute";
 
+
 function App() {
   return (
     <BrowserRouter>
@@ -30,15 +34,24 @@ function App() {
         <Route path="/" element={<LoginRoute> <Home /> </LoginRoute>} />
         <Route path="/search" element={<LoginRoute> <Search /> </LoginRoute>} />
         <Route path="/ducktalk" element={<LoginRoute> <DuckTalk /> </LoginRoute>} />
-        <Route path="/chat" element={<LoginRoute> <Chat /> </LoginRoute>} />
+        <Route path="/chat" element={<LoginRoute> <Chat /> </LoginRoute> } /> 
 
         <Route path="/chat/:roomId" element={<LoginRoute> <ChatRoom /> </LoginRoute>} />
-
+        
         {/* 덕톡 마이페이지(내가 쓴 글) 라우트 */}
         <Route path="/ducktalk/mypage" element={<LoginRoute> <DuckTalkMyPage /> </LoginRoute>} />
 
-        {/* 덕톡 다른사람 프로필 라우트 👈 추가! */}
+        {/* 덕톡 다른사람 프로필 라우트 */}
         <Route path="/ducktalk/user" element={<LoginRoute> <DuckTalkUserPage /> </LoginRoute>} />
+
+        {/* 교환 신청 페이지 라우트 */}
+        <Route path="/ducktalk/exchange/apply" element={<LoginRoute> <ExchangeApply /> </LoginRoute>} />
+
+        {/* 교환 목록 페이지 라우트 */}
+        <Route path="/ducktalk/exchange/list" element={<LoginRoute> <ExchangeList /> </LoginRoute>} />
+
+        {/* 교환 상세 페이지 라우트 */}
+        <Route path="/ducktalk/exchange/detail/:id" element={<LoginRoute> <ExchangeDetail /> </LoginRoute>} />
 
         <Route path="/display" element={<LoginRoute> <Display /> </LoginRoute>} />
 
@@ -46,7 +59,7 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         {/* 팝업 일정 및 위시리스트 라우트 */}
-        <Route path="/popup" element={<LoginRoute> <PopupSchedule /> </LoginRoute>} />
+        <Route path="/popup" element={<LoginRoute> <PopupSchedule /> </LoginRoute> } />
         <Route path="/popup/wishlist" element={<LoginRoute> <PopupWishlist /> </LoginRoute>} />
 
         {/* 게시글 작성 경로 */}
