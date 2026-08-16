@@ -1,10 +1,9 @@
 import { Navigate } from "react-router-dom";
 
 function LoginRoute({ children }) {
-  const isLoggedIn =
-    localStorage.getItem("isLoggedIn") === "true";
+  const accessToken = localStorage.getItem("accessToken");
 
-  if (!isLoggedIn) {
+  if (!accessToken) {
     return <Navigate to="/login" replace />;
   }
 
