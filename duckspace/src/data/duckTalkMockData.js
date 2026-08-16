@@ -113,7 +113,7 @@ export const myChatPostsData = [
   },
 ];
 
-// 6. [내 마이페이지] 내가 쓴 교환글
+// 6. [내 마이페이지] 내가 쓴 교환글 (3가지 상태 보존)
 export const myExchangePostsData = [
   {
     id: 1,
@@ -171,7 +171,7 @@ export const myExchangePostsData = [
   },
 ];
 
-// 7. [다른 사람 페이지] 다른 사람이 쓴 잡담글
+// 7. [다른 사람 페이지] 다른 사람이 쓴 잡담글 (2개 보존)
 export const otherUserChatPostsData = [
   {
     id: 1,
@@ -212,3 +212,95 @@ export const otherUserExchangePostsData = [
     commentCount: 2,
   },
 ];
+
+// 9. [교환 목록 페이지] 4개 탭별 데이터 (추가)
+export const exchangeListData = {
+  sent: [
+    {
+      id: "sent-1",
+      user: { name: "다른 사람", score: 98 },
+      myGoods: "치이카와 키링",
+      targetGoods: "우사기 키링",
+      status: "pending",
+    },
+    {
+      id: "sent-2",
+      user: { name: "다른 사람", score: 98 },
+      myGoods: "치이카와 키링",
+      targetGoods: "우사기 키링",
+      status: "canceled",
+    },
+  ],
+  received: [
+    {
+      id: "received-1",
+      user: { name: "다른 사람", score: 98 },
+      myGoods: "치이카와 키링",
+      targetGoods: "우사기 키링",
+      status: "pending",
+    },
+    {
+      id: "received-2",
+      user: { name: "다른 사람", score: 98 },
+      myGoods: "치이카와 키링",
+      targetGoods: "우사기 키링",
+      status: "rejected",
+    },
+  ],
+  progress: [
+    {
+      id: "progress-1",
+      user: { name: "다른 사람", score: 98 },
+      myGoods: "치이카와 키링",
+      targetGoods: "우사기 키링",
+      status: "in_progress",
+    },
+    {
+      id: "progress-2",
+      user: { name: "다른 사람", score: 98 },
+      myGoods: "치이카와 키링",
+      targetGoods: "우사기 키링",
+      status: "in_progress",
+    },
+  ],
+  completed: [
+    {
+      id: "completed-1",
+      user: { name: "다른 사람", score: 98 },
+      myGoods: "치이카와 키링",
+      targetGoods: "우사기 키링",
+      status: "done",
+    },
+    {
+      id: "completed-2",
+      user: { name: "다른 사람", score: 98 },
+      myGoods: "치이카와 키링",
+      targetGoods: "우사기 키링",
+      status: "done",
+    },
+  ],
+};
+
+// 10. [교환 상세 페이지] 공통 상세 목데이터 (추가)
+export const defaultExchangeDetailInfo = {
+  user: {
+    name: "다른 사람",
+    score: 98,
+  },
+  preferences: {
+    popup: "치이카와 스시 팝업",
+    date: "260809",
+    time: "12시부터14시까지",
+  },
+  message: "12시 30분에 정문에서 교환하고 싶어요.",
+  myGoods: {
+    title: "치이카와 키링",
+    status: "미개봉",
+    image: displayBack,
+  },
+  targetGoods: {
+    title: "우사기 키링",
+    status: "미개봉",
+    image: displayBack,
+  },
+};
