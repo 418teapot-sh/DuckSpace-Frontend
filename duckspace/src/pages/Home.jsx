@@ -5,17 +5,46 @@ import HomePopupCard from "../components/homeComponents/HomePopupCard";
 import HomeExhibition from "../components/homeComponents/HomeExhibition";
 import DuckSpaceIcon from "../assets/DuckSpaceIcon.svg";
 
+import { useNavigate } from "react-router-dom";
+import { logout } from "../apis/authApi";
+  
 const Home = () => {
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    const refreshToken =
+      localStorage.getItem("refreshToken");
+
+    try {
+      if (refreshToken) {
+        await logout(refreshToken);
+      }
+    } catch (error) {
+      console.error("로그아웃 API 오류:", error);
+    } finally {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+
+      navigate("/login");
+    }
+  };
   return (
     <div className="min-h-screen bg-white pb-24">
 
       {/* 로고 */}
-      <div className="px-5 py-3">
+      <div className="flex items-center justify-between px-5 py-3">
         <img
           src={DuckSpaceIcon}
           alt="DuckSpace"
           className="h-9"
         />
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="cursor-pointer text-[13px] text-[#858485]"
+        >
+          로그아웃
+        </button>
       </div>
 
       {/* 상단 팝업 슬라이드 */}
