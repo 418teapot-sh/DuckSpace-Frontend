@@ -8,6 +8,8 @@ import {
   IoLockClosedOutline,
 } from "react-icons/io5";
 
+import { loginMockData } from "../data/loginMockData";
+
 // 로고 이미지 불러오기 (경로 확인)
 import DuckSpaceIcon from "../assets/DuckSpaceIcon.svg";
 
@@ -28,11 +30,21 @@ function Login() {
       setErrorMessage("아이디(이메일)와 비밀번호를 모두 입력해 주세요.");
       return;
     }
+    if (
+      email !== loginMockData.email ||
+      password !== loginMockData.password
+    ) {
+      setErrorMessage(
+        "이메일 또는 비밀번호가 올바르지 않습니다."
+      );
+      return;
+    }
 
     setErrorMessage("");
 
     // 임시 로그인 성공 처리 -> 홈으로 이동
-    console.log("로그인 시도:", { email, password });
+    localStorage.setItem("isLoggedIn", "true");
+
     navigate("/");
   };
 
