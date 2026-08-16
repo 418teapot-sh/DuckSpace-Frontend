@@ -15,7 +15,6 @@ function DuckTalkExchangeCard({ post, mode = "feed" }) {
     ? [post.tag]
     : [];
 
-  // 작성자 클릭 시 라우팅 분기
   const handleAuthorClick = () => {
     if (post.author === "다른사람") {
       navigate("/ducktalk/user");
@@ -120,8 +119,10 @@ function DuckTalkExchangeCard({ post, mode = "feed" }) {
       {/* 5. 하단 버튼 분기 */}
       <div className="flex gap-4 pt-1">
         {mode === "otherUser" ? (
+          /* 👉 교환하기 클릭 시 교환 신청 페이지(/ducktalk/exchange/apply)로 이동 */
           <button
             type="button"
+            onClick={() => navigate("/ducktalk/exchange/apply")}
             className="flex h-12 flex-1 items-center justify-center rounded-lg bg-[#5791FB] border border-[#2F78FD] text-[14px] font-semibold text-white shadow-sm hover:bg-[#2F78FD] cursor-pointer transition-all"
           >
             교환하기
