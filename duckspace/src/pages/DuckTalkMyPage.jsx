@@ -4,12 +4,10 @@ import { IoChevronBack, IoSwapHorizontal } from "react-icons/io5";
 
 import NavBar from "../components/NavBar";
 
-// 소문자 duckTalkComponents 경로
 import DuckTalkProfile from "../components/duckTalkComponents/DuckTalkProfile";
 import DuckTalkChatCard from "../components/duckTalkComponents/DuckTalkChatCard";
 import DuckTalkExchangeCard from "../components/duckTalkComponents/DuckTalkExchangeCard";
 
-// 분리된 목데이터 불러오기
 import {
   myProfileData,
   myChatPostsData,
@@ -28,15 +26,19 @@ function DuckTalkMyPage() {
           type="button"
           onClick={() => navigate(-1)}
           className="absolute left-5 cursor-pointer text-2xl text-[#171617]"
+          aria-label="뒤로가기"
         >
           <IoChevronBack />
         </button>
 
         <h1 className="text-[18px] font-semibold text-[#171617]">내가 쓴 글</h1>
 
+        {/* 👉 클릭 시 교환 목록(/ducktalk/exchange/list)으로 이동 */}
         <button
           type="button"
+          onClick={() => navigate("/ducktalk/exchange/list")}
           className="absolute right-5 cursor-pointer text-2xl text-[#171617]"
+          aria-label="교환 목록 보기"
         >
           <IoSwapHorizontal />
         </button>

@@ -8,7 +8,9 @@ import Search from "./pages/Search";
 import DuckTalk from "./pages/DuckTalk";
 import DuckTalkMyPage from "./pages/DuckTalkMyPage"; 
 import DuckTalkUserPage from "./pages/DuckTalkUserPage";
-import ExchangeApply from "./pages/ExchangeApply"; // 👈 교환 신청 페이지 import
+import ExchangeApply from "./pages/ExchangeApply";
+import ExchangeList from "./pages/ExchangeList";       // 👈 교환 목록 페이지
+import ExchangeDetail from "./pages/ExchangeDetail";   // 👈 교환 상세 페이지
 import Display from "./pages/Display";
 import PopupSchedule from "./pages/PopupSchedule";
 import PopupWishlist from "./pages/PopupWishlist";
@@ -39,8 +41,14 @@ function App() {
         {/* 덕톡 다른사람 프로필 라우트 */}
         <Route path="/ducktalk/user" element={<DuckTalkUserPage />} />
 
-        {/* 교환 신청 페이지 라우트 👈 추가! */}
+        {/* 교환 신청 페이지 라우트 */}
         <Route path="/ducktalk/exchange/apply" element={<ExchangeApply />} />
+
+        {/* 교환 목록 페이지 라우트 */}
+        <Route path="/ducktalk/exchange/list" element={<ExchangeList />} />
+
+        {/* 교환 상세 페이지 라우트 */}
+        <Route path="/ducktalk/exchange/detail/:id" element={<ExchangeDetail />} />
 
         <Route path="/display" element={<Display />} />
 

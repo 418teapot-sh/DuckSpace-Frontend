@@ -16,7 +16,7 @@ function DuckTalkExchangeCard({ post, mode = "feed" }) {
     : [];
 
   const handleAuthorClick = () => {
-    if (post.author === "다른사람") {
+    if (post.author === "다른사람" || post.author === "다른 사람") {
       navigate("/ducktalk/user");
     } else if (post.author === "나") {
       navigate("/ducktalk/mypage");
@@ -25,7 +25,7 @@ function DuckTalkExchangeCard({ post, mode = "feed" }) {
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-[#F4F4F4] bg-white/75 p-5 shadow-[0_15px_40px_rgba(205,205,205,0.08)] backdrop-blur-[10px]">
-      {/* 1. 상단 작성자 정보 (클릭 시 이동) */}
+      {/* 1. 상단 작성자 정보 */}
       <div className="flex items-center justify-between">
         <div
           onClick={handleAuthorClick}
@@ -119,7 +119,6 @@ function DuckTalkExchangeCard({ post, mode = "feed" }) {
       {/* 5. 하단 버튼 분기 */}
       <div className="flex gap-4 pt-1">
         {mode === "otherUser" ? (
-          /* 👉 교환하기 클릭 시 교환 신청 페이지(/ducktalk/exchange/apply)로 이동 */
           <button
             type="button"
             onClick={() => navigate("/ducktalk/exchange/apply")}
@@ -134,8 +133,10 @@ function DuckTalkExchangeCard({ post, mode = "feed" }) {
             </div>
           ) : post.requestCount > 0 ? (
             <>
+              {/* 👉 클릭 시 교환 목록(/ducktalk/exchange/list)으로 이동 */}
               <button
                 type="button"
+                onClick={() => navigate("/ducktalk/exchange/list")}
                 className="flex h-12 flex-1 items-center justify-center rounded-lg bg-white border border-[#A6C3F8] text-[14px] font-semibold text-[#2F78FD] cursor-pointer"
               >
                 교환 신청 {post.requestCount}건
