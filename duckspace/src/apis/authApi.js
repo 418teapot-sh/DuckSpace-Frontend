@@ -1,0 +1,28 @@
+import api from "./api";
+
+export const login = async (email, password) => {
+  const response = await api.post("/api/auth/login", {
+    email,
+    password,
+  });
+
+  return response.data;
+};
+
+export const signup = async (email, password, nickname) => {
+  const response = await api.post("/api/auth/signup", {
+    email,
+    password,
+    nickname,
+  });
+
+  return response.data;
+};
+
+export const logout = async (refreshToken) => {
+  const response = await api.post("/api/auth/logout", {
+    refreshToken,
+  });
+
+  return response.data;
+};

@@ -8,7 +8,7 @@ import {
   IoLockClosedOutline,
 } from "react-icons/io5";
 
-import { loginMockData } from "../data/loginMockData";
+import { login } from "../apis/authApi";
 
 // 로고 이미지 불러오기 (경로 확인)
 import DuckSpaceIcon from "../assets/DuckSpaceIcon.svg";
@@ -23,44 +23,46 @@ function Login() {
   const [errorMessage, setErrorMessage] = useState("");
 
   // 로그인 제출 핸들러 (나중에 백엔드 API 연동할 자리)
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     if (!email.trim() || !password.trim()) {
       setErrorMessage("아이디(이메일)와 비밀번호를 모두 입력해 주세요.");
       return;
     }
-    if (
-      email !== loginMockData.email ||
-      password !== loginMockData.password
-    ) {
-      setErrorMessage(
-        "이메일 또는 비밀번호가 올바르지 않습니다."
-      );
-      return;
+
+    try {
+      setErrorMessage(""); // 이전 에러 메시지 초기화
+      const result = await login(email, password);
+      const { accessToken, refreshToken } = result.data;
+
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+
+      navigate("/");
+    } catch (error) {
+      console.log("로그인 에러 응답:", error.response?.data);
+      const errorCode = error.response?.data?.error?.code;
+      if (errorCode === "INVALID_CREDENTIALS") {
+        setErrorMessage(
+          "이메일 또는 비밀번호가 올바르지 않습니다."
+        );
+        return;
+      }
+      if (errorCode === "TOO_MANY_LOGIN_ATTEMPTS") {
+        setErrorMessage(
+          "로그인 시도가 너무 많습니다. 잠시 후 다시 시도해 주세요."
+        );
+        return;
+      }
+      setErrorMessage("로그인 중 오류가 발생했습니다." );
     }
-
-    setErrorMessage("");
-
-    // 임시 로그인 성공 처리 -> 홈으로 이동
-    localStorage.setItem("isLoggedIn", "true");
-
-    navigate("/");
   };
 
   return (
     <div className="min-h-screen bg-[#FEFEFE] px-6 pb-12 flex flex-col justify-between">
       {/* 1. 상단 뒤로가기 헤더 */}
       <div>
-        <header className="flex h-14 items-center -mx-2">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="p-2 cursor-pointer text-2xl text-[#171617]"
-          >
-            <IoChevronBack />
-          </button>
-        </header>
 
         {/* 2. 로고 및 타이틀 영역 */}
         <div className="mt-8 mb-10 flex flex-col items-center text-center">
@@ -147,7 +149,7 @@ function Login() {
         <span>|</span>
         <button
           type="button"
-          onClick={() => alert("회원가입 페이지 준비 중입니다.")}
+          onClick={() => navigate("/signup")}
           className="cursor-pointer font-semibold text-[#2F78FD] hover:underline"
         >
           회원가입

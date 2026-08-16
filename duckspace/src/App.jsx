@@ -25,6 +25,7 @@ import DisplayList from './pages/displayPage/DisplayList';
 import DisplayUpload from './pages/displayPage/DisplayUpload';
 
 import LoginRoute from "./components/LoginRoute";
+import Signup from "./pages/Signup";
 
 
 function App() {
@@ -57,6 +58,8 @@ function App() {
 
         {/* 로그인 라우트 */}
         <Route path="/login" element={<Login />} />
+        {/* 회원가입 라우트 */}
+        <Route path="/signup" element={<Signup />} />
 
         {/* 팝업 일정 및 위시리스트 라우트 */}
         <Route path="/popup" element={<LoginRoute> <PopupSchedule /> </LoginRoute> } />
