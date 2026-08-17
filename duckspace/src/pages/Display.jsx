@@ -6,9 +6,46 @@ import DisplayEdit from "../components/DisplayEdit";
 import DisplayGoods from "../components/DisplayGoods";
 import NavBar from "../components/NavBar";
 
+import { createExhibition } from "../apis/displayApi";
+
 function Display() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("display");
+  const [exhibitions, setExhibitions] = useState([
+    {
+      exhibitionId: "local -1",
+      name: "장식장 1",
+      themeCode: "BASIC",
+    },
+  ]);
+
+  const [activeExhibitionId, setActiveExhibitionId] = useState("local -1");
+
+  const handleAddExhibition = async () => {
+    try {
+      const nextNumber = exhibitions.length + 1;
+
+      const result = await createExhibition(
+        `장식장 ${nextNumber}`,
+        "BASIC"
+      );
+
+      const newExhibition = result.data;
+
+      setExhibitions((prev) => [
+        ...prev,
+        newExhibition,
+      ]);
+
+      setActiveExhibitionId(
+        newExhibition.exhibitionId
+      );
+    } catch (error) {
+      console.error(
+        "장식장 생성 실패:",
+        error.response?.data || error
+      );
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white pb-20">
@@ -55,46 +92,51 @@ function Display() {
       </section>
 
       {/* 탭 영역 */}
-      <section className="px-7 ">
-        <div className="flex border-b border-[#EEEEEE] ">
-          {/* 장식장 1 */}
-          <button
-            onClick={() => setActiveTab("display")}
-            className={`
-              flex-1
-              py-3
-              text-[16px]
-              font-medium
-              cursor-pointer
-              ${
-                activeTab === "display"
-                  ? "border-b-2 border-[#5791FB] text-[#5791FB]"
-                  : "text-[#A2A2A2]"
+      <section className="px-7">
+        <div className="flex border-b border-[#EEEEEE]">
+          {exhibitions.map((exhibition) => (
+            <button
+              key={exhibition.exhibitionId}
+              onClick={() =>
+                setActiveExhibitionId(
+                  exhibition.exhibitionId
+                )
               }
-            `}
-          >
-            장식장 1
-          </button>
+              className={`
+                flex-1
+                py-3
+                text-[16px]
+                font-medium
+                cursor-pointer
+                ${
+                  activeExhibitionId ===
+                  exhibition.exhibitionId
+                    ? "border-b-2 border-[#5791FB] text-[#5791FB]"
+                    : "text-[#A2A2A2]"
+                }
+              `}
+            >
+              {exhibition.name}
+            </button>
+          ))}
 
           {/* 새 장식장 추가 */}
           <button
-            onClick={() => setActiveTab("add")}
-            className={`
+            type="button"
+            onClick={handleAddExhibition}
+            className="
               flex-1
+              cursor-pointer
               py-3
               text-[26px]
-              cursor-pointer
-              ${
-                activeTab === "add"
-                  ? "border-b-2 border-[#5791FB] text-[#5791FB]"
-                  : "text-[#A2A2A2]"
-              }
-            `}
+              text-[#A2A2A2]
+            "
           >
             +
           </button>
         </div>
       </section>
+        
 
       {/* 전시장 */}
       <section className="px-7 pt-3">
