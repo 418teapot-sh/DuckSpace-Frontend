@@ -1,25 +1,52 @@
 import { IoChevronBack, IoEllipsisHorizontal, IoHeartOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import DisplayEdit from "../components/DisplayEdit";
 import DisplayGoods from "../components/DisplayGoods";
 import NavBar from "../components/NavBar";
 
-import { createExhibition } from "../apis/displayApi";
+import { useDisplayStore } from "../store/displayStore";
+
+import { createExhibition , getMyExhibitions, getExhibitionDetail } from "../apis/displayApi";
+
 
 function Display() {
   const navigate = useNavigate();
-  const [exhibitions, setExhibitions] = useState([
-    {
-      exhibitionId: "local -1",
-      name: "장식장 1",
-      themeCode: "BASIC",
-    },
-  ]);
+  
+  const setEditingItems = useDisplayStore(
+    (state) => state.setEditingItems
+  );
 
-  const [activeExhibitionId, setActiveExhibitionId] = useState("local -1");
+  
+  const [exhibitions, setExhibitions] = useState([]);
+  const [activeExhibitionId, setActiveExhibitionId] = useState(null);
+  
+  useEffect(() => {
+    const fetchMyExhibitions = async () => {
+      try {
+        const result = await getMyExhibitions();
 
+        const exhibitionList = result.data;
+
+        setExhibitions(exhibitionList);
+
+        if (exhibitionList.length > 0) {
+          setActiveExhibitionId(
+            exhibitionList[0].exhibitionId
+          );
+        }
+      } catch (error) {
+        console.error(
+          "장식장 목록 조회 실패:",
+          error.response?.data || error
+        );
+      }
+    };
+
+    fetchMyExhibitions();
+  }, []);
+  
   const handleAddExhibition = async () => {
     try {
       const nextNumber = exhibitions.length + 1;
@@ -46,6 +73,41 @@ function Display() {
       );
     }
   };
+  useEffect(() => {
+    if (!activeExhibitionId) return;
+
+    const fetchExhibitionDetail = async () => {
+      try {
+        const result = await getExhibitionDetail(
+          activeExhibitionId
+        );
+
+        const convertedItems = result.data.items.map(
+          (item) => ({
+            id: item.itemId,
+            itemId: item.itemId,
+            src: item.imageUrl,
+
+            x: item.posX * 360,
+            y: item.posY * 400,
+            width: item.width * 360,
+            height: item.height * 400,
+
+            rotation: item.rotation ?? 0,
+          })
+        );
+
+        setEditingItems(convertedItems);
+      } catch (error) {
+        console.error(
+          "장식장 상세 조회 실패:",
+          error.response?.data || error
+        );
+      }
+    };
+
+    fetchExhibitionDetail();
+  }, [activeExhibitionId, setEditingItems]);
 
   return (
     <div className="min-h-screen bg-white pb-20">
@@ -93,7 +155,7 @@ function Display() {
 
       {/* 탭 영역 */}
       <section className="px-7">
-        <div className="flex border-b border-[#EEEEEE]">
+        <div className="flex overflow-x-auto border-b border-[#EEEEEE]">
           {exhibitions.map((exhibition) => (
             <button
               key={exhibition.exhibitionId}
@@ -103,7 +165,8 @@ function Display() {
                 )
               }
               className={`
-                flex-1
+                shrink-0
+                min-w-[120px]
                 py-3
                 text-[16px]
                 font-medium
@@ -125,7 +188,8 @@ function Display() {
             type="button"
             onClick={handleAddExhibition}
             className="
-              flex-1
+              shrink-0
+              min-w-[120px]
               cursor-pointer
               py-3
               text-[26px]
@@ -140,7 +204,7 @@ function Display() {
 
       {/* 전시장 */}
       <section className="px-7 pt-3">
-        <DisplayEdit />
+        <DisplayEdit exhibitionId={activeExhibitionId} />
       </section>
 
       {/* 좋아요 영역 */}
