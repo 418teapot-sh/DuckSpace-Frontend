@@ -1,26 +1,57 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoChevronBack, IoSearch, IoAdd } from "react-icons/io5";
 
 import NavBar from "../components/NavBar";
 import DuckTalkModal from "../components/DuckTalkModal";
 
-// 덕톡 마이페이지 아이콘 불러오기
+// 덕톡 마이페이지 아이콘
 import userIcon from "../assets/ducktalkIcon/userIcon.svg";
 
-// 소문자 duckTalkComponents 경로
+// 카드 컴포넌트
 import DuckTalkChatCard from "../components/duckTalkComponents/DuckTalkChatCard";
 import DuckTalkExchangeCard from "../components/duckTalkComponents/DuckTalkExchangeCard";
 
-// 메인 피드 목데이터 불러오기
-import { feedChatPostsData, feedExchangePostsData } from "../data/duckTalkMockData";
+// 실제 백엔드 API
+import { getCasualPosts, getExchangePosts } from "../apis/postApi";
 
 function DuckTalk() {
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState("chat");
+  const [activeTab, setActiveTab] = useState("chat"); // 'chat' | 'exchange'
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [chatPosts, setChatPosts] = useState([]);
+  const [exchangePosts, setExchangePosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // 탭 변경 또는 검색어 변경 시 서버에서 게시글 목록 조회
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+        if (activeTab === "chat") {
+          const data = await getCasualPosts({ keyword: search.trim() || undefined });
+          setChatPosts(data || []);
+        } else {
+          const data = await getExchangePosts({ keyword: search.trim() || undefined });
+          setExchangePosts(data || []);
+        }
+      } catch (error) {
+        console.error("게시글 목록 불러오기 실패:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // 검색어 입력 시 디바운스 처리 (300ms)
+    const debounceTimer = setTimeout(() => {
+      fetchPosts();
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [activeTab, search]);
 
   return (
     <div className="min-h-screen bg-white pb-28">
@@ -36,7 +67,6 @@ function DuckTalk() {
 
         <h1 className="text-xl font-semibold">덕톡라운지</h1>
 
-        {/* 우측 상단 사람 아이콘 -> 내 마이페이지로 이동 */}
         <button
           onClick={() => navigate("/ducktalk/mypage")}
           className="cursor-pointer flex items-center justify-center"
@@ -49,8 +79,9 @@ function DuckTalk() {
       {/* 잡담 / 교환 탭 */}
       <div className="grid grid-cols-2 border-b border-gray-200">
         <button
+          type="button"
           onClick={() => setActiveTab("chat")}
-          className={`relative h-12 cursor-pointer text-base ${
+          className={`relative h-12 cursor-pointer text-base transition-colors ${
             activeTab === "chat"
               ? "font-medium text-[#5791FB]"
               : "text-[#A2A2A2]"
@@ -63,8 +94,9 @@ function DuckTalk() {
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab("exchange")}
-          className={`relative h-12 cursor-pointer text-base ${
+          className={`relative h-12 cursor-pointer text-base transition-colors ${
             activeTab === "exchange"
               ? "font-medium text-[#5791FB]"
               : "text-[#A2A2A2]"
@@ -86,31 +118,48 @@ function DuckTalk() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="키워드로 검색해보세요.(기능 구현 예정)"
+            placeholder="키워드로 검색해보세요."
             className="w-full bg-transparent text-sm outline-none placeholder:text-[#A2A2A2]"
           />
         </div>
       </div>
 
-      {/* 게시글 카드 영역 */}
+      {/* 게시글 카드 목록 */}
       <main className="px-6">
-        {activeTab === "chat" ? (
-          <div className="flex flex-col gap-4">
-            {feedChatPostsData.map((post) => (
-              <DuckTalkChatCard key={post.id} post={post} />
-            ))}
+        {loading ? (
+          <div className="py-20 text-center text-sm text-[#A2A2A2]">
+            게시글을 불러오는 중...
           </div>
+        ) : activeTab === "chat" ? (
+          chatPosts.length === 0 ? (
+            <div className="py-20 text-center text-sm text-[#A2A2A2]">
+              등록된 잡담 글이 없습니다.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {chatPosts.map((post) => (
+                <DuckTalkChatCard key={post.id} post={post} />
+              ))}
+            </div>
+          )
         ) : (
-          <div className="flex flex-col gap-4">
-            {feedExchangePostsData.map((post) => (
-              <DuckTalkExchangeCard key={post.id} post={post} mode="feed" />
-            ))}
-          </div>
+          exchangePosts.length === 0 ? (
+            <div className="py-20 text-center text-sm text-[#A2A2A2]">
+              등록된 교환 글이 없습니다.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {exchangePosts.map((post) => (
+                <DuckTalkExchangeCard key={post.id} post={post} mode="feed" />
+              ))}
+            </div>
+          )
         )}
       </main>
 
-      {/* 글쓰기 + 버튼 */}
+      {/* 글쓰기 플로팅 버튼 */}
       <button
+        type="button"
         onClick={() => setIsModalOpen(true)}
         className="fixed bottom-28 right-6 z-40 flex h-16 w-16 cursor-pointer items-center justify-center rounded-full bg-[#2F78FD] shadow-lg active:scale-95 transition-all"
         aria-label="글쓰기"
@@ -118,10 +167,9 @@ function DuckTalk() {
         <IoAdd size={42} className="text-white" />
       </button>
 
-      {/* 덕톡 글쓰기 모달 */}
+      {/* 글쓰기 선택 모달 */}
       {isModalOpen && <DuckTalkModal onClose={() => setIsModalOpen(false)} />}
 
-      {/* 하단 네비게이션 */}
       <NavBar />
     </div>
   );
