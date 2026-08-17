@@ -47,3 +47,33 @@ export const addExhibitionItem = async (
 
   return response.data;
 };
+
+export const uploadExhibitionItem = async (
+  exhibitionId,
+  file,
+  data
+) => {
+  const formData = new FormData();
+
+  formData.append("image", file);
+
+  formData.append(
+    "data",
+    new Blob(
+      [JSON.stringify(data)],
+      { type: "application/json" }
+    )
+  );
+
+  const response = await api.post(
+    `/api/exhibitions/${exhibitionId}/items/upload`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
+  return response.data;
+};

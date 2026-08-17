@@ -66,7 +66,13 @@ function DisplayList() {
 
         <h1 className="text-xl font-bold">장식장</h1>
 
-        <button>
+        <button
+          onClick={() =>
+            navigate("/display/upload", {
+              state: { exhibitionId },
+            })
+          }
+        >
           <IoAdd size={32} />
         </button>
       </div>
