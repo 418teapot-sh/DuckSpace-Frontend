@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
 
 import ExchangeListCard from "../components/duckTalkComponents/ExchangeListCard";
-import { exchangeListData } from "../data/duckTalkMockData";
+import { getApplications } from "../apis/postApi";
 
 function ExchangeList() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("sent");
+  const [sentList, setSentList] = useState([]);
+  const [receivedList, setReceivedList] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const tabList = [
     { key: "sent", label: "보낸 신청" },
@@ -16,7 +19,51 @@ function ExchangeList() {
     { key: "completed", label: "완료" },
   ];
 
-  const currentItems = exchangeListData[activeTab] || [];
+  // 1. 서버에서 보낸 신청(sent)과 받은 신청(received)을 모두 가져옴
+  useEffect(() => {
+    const fetchAllApplications = async () => {
+      try {
+        setLoading(true);
+        // 서버에는 sent와 received 두 가지만 요청 (400 에러 방지)
+        const [sentData, receivedData] = await Promise.all([
+          getApplications("sent"),
+          getApplications("received"),
+        ]);
+        setSentList(sentData || []);
+        setReceivedList(receivedData || []);
+      } catch (error) {
+        console.error("교환 신청 목록 조회 실패:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllApplications();
+  }, []);
+
+  // 2. 탭에 따라 프론트엔드에서 status 필드로 걸러내기 (클라이언트 필터링)
+  const getFilteredItems = () => {
+    const allItems = [...sentList, ...receivedList];
+
+    switch (activeTab) {
+      case "sent":
+        return sentList;
+      case "received":
+        return receivedList;
+      case "progress":
+        // 대기중(APPLIED) 또는 수락됨(ACCEPTED)인 항목만 추출
+        return allItems.filter((item) =>
+          ["APPLIED", "ACCEPTED"].includes(item.status)
+        );
+      case "completed":
+        // 완료(COMPLETED)된 항목만 추출
+        return allItems.filter((item) => item.status === "COMPLETED");
+      default:
+        return [];
+    }
+  };
+
+  const currentItems = getFilteredItems();
 
   return (
     <div className="min-h-screen bg-[#FEFEFE] pb-28">
@@ -53,9 +100,23 @@ function ExchangeList() {
 
       {/* 3. 카드 목록 */}
       <main className="flex flex-col gap-3.5 px-5 pt-3.5">
-        {currentItems.map((item) => (
-          <ExchangeListCard key={item.id} item={item} activeTab={activeTab} />
-        ))}
+        {loading ? (
+          <div className="py-20 text-center text-sm text-[#A2A2A2]">
+            목록을 불러오는 중...
+          </div>
+        ) : currentItems.length === 0 ? (
+          <div className="py-20 text-center text-sm text-[#A2A2A2]">
+            내역이 없습니다.
+          </div>
+        ) : (
+          currentItems.map((item) => (
+            <ExchangeListCard
+              key={item.id || item.applicationId}
+              item={item}
+              activeTab={activeTab}
+            />
+          ))
+        )}
       </main>
     </div>
   );
