@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { createExchangePost } from "../apis/postApi";
 
 export default function PostExchangePages() {
   const navigate = useNavigate();
@@ -8,6 +9,8 @@ export default function PostExchangePages() {
 
   // 현재 작성 단계 (1: 기본 정보, 2: 교환 품목, 3: 교환 정보, 4: 완료)
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createdPostId, setCreatedPostId] = useState(null);
 
   // 1단계: 기본 정보 State
   const [title, setTitle] = useState("");
@@ -20,13 +23,26 @@ export default function PostExchangePages() {
   const [myImages, setMyImages] = useState([]);
   const [myGoodsName, setMyGoodsName] = useState("");
   const [myGoodsBrand, setMyGoodsBrand] = useState("");
-  const [myGoodsCondition, setMyGoodsCondition] = useState(""); // 미개봉, 사용감 적음, 사용감 있음
+  const [myGoodsCondition, setMyGoodsCondition] = useState("미개봉"); // 기본값 미개봉
 
   // 3단계: 교환 정보 (내가 원하는 굿즈) State
   const [wantImages, setWantImages] = useState([]);
   const [wantGoodsName, setWantGoodsName] = useState("");
   const [wantGoodsBrand, setWantGoodsBrand] = useState("");
   const [additionalCondition, setAdditionalCondition] = useState("");
+
+  // 상태 한글 -> 백엔드 Enum 매핑 함수
+  const mapConditionToEnum = (koreanCond) => {
+    switch (koreanCond) {
+      case "사용감 적음":
+        return "LIGHTLY_USED";
+      case "사용감 있음":
+        return "USED";
+      case "미개봉":
+      default:
+        return "UNOPENED";
+    }
+  };
 
   // 이미지 추가/삭제 핸들러 (내가 가진 굿즈)
   const handleAddMyImages = (e) => {
@@ -60,6 +76,48 @@ export default function PostExchangePages() {
     setWantImages((prev) => prev.filter((img) => img.id !== id));
   };
 
+  // 3단계에서 [다음(등록)] 눌렀을 때 백엔드 API 호출
+  const handleSubmitExchange = async () => {
+    try {
+      setIsSubmitting(true);
+
+      // Swagger 스펙 규격(ExchangePostRequest)에 맞춘 페이로드 구성
+      const payload = {
+        title: title.trim(),
+        content: content.trim() || undefined,
+        preferredPopupName: popupName.trim() || undefined,
+        preferredDate: preferredDate.trim() || undefined,
+        preferredTime: preferredTime.trim() || undefined,
+        extraCondition: additionalCondition.trim() || undefined,
+        offeredItem: {
+          itemName: myGoodsName.trim(),
+          brand: myGoodsBrand.trim() || undefined,
+          condition: mapConditionToEnum(myGoodsCondition),
+          imageUrl: myImages[0]?.url || undefined,
+        },
+        wantedItem: {
+          itemName: wantGoodsName.trim(),
+          brand: wantGoodsBrand.trim() || undefined,
+          imageUrl: wantImages[0]?.url || undefined,
+        },
+      };
+
+      console.log("백엔드로 보낼 교환글 데이터:", payload);
+
+      // postApi.js를 통해 서버로 POST /api/posts/exchange 요청
+      const newPostId = await createExchangePost(payload);
+      console.log("등록 성공! 생성된 글 ID:", newPostId);
+
+      setCreatedPostId(newPostId);
+      setStep(4); // 4단계 완료 화면으로 전환
+    } catch (error) {
+      console.error("교환글 등록 실패:", error);
+      alert(error.response?.data?.error?.message || "교환글 등록 중 오류가 발생했습니다.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // 각 단계별 필수값 입력 여부
   const isStep1Valid = title.trim().length > 0;
   const isStep2Valid = myGoodsName.trim().length > 0;
@@ -67,7 +125,6 @@ export default function PostExchangePages() {
 
   return (
     <div className="flex min-h-screen justify-center bg-gray-100 sm:py-8">
-      {/* 피그마 규격: 402px 프레임 */}
       <div className="flex w-full max-w-[402px] flex-col justify-between bg-white sm:min-h-[874px] sm:rounded-3xl sm:shadow-xl border border-gray-100 overflow-hidden">
         
         {/* ==================== 1 ~ 3단계 화면 ==================== */}
@@ -93,9 +150,8 @@ export default function PostExchangePages() {
               {/* 메인 콘텐츠 영역 */}
               <main className="p-[20px] space-y-[20px]">
                 
-                {/* 📌 단계 인디케이터 */}
+                {/* 단계 인디케이터 */}
                 <div className="flex justify-center items-center gap-[12px] py-1">
-                  {/* Step 1 */}
                   <div className="flex flex-col items-center gap-[8px] w-[59px]">
                     <div className={`flex items-center justify-center w-[24px] h-[24px] rounded-full text-[12px] font-semibold ${step === 1 ? "bg-[#2F78FD] text-[#FCFCFC]" : "bg-[#FCFCFC] border border-[#DEDEDE] text-[#A2A2A2]"}`}>
                       1
@@ -103,7 +159,6 @@ export default function PostExchangePages() {
                     <span className={`text-[12px] font-semibold ${step === 1 ? "text-[#2F78FD]" : "text-[#858485]"}`}>기본 정보</span>
                   </div>
 
-                  {/* Step 2 */}
                   <div className="flex flex-col items-center gap-[8px] w-[59px]">
                     <div className={`flex items-center justify-center w-[24px] h-[24px] rounded-full text-[12px] font-semibold ${step === 2 ? "bg-[#2F78FD] text-[#FCFCFC]" : "bg-[#FCFCFC] border border-[#DEDEDE] text-[#A2A2A2]"}`}>
                       2
@@ -111,7 +166,6 @@ export default function PostExchangePages() {
                     <span className={`text-[12px] font-semibold ${step === 2 ? "text-[#2F78FD]" : "text-[#858485]"}`}>교환 품목</span>
                   </div>
 
-                  {/* Step 3 */}
                   <div className="flex flex-col items-center gap-[8px] w-[59px]">
                     <div className={`flex items-center justify-center w-[24px] h-[24px] rounded-full text-[12px] font-semibold ${step === 3 ? "bg-[#2F78FD] text-[#FCFCFC]" : "bg-[#FCFCFC] border border-[#DEDEDE] text-[#A2A2A2]"}`}>
                       3
@@ -120,10 +174,9 @@ export default function PostExchangePages() {
                   </div>
                 </div>
 
-                {/* ---------------- 1단계: 기본 정보 ---------------- */}
+                {/* 1단계: 기본 정보 */}
                 {step === 1 && (
                   <div className="space-y-[20px]">
-                    {/* 제목 (필수) */}
                     <section className="space-y-[8px]">
                       <h2 className="text-[18px] font-semibold text-[#171617]">제목(필수)</h2>
                       <div className="flex flex-col items-end gap-[4px]">
@@ -137,7 +190,6 @@ export default function PostExchangePages() {
                       </div>
                     </section>
 
-                    {/* 내용 (선택) */}
                     <section className="space-y-[8px]">
                       <h2 className="text-[18px] font-semibold text-[#171617]">내용(선택)</h2>
                       <div className="flex flex-col items-end gap-[4px]">
@@ -151,7 +203,6 @@ export default function PostExchangePages() {
                       </div>
                     </section>
 
-                    {/* 교환할 팝업 이름 */}
                     <section className="space-y-[8px]">
                       <h2 className="text-[18px] font-semibold text-[#171617]">교환할 팝업 이름(선택)</h2>
                       <div className="flex items-center gap-[4px] rounded-[8px] bg-[#FCFCFC] p-[12px] border border-[#EEEEEE] focus-within:border-[#2F78FD]">
@@ -166,7 +217,6 @@ export default function PostExchangePages() {
                       </div>
                     </section>
 
-                    {/* 선호 날짜 */}
                     <section className="space-y-[8px]">
                       <h2 className="text-[18px] font-semibold text-[#171617]">선호 날짜(선택)</h2>
                       <div className="flex items-center gap-[4px] rounded-[8px] bg-[#FCFCFC] p-[12px] border border-[#EEEEEE] focus-within:border-[#2F78FD]">
@@ -181,7 +231,6 @@ export default function PostExchangePages() {
                       </div>
                     </section>
 
-                    {/* 선호 시간 */}
                     <section className="space-y-[8px]">
                       <h2 className="text-[18px] font-semibold text-[#171617]">선호 시간(선택)</h2>
                       <div className="flex items-center gap-[4px] rounded-[8px] bg-[#FCFCFC] p-[12px] border border-[#EEEEEE] focus-within:border-[#2F78FD]">
@@ -198,10 +247,9 @@ export default function PostExchangePages() {
                   </div>
                 )}
 
-                {/* ---------------- 2단계: 교환 품목 ---------------- */}
+                {/* 2단계: 교환 품목 */}
                 {step === 2 && (
                   <div className="space-y-[20px]">
-                    {/* 내가 가진 굿즈 이미지 */}
                     <section className="space-y-[8px]">
                       <h2 className="text-[18px] font-semibold text-[#171617]">내가 가진 굿즈</h2>
                       <div className="flex items-center gap-[12px] overflow-x-auto pb-1">
@@ -234,7 +282,6 @@ export default function PostExchangePages() {
                       </div>
                     </section>
 
-                    {/* 굿즈 이름 (필수) */}
                     <section className="space-y-[8px]">
                       <h2 className="text-[18px] font-semibold text-[#171617]">굿즈 이름 (필수)</h2>
                       <div className="flex items-center gap-[4px] rounded-[8px] bg-[#FCFCFC] p-[12px] border border-[#EEEEEE] focus-within:border-[#2F78FD]">
@@ -249,7 +296,6 @@ export default function PostExchangePages() {
                       </div>
                     </section>
 
-                    {/* 브랜드/시리즈 (선택) */}
                     <section className="space-y-[8px]">
                       <h2 className="text-[18px] font-semibold text-[#171617]">브랜드/시리즈 (선택)</h2>
                       <div className="flex items-center gap-[4px] rounded-[8px] bg-[#FCFCFC] p-[12px] border border-[#EEEEEE] focus-within:border-[#2F78FD]">
@@ -264,7 +310,6 @@ export default function PostExchangePages() {
                       </div>
                     </section>
 
-                    {/* 상태 (선택) */}
                     <section className="space-y-[8px]">
                       <h2 className="text-[18px] font-semibold text-[#171617]">상태 (선택)</h2>
                       <div className="grid grid-cols-3 gap-[8px]">
@@ -272,7 +317,7 @@ export default function PostExchangePages() {
                           <button
                             key={cond}
                             type="button"
-                            onClick={() => setMyGoodsCondition(cond === myGoodsCondition ? "" : cond)}
+                            onClick={() => setMyGoodsCondition(cond)}
                             className={`h-[48px] rounded-[8px] text-[14px] font-semibold transition-all ${
                               myGoodsCondition === cond
                                 ? "bg-[#FCFCFC] border border-[#A6C3F8] text-[#2F78FD]"
@@ -287,10 +332,9 @@ export default function PostExchangePages() {
                   </div>
                 )}
 
-                {/* ---------------- 3단계: 교환 정보 ---------------- */}
+                {/* 3단계: 교환 정보 */}
                 {step === 3 && (
                   <div className="space-y-[20px]">
-                    {/* 내가 원하는 굿즈 이미지 */}
                     <section className="space-y-[8px]">
                       <h2 className="text-[18px] font-semibold text-[#171617]">내가 원하는 굿즈 (선택)</h2>
                       <div className="flex items-center gap-[12px] overflow-x-auto pb-1">
@@ -323,7 +367,6 @@ export default function PostExchangePages() {
                       </div>
                     </section>
 
-                    {/* 굿즈 이름 (필수) */}
                     <section className="space-y-[8px]">
                       <h2 className="text-[18px] font-semibold text-[#171617]">굿즈 이름 (필수)</h2>
                       <div className="flex items-center gap-[4px] rounded-[8px] bg-[#FCFCFC] p-[12px] border border-[#EEEEEE] focus-within:border-[#2F78FD]">
@@ -337,7 +380,6 @@ export default function PostExchangePages() {
                       </div>
                     </section>
 
-                    {/* 브랜드/시리즈 (선택) */}
                     <section className="space-y-[8px]">
                       <h2 className="text-[18px] font-semibold text-[#171617]">브랜드/시리즈 (선택)</h2>
                       <div className="flex items-center gap-[4px] rounded-[8px] bg-[#FCFCFC] p-[12px] border border-[#EEEEEE] focus-within:border-[#2F78FD]">
@@ -352,7 +394,6 @@ export default function PostExchangePages() {
                       </div>
                     </section>
 
-                    {/* 추가 조건 (선택) */}
                     <section className="space-y-[8px]">
                       <h2 className="text-[18px] font-semibold text-[#171617]">추가 조건 (선택)</h2>
                       <div className="flex flex-col items-end gap-[4px]">
@@ -371,7 +412,7 @@ export default function PostExchangePages() {
               </main>
             </div>
 
-            {/* 하단 버튼 영역 (1~3단계 공통) */}
+            {/* 하단 버튼 영역 */}
             <footer className="p-[20px] bg-white border-t border-gray-50">
               {step === 1 ? (
                 <button
@@ -391,6 +432,7 @@ export default function PostExchangePages() {
                   <button
                     type="button"
                     onClick={() => setStep(step - 1)}
+                    disabled={isSubmitting}
                     className="flex-1 h-[48px] rounded-[8px] bg-[#FCFCFC] border border-[#A6C3F8] text-[14px] font-semibold text-[#2F78FD] hover:bg-blue-50/50"
                   >
                     이전
@@ -399,16 +441,16 @@ export default function PostExchangePages() {
                     type="button"
                     onClick={() => {
                       if (step === 2 && isStep2Valid) setStep(3);
-                      if (step === 3 && isStep3Valid) setStep(4);
+                      if (step === 3 && isStep3Valid) handleSubmitExchange();
                     }}
-                    disabled={step === 2 ? !isStep2Valid : !isStep3Valid}
+                    disabled={(step === 2 ? !isStep2Valid : !isStep3Valid) || isSubmitting}
                     className={`flex-1 h-[48px] rounded-[8px] text-[14px] font-semibold transition-all ${
-                      (step === 2 ? isStep2Valid : isStep3Valid)
+                      (step === 2 ? isStep2Valid : isStep3Valid) && !isSubmitting
                         ? "bg-[#2F78FD] text-[#FCFCFC] hover:bg-blue-600 shadow-md shadow-blue-100"
                         : "bg-[#F4F4F4] text-[#858485] border border-[#DEDEDE] cursor-not-allowed"
                     }`}
                   >
-                    다음
+                    {isSubmitting ? "등록 중..." : "다음"}
                   </button>
                 </div>
               )}
@@ -426,7 +468,7 @@ export default function PostExchangePages() {
               <button
                 type="button"
                 aria-label="닫기"
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/ducktalk")}
                 className="p-1 -mr-1 text-[#171617] hover:bg-gray-100 rounded-full transition-colors"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -450,15 +492,21 @@ export default function PostExchangePages() {
             <footer className="p-[20px] space-y-[10px]">
               <button
                 type="button"
-                onClick={() => alert("글 상세 페이지로 이동")}
-                className="w-full h-[48px] rounded-[8px] bg-[#FCFCFC] border border-[#A6C3F8] text-[14px] font-semibold text-[#2F78FD] hover:bg-blue-50/50 transition-all"
+                onClick={() => {
+                  if (createdPostId) {
+                    navigate(`/ducktalk/exchange/detail/${createdPostId}`);
+                  } else {
+                    navigate("/ducktalk");
+                  }
+                }}
+                className="w-full h-[48px] rounded-[8px] bg-[#FCFCFC] border border-[#A6C3F8] text-[14px] font-semibold text-[#2F78FD] hover:bg-blue-50/50 transition-all cursor-pointer"
               >
                 글 보러가기
               </button>
               <button
                 type="button"
-                onClick={() => navigate("/")}
-                className="w-full h-[48px] rounded-[8px] bg-[#2F78FD] text-[14px] font-semibold text-[#FCFCFC] hover:bg-blue-600 transition-all shadow-md shadow-blue-100"
+                onClick={() => navigate("/ducktalk")}
+                className="w-full h-[48px] rounded-[8px] bg-[#2F78FD] text-[14px] font-semibold text-[#FCFCFC] hover:bg-blue-600 transition-all shadow-md shadow-blue-100 cursor-pointer"
               >
                 덕톡 라운지로
               </button>
