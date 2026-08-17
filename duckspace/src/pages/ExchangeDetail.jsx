@@ -1,58 +1,145 @@
-import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
 
 import ExchangeUserPreferenceCard from "../components/duckTalkComponents/ExchangeUserPreferenceCard";
 import ExchangeGoodsPair from "../components/duckTalkComponents/ExchangeGoodsPair";
 import ExchangeActionComplete from "../components/duckTalkComponents/ExchangeActionComplete";
-import { defaultExchangeDetailInfo } from "../data/duckTalkMockData";
+import {
+  getPostDetail,
+  acceptApplication,
+  rejectApplication,
+  cancelApplication,
+  completeApplication,
+} from "../apis/postApi";
 
-function ExchangeDetail() {
+export default function ExchangeDetail() {
   const navigate = useNavigate();
+  const { id } = useParams(); // URL 파라미터 ID (postId 또는 applicationId)
   const [searchParams] = useSearchParams();
-  const tabType = searchParams.get("tab") || "completed";
+  const tabType = searchParams.get("tab") || "feed"; // 'sent' | 'received' | 'progress' | 'completed' | 'feed'
 
+  const [postDetail, setPostDetail] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [actionComplete, setActionComplete] = useState(null);
-  const detail = defaultExchangeDetailInfo;
 
-  // 탭별 설정 분기
+  // 게시글 상세 조회
+  useEffect(() => {
+    const fetchDetail = async () => {
+      if (!id) return;
+      try {
+        setLoading(true);
+        const data = await getPostDetail(id);
+        setPostDetail(data);
+      } catch (error) {
+        console.error("게시글 상세 조회 실패:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDetail();
+  }, [id]);
+
+  // 신청 수락
+  const handleAccept = async () => {
+    if (!window.confirm("이 교환 신청을 수락하시겠습니까?")) return;
+    try {
+      await acceptApplication(id);
+      alert("신청을 수락했습니다.");
+      navigate("/ducktalk/exchange/list");
+    } catch (error) {
+      console.error("신청 수락 실패:", error);
+      alert("신청 수락 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 신청 거절
+  const handleReject = async () => {
+    if (!window.confirm("이 교환 신청을 거절하시겠습니까?")) return;
+    try {
+      await rejectApplication(id);
+      setActionComplete("rejected");
+    } catch (error) {
+      console.error("신청 거절 실패:", error);
+      alert("신청 거절 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 신청 취소
+  const handleCancel = async () => {
+    if (!window.confirm("교환 신청을 취소하시겠습니까?")) return;
+    try {
+      await cancelApplication(id);
+      setActionComplete("canceled");
+    } catch (error) {
+      console.error("신청 취소 실패:", error);
+      alert("신청 취소 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 교환 완료 처리
+  const handleComplete = async () => {
+    if (!window.confirm("교환을 완료 처리하시겠습니까?")) return;
+    try {
+      await completeApplication(id);
+      alert("교환이 완료 처리되었습니다.");
+      navigate("/ducktalk/exchange/list");
+    } catch (error) {
+      console.error("교환 완료 처리 실패:", error);
+      alert("교환 완료 처리 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 탭 타입별 헤더 타이틀 및 세부 설정
   const getTabConfig = () => {
     switch (tabType) {
       case "sent":
-        return {
-          title: "보낸 신청",
-          goodsSectionTitle: "교환 신청한 굿즈",
-          firstGoods: { ...detail.myGoods, label: "내 굿즈", isMine: true },
-          secondGoods: { ...detail.targetGoods, label: "상대방 굿즈", isMine: false },
-        };
+        return { title: "보낸 신청", goodsSectionTitle: "교환 신청한 굿즈" };
       case "received":
-        return {
-          title: "받은 신청",
-          goodsSectionTitle: "교환 신청한 굿즈",
-          firstGoods: { ...detail.targetGoods, label: "상대방 굿즈", isMine: false },
-          secondGoods: { ...detail.myGoods, label: "내 굿즈", isMine: true },
-        };
+        return { title: "받은 신청", goodsSectionTitle: "교환 신청받은 굿즈" };
       case "progress":
-        return {
-          title: "진행중인 교환",
-          goodsSectionTitle: "교환 완료 된 굿즈",
-          firstGoods: { ...detail.myGoods, label: "내 굿즈", isMine: true },
-          secondGoods: { ...detail.targetGoods, label: "상대방 굿즈", isMine: false },
-        };
+        return { title: "진행중인 교환", goodsSectionTitle: "교환 진행 중인 굿즈" };
       case "completed":
+        return { title: "완료된 교환", goodsSectionTitle: "교환 완료된 굿즈" };
+      case "feed":
       default:
-        return {
-          title: "완료된 교환",
-          goodsSectionTitle: "교환 신청한 굿즈",
-          firstGoods: { ...detail.targetGoods, label: "상대방 굿즈", isMine: false },
-          secondGoods: { ...detail.myGoods, label: "내 굿즈", isMine: true },
-        };
+        return { title: "교환 글 상세", goodsSectionTitle: "교환 희망 굿즈 대조" };
     }
   };
 
   const config = getTabConfig();
+  const exchangeInfo = postDetail?.exchangeInfo;
 
-  // 완료 뷰 분기 (취소완료 / 거절완료)
+  const userObj = {
+    name: postDetail?.authorNickname || "작성자",
+    score: 95,
+  };
+
+  const preferencesObj = {
+    popupName: exchangeInfo?.preferredPopupName || "미지정",
+    date: exchangeInfo?.preferredDate || "조율 가능",
+    time: exchangeInfo?.preferredTime || "조율 가능",
+    condition: exchangeInfo?.extraCondition || "없음",
+  };
+
+  const firstGoods = {
+    title: exchangeInfo?.offeredItem?.itemName || "제시 굿즈",
+    series: exchangeInfo?.offeredItem?.brand || "",
+    status: exchangeInfo?.offeredItem?.condition === "UNOPENED" ? "미개봉" : "개봉",
+    image: exchangeInfo?.offeredItem?.imageUrl,
+    label: "작성자 굿즈",
+    isMine: postDetail?.mine,
+  };
+
+  const secondGoods = {
+    title: exchangeInfo?.wantedItem?.itemName || "희망 굿즈",
+    series: exchangeInfo?.wantedItem?.brand || "",
+    image: exchangeInfo?.wantedItem?.imageUrl,
+    label: "원하는 굿즈",
+    isMine: false,
+  };
+
   if (actionComplete) {
     return (
       <ExchangeActionComplete
@@ -62,6 +149,14 @@ function ExchangeDetail() {
         onChatClick={() => navigate("/chat")}
         onClose={() => navigate("/ducktalk/exchange/list")}
       />
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white text-sm text-[#858485]">
+        상세 내용을 불러오는 중...
+      </div>
     );
   }
 
@@ -78,98 +173,112 @@ function ExchangeDetail() {
         <h1 className="text-[18px] font-semibold text-[#171617]">{config.title}</h1>
       </header>
 
-      <main className="flex flex-col gap-3 px-5 pt-3">
-        {/* 1. 상대방 정보 카드 */}
-        <ExchangeUserPreferenceCard user={detail.user} preferences={detail.preferences} />
+      <main className="flex flex-col gap-4 px-5 pt-3">
+        {/* 1. 상대방 정보 및 선호 조건 카드 */}
+        <ExchangeUserPreferenceCard user={userObj} preferences={preferencesObj} />
 
-        {/* 2. 교환 굿즈 2종 카드 */}
+        {/* 2. 교환 굿즈 대조 카드 */}
         <ExchangeGoodsPair
           sectionTitle={config.goodsSectionTitle}
-          firstGoods={config.firstGoods}
-          secondGoods={config.secondGoods}
+          firstGoods={firstGoods}
+          secondGoods={secondGoods}
         />
 
-        {/* 3. 메시지 카드 */}
-        <div className="flex flex-col gap-3 rounded-lg bg-white/75 p-5 shadow-[0px_15px_40px_rgba(205.52,205.52,205.52,0.08)] backdrop-blur-[10px]">
-          <h2 className="text-[18px] font-semibold leading-[25.2px] text-[#171617]">메세지</h2>
-          <div className="w-full rounded-tr-2xl rounded-br-2xl rounded-tl-[20px] bg-[#2F78FD] px-5 py-3 text-center">
-            <span className="text-[16px] font-semibold leading-[20.8px] text-[#FCFCFC]">
-              {detail.message}
-            </span>
+        {/* 3. 본문 내용 */}
+        {postDetail?.content && (
+          <div className="flex flex-col gap-2 rounded-lg bg-white/75 p-5 shadow-[0px_15px_40px_rgba(205.52,205.52,205.52,0.08)] backdrop-blur-[10px] border border-[#F4F4F4]">
+            <h2 className="text-[16px] font-semibold text-[#171617]">상세 설명</h2>
+            <p className="text-[14px] leading-[22px] text-[#545454] whitespace-pre-wrap">
+              {postDetail.content}
+            </p>
           </div>
-        </div>
+        )}
       </main>
 
       {/* 4. 하단 액션 버튼 */}
-      {tabType !== "completed" && (
-        <div className="fixed bottom-0 left-0 right-0 mx-auto max-w-[430px] bg-[#FCFCFC] px-5 py-3 z-30 flex flex-col items-center gap-2">
-          {tabType === "received" && (
-            <>
-              <div className="flex w-full gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setActionComplete("rejected")}
-                  className="flex h-12 flex-1 items-center justify-center rounded-lg border border-[#DEDEDE] bg-[#F4F4F4] text-[14px] font-semibold text-[#858485] cursor-pointer"
-                >
-                  거절하기
-                </button>
-                <button
-                  type="button"
-                  className="flex h-12 flex-1 items-center justify-center rounded-lg border border-[#A6C3F8] bg-[#FCFCFC] text-[14px] font-semibold text-[#2F78FD] cursor-pointer"
-                >
-                  수락하기
-                </button>
-              </div>
-              <button
-                type="button"
-                onClick={() => navigate("/chat")}
-                className="text-[16px] text-[#858485] cursor-pointer py-1"
-              >
-                채팅하기
-              </button>
-            </>
-          )}
+      <div className="fixed bottom-0 left-0 right-0 mx-auto max-w-[430px] bg-[#FCFCFC] px-5 py-3 z-30 flex flex-col items-center gap-2">
+        {tabType === "feed" && (
+          postDetail?.mine ? (
+            <div className="flex h-12 w-full items-center justify-center rounded-lg bg-[#F4F4F4] border border-[#DEDEDE] text-[14px] font-semibold text-[#858485]">
+              내가 작성한 글입니다
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => navigate(`/ducktalk/exchange/apply/${postDetail?.id || id}`)}
+              className="flex h-12 w-full items-center justify-center rounded-lg bg-[#2F78FD] text-[14px] font-semibold text-white shadow-md hover:bg-blue-600 transition-all cursor-pointer"
+            >
+              교환 신청하기
+            </button>
+          )
+        )}
 
-          {tabType === "progress" && (
-            <div className="flex w-full gap-2">
+        {tabType === "received" && (
+          <>
+            <div className="flex w-full gap-2.5">
               <button
                 type="button"
-                onClick={() => navigate("/chat")}
+                onClick={handleReject}
+                className="flex h-12 flex-1 items-center justify-center rounded-lg border border-[#DEDEDE] bg-[#F4F4F4] text-[14px] font-semibold text-[#858485] cursor-pointer"
+              >
+                거절하기
+              </button>
+              <button
+                type="button"
+                onClick={handleAccept}
                 className="flex h-12 flex-1 items-center justify-center rounded-lg border border-[#A6C3F8] bg-[#FCFCFC] text-[14px] font-semibold text-[#2F78FD] cursor-pointer"
               >
-                채팅하기
-              </button>
-              <button
-                type="button"
-                className="flex h-12 flex-1 items-center justify-center rounded-lg border border-[#2F78FD] bg-[#5791FB] text-[14px] font-semibold text-[#FCFCFC] cursor-pointer shadow-sm hover:bg-[#2F78FD]"
-              >
-                교환 완료
+                수락하기
               </button>
             </div>
-          )}
+            <button
+              type="button"
+              onClick={() => navigate("/chat")}
+              className="text-[15px] text-[#858485] cursor-pointer py-1"
+            >
+              채팅하기
+            </button>
+          </>
+        )}
 
-          {tabType === "sent" && (
-            <>
-              <button
-                type="button"
-                onClick={() => setActionComplete("canceled")}
-                className="flex h-12 w-full items-center justify-center rounded-lg border border-[#DEDEDE] bg-[#F4F4F4] text-[14px] font-semibold text-[#858485] cursor-pointer"
-              >
-                취소하기
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate("/chat")}
-                className="text-[16px] text-[#858485] cursor-pointer py-1"
-              >
-                채팅하기
-              </button>
-            </>
-          )}
-        </div>
-      )}
+        {tabType === "progress" && (
+          <div className="flex w-full gap-2">
+            <button
+              type="button"
+              onClick={() => navigate("/chat")}
+              className="flex h-12 flex-1 items-center justify-center rounded-lg border border-[#A6C3F8] bg-[#FCFCFC] text-[14px] font-semibold text-[#2F78FD] cursor-pointer"
+            >
+              채팅하기
+            </button>
+            <button
+              type="button"
+              onClick={handleComplete}
+              className="flex h-12 flex-1 items-center justify-center rounded-lg border border-[#2F78FD] bg-[#5791FB] text-[14px] font-semibold text-[#FCFCFC] cursor-pointer shadow-sm hover:bg-[#2F78FD]"
+            >
+              교환 완료
+            </button>
+          </div>
+        )}
+
+        {tabType === "sent" && (
+          <>
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="flex h-12 w-full items-center justify-center rounded-lg border border-[#DEDEDE] bg-[#F4F4F4] text-[14px] font-semibold text-[#858485] cursor-pointer"
+            >
+              취소하기
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/chat")}
+              className="text-[15px] text-[#858485] cursor-pointer py-1"
+            >
+              채팅하기
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
-
-export default ExchangeDetail;

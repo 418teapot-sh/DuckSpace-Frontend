@@ -1,45 +1,91 @@
 import { useNavigate } from "react-router-dom";
-import { IoCheckmarkCircle, IoSwapHorizontal, IoChevronForward } from "react-icons/io5";
+import { IoSwapHorizontal, IoChevronForward } from "react-icons/io5";
+import { acceptApplication, rejectApplication, cancelApplication } from "../../apis/postApi";
 
-function ExchangeListCard({ item, activeTab }) {
+function ExchangeListCard({ item, activeTab, onRefresh }) {
   const navigate = useNavigate();
+
+  // 신청 취소 처리
+  const handleCancel = async () => {
+    if (!window.confirm("교환 신청을 취소하시겠습니까?")) return;
+    try {
+      await cancelApplication(item.id);
+      alert("신청이 취소되었습니다.");
+      if (onRefresh) onRefresh();
+    } catch (error) {
+      console.error("신청 취소 실패:", error);
+      alert("신청 취소 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 신청 수락 처리
+  const handleAccept = async () => {
+    if (!window.confirm("이 교환 신청을 수락하시겠습니까?")) return;
+    try {
+      await acceptApplication(item.id);
+      alert("신청을 수락했습니다.");
+      if (onRefresh) onRefresh();
+    } catch (error) {
+      console.error("신청 수락 실패:", error);
+      alert("신청 수락 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 신청 거절 처리
+  const handleReject = async () => {
+    if (!window.confirm("이 교환 신청을 거절하시겠습니까?")) return;
+    try {
+      await rejectApplication(item.id);
+      alert("신청을 거절했습니다.");
+      if (onRefresh) onRefresh();
+    } catch (error) {
+      console.error("신청 거절 실패:", error);
+      alert("신청 거절 중 오류가 발생했습니다.");
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-[#F4F4F4] bg-white/75 p-4 sm:p-5 shadow-[0px_15px_40px_rgba(205.52,205.52,205.52,0.08)] backdrop-blur-[10px]">
       {/* 1. 상대방 프로필 정보 */}
       <div className="flex items-center justify-between rounded-lg border border-[#F4F4F4] px-5 py-2">
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-full bg-[#858485]" />
+          <div className="h-9 w-9 rounded-full bg-[#858485] overflow-hidden">
+            {item.offeredImageUrl ? (
+              <img src={item.offeredImageUrl} alt="프로필" className="h-full w-full object-cover" />
+            ) : null}
+          </div>
           <span className="text-[16px] font-semibold leading-[20.8px] text-[#171617]">
-            {item.user.name}
+            {item.applicantNickname || "신청자"}
           </span>
         </div>
-        <div className="flex items-center gap-1 text-[#2F78FD]">
-          <IoCheckmarkCircle size={18} />
-          <span className="text-[14px] font-semibold leading-[21px]">
-            신뢰도 {item.user.score}
-          </span>
-        </div>
+        <span className="text-[13px] font-medium text-[#2F78FD]">
+          {item.status === "APPLIED" && "대기중"}
+          {item.status === "ACCEPTED" && "수락됨"}
+          {item.status === "COMPLETED" && "교환 완료"}
+          {item.status === "CANCELLED" && "취소됨"}
+          {item.status === "REJECTED" && "거절됨"}
+        </span>
       </div>
 
       {/* 2. 교환 굿즈 대조 */}
       <div className="flex items-center justify-between px-2">
-        <div className="w-[124px] text-center text-[16px] font-semibold leading-[20.8px] text-[#171617]">
-          {item.myGoods}
+        <div className="w-[124px] text-center text-[15px] font-semibold leading-[20.8px] text-[#171617] truncate">
+          {item.offeredItemName || "신청 굿즈"}
         </div>
-        <IoSwapHorizontal size={22} className="text-black shrink-0" />
-        <div className="w-[124px] text-center text-[16px] font-semibold leading-[20.8px] text-[#171617]">
-          {item.targetGoods}
+        <IoSwapHorizontal size={22} className="text-[#5791FB] shrink-0" />
+        <div className="w-[124px] text-center text-[15px] font-semibold leading-[20.8px] text-[#171617] truncate">
+          {item.postTitle || "게시글 굿즈"}
         </div>
       </div>
 
       {/* 3. 탭별 액션 버튼 분기 */}
       {activeTab === "sent" && (
         <div className="flex gap-3">
-          {item.status === "pending" ? (
+          {item.status === "APPLIED" ? (
             <>
               <button
                 type="button"
+                onClick={handleCancel}
                 className="flex h-12 flex-1 items-center justify-center rounded-lg border border-[#DEDEDE] bg-[#F4F4F4] text-[14px] font-semibold text-[#858485] cursor-pointer"
               >
                 취소하기
@@ -53,8 +99,8 @@ function ExchangeListCard({ item, activeTab }) {
               </button>
             </>
           ) : (
-            <div className="flex h-12 flex-1 items-center justify-center rounded-lg border border-[#A2A2A2] bg-[#DEDEDE] text-[14px] font-semibold text-[#A2A2A2]">
-              취소완료
+            <div className="flex h-12 flex-1 items-center justify-center rounded-lg border border-[#DEDEDE] bg-[#F4F4F4] text-[14px] font-semibold text-[#A2A2A2]">
+              {item.status === "CANCELLED" ? "취소 완료" : "종료됨"}
             </div>
           )}
         </div>
@@ -62,30 +108,32 @@ function ExchangeListCard({ item, activeTab }) {
 
       {activeTab === "received" && (
         <div className="flex gap-3">
-          {item.status === "pending" ? (
+          {item.status === "APPLIED" ? (
             <>
               <button
                 type="button"
+                onClick={handleReject}
                 className="flex h-12 flex-1 items-center justify-center rounded-lg border border-[#DEDEDE] bg-[#F4F4F4] text-[14px] font-semibold text-[#858485] cursor-pointer"
               >
                 거절하기
               </button>
               <button
                 type="button"
+                onClick={handleAccept}
                 className="flex h-12 flex-1 items-center justify-center rounded-lg border border-[#A6C3F8] bg-[#FCFCFC] text-[14px] font-semibold text-[#2F78FD] cursor-pointer"
               >
                 수락하기
               </button>
             </>
           ) : (
-            <div className="flex h-12 flex-1 items-center justify-center rounded-lg border border-[#A2A2A2] bg-[#DEDEDE] text-[14px] font-semibold text-[#A2A2A2]">
-              거절완료
+            <div className="flex h-12 flex-1 items-center justify-center rounded-lg border border-[#DEDEDE] bg-[#F4F4F4] text-[14px] font-semibold text-[#A2A2A2]">
+              {item.status === "REJECTED" ? "거절 완료" : "처리 완료"}
             </div>
           )}
         </div>
       )}
 
-      {activeTab === "progress" && (
+      {(activeTab === "progress" || activeTab === "completed") && (
         <button
           type="button"
           onClick={() => navigate("/chat")}
@@ -97,11 +145,11 @@ function ExchangeListCard({ item, activeTab }) {
 
       {/* 4. 자세히 보기 버튼 */}
       <div
-        onClick={() => navigate(`/ducktalk/exchange/detail/${item.id}?tab=${activeTab}`)}
+        onClick={() => navigate(`/ducktalk/exchange/detail/${item.postId || item.id}`)}
         className="flex items-center justify-end gap-1 cursor-pointer text-[#A2A2A2] hover:text-[#545454] transition-colors"
       >
-        <span className="text-[16px] font-normal leading-[24px]">자세히 보기</span>
-        <IoChevronForward size={18} />
+        <span className="text-[14px] font-normal leading-[24px]">게시글 보기</span>
+        <IoChevronForward size={16} />
       </div>
     </div>
   );

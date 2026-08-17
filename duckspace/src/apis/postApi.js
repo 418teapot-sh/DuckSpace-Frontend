@@ -1,5 +1,21 @@
 import api from "./api";
 
+// ===== 이미지 업로드 =====
+
+export const uploadImage = async (file) => {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const res = await api.post("/api/posts/images", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  // 백엔드가 반환한 CDN 이미지 주소 (https://...)
+  return res.data.data.imageUrl;
+};
+
 // ===== 잡담 게시판 =====
 
 export const getCasualPosts = async ({ keyword, cursor, size = 10 } = {}) => {

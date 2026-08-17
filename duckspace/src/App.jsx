@@ -9,8 +9,8 @@ import DuckTalk from "./pages/DuckTalk";
 import DuckTalkMyPage from "./pages/DuckTalkMyPage"; 
 import DuckTalkUserPage from "./pages/DuckTalkUserPage";
 import ExchangeApply from "./pages/ExchangeApply";
-import ExchangeList from "./pages/ExchangeList";       // 👈 교환 목록 페이지
-import ExchangeDetail from "./pages/ExchangeDetail";   // 👈 교환 상세 페이지
+import ExchangeList from "./pages/ExchangeList";       // 교환 목록 페이지
+import ExchangeDetail from "./pages/ExchangeDetail";   // 교환 상세 페이지
 import Display from "./pages/Display";
 import PopupSchedule from "./pages/PopupSchedule";
 import PopupWishlist from "./pages/PopupWishlist";
@@ -26,7 +26,6 @@ import DisplayUpload from './pages/displayPage/DisplayUpload';
 
 import LoginRoute from "./components/LoginRoute";
 import Signup from "./pages/Signup";
-
 
 function App() {
   return (
@@ -45,8 +44,9 @@ function App() {
         {/* 덕톡 다른사람 프로필 라우트 */}
         <Route path="/ducktalk/user" element={<LoginRoute> <DuckTalkUserPage /> </LoginRoute>} />
 
-        {/* 교환 신청 페이지 라우트 */}
+        {/* 교환 신청 페이지 라우트 (postId 지원 추가) */}
         <Route path="/ducktalk/exchange/apply" element={<LoginRoute> <ExchangeApply /> </LoginRoute>} />
+        <Route path="/ducktalk/exchange/apply/:postId" element={<LoginRoute> <ExchangeApply /> </LoginRoute>} />
 
         {/* 교환 목록 페이지 라우트 */}
         <Route path="/ducktalk/exchange/list" element={<LoginRoute> <ExchangeList /> </LoginRoute>} />
