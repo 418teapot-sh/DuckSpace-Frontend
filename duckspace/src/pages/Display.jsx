@@ -21,6 +21,7 @@ function Display() {
   
   const [exhibitions, setExhibitions] = useState([]);
   const [activeExhibitionId, setActiveExhibitionId] = useState(null);
+  const [displayGoods, setDisplayGoods] = useState([]);
   
   useEffect(() => {
     const fetchMyExhibitions = async () => {
@@ -80,7 +81,10 @@ function Display() {
       try {
         const result = await getExhibitionDetail(
           activeExhibitionId
+          
         );
+
+        setDisplayGoods(result.data.items);
 
         const convertedItems = result.data.items.map(
           (item) => ({
@@ -217,7 +221,9 @@ function Display() {
 
       {/* 전시된 굿즈 */}
       <section className="px-7">
-        <DisplayGoods />
+        <DisplayGoods
+          
+        />
       </section>
 
       {/* 하단 네브바 */}

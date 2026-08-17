@@ -2,7 +2,10 @@ import { useState } from "react";
 import { IoChevronBack, IoAdd } from "react-icons/io5";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useGoodsStore } from "../../store/goodsStore";
-import { uploadExhibitionItem } from "../../apis/displayApi";
+
+{/* 아래는 개발용 코드 주석이 진짜 실전용 코드임 */}
+import { addExhibitionItem } from "../../apis/displayApi";
+// import { uploadExhibitionItem } from "../../apis/displayApi";
 
 
 function DisplayUpload() {
@@ -53,16 +56,24 @@ function DisplayUpload() {
             height: 70 / 400,
             rotation: 0,
           },
+          /* 아래 url은 개발용, 실전에서는 삭제 */
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg",
+
           itemName: name.trim(),
           price: price ? Number(price) : 0,
           comment: comment.trim(),
         };
-
-        const result = await uploadExhibitionItem(
+        // 이거도 개발용 코드, 후에 전체 삭제후 아래 주석 코드 사용
+        const result = await addExhibitionItem(
           exhibitionId,
-          imageFile,
           data
         );
+        console.log( "개발용 굿즈 등록 성공:", result.data);
+        // const result = await uploadExhibitionItem(
+        //   exhibitionId,
+        //   imageFile,
+        //   data
+        // );
 
         console.log("굿즈 업로드 성공:", result.data);
 

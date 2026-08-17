@@ -77,3 +77,33 @@ export const uploadExhibitionItem = async (
 
   return response.data;
 };
+
+export const getExhibitionItems = async (
+  exhibitionId,
+  cursor,
+  size = 20
+) => {
+  const params = { size };
+
+  if (cursor) {
+    params.cursor = cursor;
+  }
+
+  const response = await api.get(
+    `/api/exhibitions/${exhibitionId}/items`,
+    { params }
+  );
+
+  return response.data;
+};
+
+export const getExhibitionItem = async (
+  exhibitionId,
+  itemId
+) => {
+  const response = await api.get(
+    `/api/exhibitions/${exhibitionId}/items/${itemId}`
+  );
+
+  return response.data;
+};
