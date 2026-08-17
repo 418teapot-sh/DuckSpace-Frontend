@@ -47,11 +47,11 @@ function DuckTalkChatCard({ post }) {
           <div className="h-6 w-6 rounded-full bg-[#DEDEDE]" />
           <div className="flex items-center gap-3">
             <span className="text-[16px] font-semibold text-[#171617]">
-              {/*{post.author}*/} //// 여기!!!!
+              {/*{post.author} //// 여기!!!! */} 
               {authorName}
             </span>
             <span className="text-[12px] text-[#858485]">
-              {/*{post.date}*/} //// 여기!!!!
+              {/*{post.date} //// 여기!!!! */} 
               {formattedDate}
             </span>
           </div>
