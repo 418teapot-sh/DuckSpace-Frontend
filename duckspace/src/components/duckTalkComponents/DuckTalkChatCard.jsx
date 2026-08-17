@@ -7,16 +7,34 @@ import {
 
 function DuckTalkChatCard({ post }) {
   const navigate = useNavigate();
-  const isMe = post.author === "나";
+  
+  //const isMe = post.author === "나";
+  const isMe = post.author === "true";
+  
+  {/* 수정한 코드 여기부터  */}
+  const authorName = post.authorNickname || "사용자";
+  const formattedDate = post.createdAt
+    ? post.createdAt.slice(0, 10).replace(/-/g, ".")
+    : "";
+  {/* 수정한 코드 여기까지  */}
 
   // 작성자 클릭 시 라우팅 분기
+  // const handleAuthorClick = () => {
+  //   if (post.author === "다른사람") {
+  //     navigate("/ducktalk/user");
+  //   } else if (post.author === "나") {
+  //     navigate("/ducktalk/mypage");
+  //   }
+  // };
+  {/* 수정한 코드 여기부터  */}
   const handleAuthorClick = () => {
-    if (post.author === "다른사람") {
-      navigate("/ducktalk/user");
-    } else if (post.author === "나") {
+    if (post.mine) {
       navigate("/ducktalk/mypage");
+    } else if (post.authorId) {
+      navigate(`/ducktalk/user?id=${post.authorId}`);
     }
   };
+  {/* 수정한 코드 여기까지  */}
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-[#F4F4F4] bg-white/75 p-5 shadow-[0_15px_40px_rgba(205,205,205,0.08)] backdrop-blur-[10px]">
@@ -29,9 +47,13 @@ function DuckTalkChatCard({ post }) {
           <div className="h-6 w-6 rounded-full bg-[#DEDEDE]" />
           <div className="flex items-center gap-3">
             <span className="text-[16px] font-semibold text-[#171617]">
-              {post.author}
+              {/*{post.author}*/} //// 여기!!!!
+              {authorName}
             </span>
-            <span className="text-[12px] text-[#858485]">{post.date}</span>
+            <span className="text-[12px] text-[#858485]">
+              {/*{post.date}*/} //// 여기!!!!
+              {formattedDate}
+            </span>
           </div>
         </div>
 
