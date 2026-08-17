@@ -254,7 +254,10 @@ function DisplayEdit({ exhibitionId }) {
                         onClick={() => {
                             console.log("객체 추가");
                             navigate("/display/list", {
-                                state: { mode: "select" },
+                                state: {  
+                                    mode: "select",
+                                    exhibitionId,
+                                },
                             });
                         }}
                     />

@@ -35,3 +35,15 @@ export const updateExhibitionItemPosition = async (
 
   return response.data;
 };
+
+export const addExhibitionItem = async (
+  exhibitionId,
+  itemData
+) => {
+  const response = await api.post(
+    `/api/exhibitions/${exhibitionId}/items`,
+    itemData
+  );
+
+  return response.data;
+};

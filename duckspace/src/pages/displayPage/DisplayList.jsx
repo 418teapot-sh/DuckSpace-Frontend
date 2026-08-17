@@ -3,28 +3,54 @@ import { useGoodsStore } from "../../store/goodsStore";
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDisplayStore } from "../../store/displayStore";
+import { addExhibitionItem } from "../../apis/displayApi";
 
 function DisplayList() {
     const location = useLocation();
     const navigate = useNavigate();
+
+    const exhibitionId = location.state?.exhibitionId;
+
     const addItem = useDisplayStore((state) => state.addItem);
     const mode = location.state?.mode || "view";
     const goods = useGoodsStore((state) => state.goods);
 
-    const handleSelectItem = (good) => {
-        const newItem = {
-            id: Date.now(),
-            goodsId: good.id,
-            src: good.imageUrl,
-            x: 100,
-            y: 100,
-            width: 70,
-            height: 70,
-            rotation: 0,
-        };
-
-        addItem(newItem);
-        navigate("/display");
+    const handleSelectItem = async(good) => {
+        try {
+          const result = await addExhibitionItem(
+              exhibitionId,
+              {
+                  placement: {
+                      posX: 100 / 360,
+                      posY: 100 / 400,
+                      width: 70 / 360,
+                      height: 70 / 400,
+                      rotation: 0,
+                  },
+                  imageUrl: good.imageUrl,
+                  itemName: good.name,
+                  price: good.price ?? 0,
+                  comment: "",
+              }
+          );
+          const item = result.data;
+          addItem({
+              id: item.itemId,
+              itemId: item.itemId,
+              src: item.imageUrl,
+              x: item.posX * 360,
+              y: item.posY * 400,
+              width: item.width * 360,
+              height: item.height * 400,
+              rotation: item.rotation ?? 0,
+          });
+          navigate("/display");
+      } catch (error) {
+          console.error(
+              "굿즈 배치 실패:",
+              error.response?.data || error
+          );
+      }
     };
 
   return (
