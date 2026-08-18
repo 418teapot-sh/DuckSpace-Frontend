@@ -3,19 +3,17 @@ import { useState } from "react";
 import cameraIcon from "../../assets/chatIcon/camera.svg";
 import sendIcon from "../../assets/chatIcon/send.svg";
 
-function ChatInput() {
+function ChatInput({ onSendMessage, disabled }) {
   const [message, setMessage] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const trimmedMessage = message.trim();
+    if (!trimmedMessage || disabled) return;
 
-    if (!trimmedMessage) return;
-
-    // 나중에 메시지 전송 API 연결
-    console.log("보낼 메시지:", trimmedMessage);
-
+    if (onSendMessage) {
+      onSendMessage(trimmedMessage);
+    }
     setMessage("");
   };
 
@@ -36,11 +34,11 @@ function ChatInput() {
           backdrop-blur-[10px]
         "
       >
-        {/* 카메라 */}
-        {/* 사진 첨부 백엔드 api 명세서에 안나와있길래 아직 구현 X */}
+        {/* 카메라 (추후 확장) */}
         <button
           type="button"
-          className="flex shrink-0 items-center justify-center"
+          onClick={() => alert("사진 전송 기능은 준비 중입니다.")}
+          className="flex shrink-0 items-center justify-center cursor-pointer opacity-70 hover:opacity-100 transition-opacity"
         >
           <img
             src={cameraIcon}
@@ -55,6 +53,8 @@ function ChatInput() {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           maxLength={1000}
+          placeholder="메시지를 입력하세요..."
+          disabled={disabled}
           className="
             min-w-0
             flex-1
@@ -63,14 +63,19 @@ function ChatInput() {
             text-[14px]
             text-black
             outline-none
+            placeholder:text-[#A2A2A2]
           "
         />
 
-        {/* 전송 */}
+        {/* 전송 버튼 */}
         <button
           type="submit"
-          disabled={!message.trim()}
-          className="flex shrink-0 items-center justify-center"
+          disabled={!message.trim() || disabled}
+          className={`flex shrink-0 items-center justify-center transition-opacity ${
+            message.trim() && !disabled
+              ? "opacity-100 cursor-pointer"
+              : "opacity-30 cursor-not-allowed"
+          }`}
         >
           <img
             src={sendIcon}
@@ -79,8 +84,7 @@ function ChatInput() {
           />
         </button>
       </form>
-      <div className="h-8"/>
-    
+      <div className="h-4" />
     </div>
   );
 }

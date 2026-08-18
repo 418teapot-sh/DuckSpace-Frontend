@@ -5,6 +5,8 @@ import { IoChevronBack, IoAdd } from "react-icons/io5";
 import ExchangeUserPreferenceCard from "../components/duckTalkComponents/ExchangeUserPreferenceCard";
 import ExchangeActionComplete from "../components/duckTalkComponents/ExchangeActionComplete";
 import { getPostDetail, applyExchange, uploadImage } from "../apis/postApi";
+// ✅ 채팅 API 추가
+import { createOrGetChatRoom } from "../apis/chatApi";
 
 export default function ExchangeApply() {
   const navigate = useNavigate();
@@ -102,6 +104,35 @@ export default function ExchangeApply() {
     }
   };
 
+  // ✅ 1:1 채팅방 생성 및 바로 입장 핸들러 추가
+  const handleStartChat = async () => {
+    try {
+      const partnerId = postDetail?.authorId || postDetail?.writerId || postDetail?.userId;
+      const numericPartnerId = Number(partnerId);
+
+      if (!numericPartnerId || isNaN(numericPartnerId)) {
+        alert("상대방 유저 정보를 찾지 못했습니다.");
+        return;
+      }
+
+      console.log("전송할 상대방 ID:", numericPartnerId);
+
+      const roomData = await createOrGetChatRoom(numericPartnerId);
+      const targetRoomId =
+        roomData?.roomId || roomData?.id || roomData?.chatRoomId || (typeof roomData === "number" ? roomData : null);
+
+      if (targetRoomId) {
+        const partnerName = postDetail?.authorNickname || "상대방";
+        navigate(`/chat/${targetRoomId}`, { state: { partnerNickname: partnerName } });
+      } else {
+        alert("채팅방 번호를 응답받지 못했습니다.");
+      }
+    } catch (error) {
+      console.error("채팅방 개설/입장 실패:", error);
+      alert(error.response?.data?.error?.message || "채팅방 입장 중 오류가 발생했습니다.");
+    }
+  };
+
   // 상대방 정보 및 희망 굿즈 파싱
   const exchangeInfo = postDetail?.exchangeInfo;
   const userObj = {
@@ -124,7 +155,7 @@ export default function ExchangeApply() {
         description="답변이 올 때까지 기다려주세요."
         listButtonText="교환 신청 목록 보러가기"
         onListClick={() => navigate("/ducktalk/exchange/list")}
-        onChatClick={() => navigate("/chat")}
+        onChatClick={handleStartChat} // ✅ 채팅방 생성 및 입장 함수 연결
         onClose={() => navigate("/ducktalk")}
       />
     );

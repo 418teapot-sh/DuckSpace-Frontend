@@ -12,6 +12,8 @@ import {
   cancelApplication,
   completeApplication,
 } from "../apis/postApi";
+// ✅ 채팅 API 추가
+import { createOrGetChatRoom } from "../apis/chatApi";
 
 export default function ExchangeDetail() {
   const navigate = useNavigate();
@@ -40,6 +42,35 @@ export default function ExchangeDetail() {
 
     fetchDetail();
   }, [id]);
+
+  // ✅ 1:1 채팅방 생성 및 바로 입장 핸들러 추가
+  const handleStartChat = async () => {
+    try {
+      const partnerId = postDetail?.authorId || postDetail?.writerId || postDetail?.userId;
+      const numericPartnerId = Number(partnerId);
+
+      if (!numericPartnerId || isNaN(numericPartnerId)) {
+        alert("상대방 유저 정보를 찾지 못했습니다.");
+        return;
+      }
+
+      console.log("전송할 상대방 ID:", numericPartnerId);
+
+      const roomData = await createOrGetChatRoom(numericPartnerId);
+      const targetRoomId =
+        roomData?.roomId || roomData?.id || roomData?.chatRoomId || (typeof roomData === "number" ? roomData : null);
+
+      if (targetRoomId) {
+        const partnerName = postDetail?.authorNickname || "상대방";
+        navigate(`/chat/${targetRoomId}`, { state: { partnerNickname: partnerName } });
+      } else {
+        alert("채팅방 번호를 응답받지 못했습니다.");
+      }
+    } catch (error) {
+      console.error("채팅방 개설/입장 실패:", error);
+      alert(error.response?.data?.error?.message || "채팅방 입장 중 오류가 발생했습니다.");
+    }
+  };
 
   // 신청 수락
   const handleAccept = async () => {
@@ -146,7 +177,7 @@ export default function ExchangeDetail() {
         title={actionComplete === "canceled" ? "교환 신청 취소 완료!" : "교환 신청 거절 완료!"}
         listButtonText="교환목록 보러가기"
         onListClick={() => navigate("/ducktalk/exchange/list")}
-        onChatClick={() => navigate("/chat")}
+        onChatClick={handleStartChat} // ✅ 하드코딩 제거 및 함수 연결
         onClose={() => navigate("/ducktalk/exchange/list")}
       />
     );
@@ -233,7 +264,7 @@ export default function ExchangeDetail() {
             </div>
             <button
               type="button"
-              onClick={() => navigate("/chat")}
+              onClick={handleStartChat} // ✅ 하드코딩 제거
               className="text-[15px] text-[#858485] cursor-pointer py-1"
             >
               채팅하기
@@ -245,7 +276,7 @@ export default function ExchangeDetail() {
           <div className="flex w-full gap-2">
             <button
               type="button"
-              onClick={() => navigate("/chat")}
+              onClick={handleStartChat} // ✅ 하드코딩 제거
               className="flex h-12 flex-1 items-center justify-center rounded-lg border border-[#A6C3F8] bg-[#FCFCFC] text-[14px] font-semibold text-[#2F78FD] cursor-pointer"
             >
               채팅하기
@@ -271,7 +302,7 @@ export default function ExchangeDetail() {
             </button>
             <button
               type="button"
-              onClick={() => navigate("/chat")}
+              onClick={handleStartChat} // ✅ 하드코딩 제거
               className="text-[15px] text-[#858485] cursor-pointer py-1"
             >
               채팅하기
