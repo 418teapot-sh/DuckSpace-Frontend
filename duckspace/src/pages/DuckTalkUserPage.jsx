@@ -1,5 +1,5 @@
-import { useState, } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect} from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
 
 import NavBar from "../components/NavBar";
@@ -8,16 +8,47 @@ import DuckTalkChatCard from "../components/duckTalkComponents/DuckTalkChatCard"
 import DuckTalkExchangeCard from "../components/duckTalkComponents/DuckTalkExchangeCard";
 import shelfIcon from "../assets/shelfIcon.svg";
 
+import { getUserProfile } from "../apis/userApi";
+
 // 다른 사람 목데이터 불러오기
 import {
-  otherUserProfileData,
   otherUserChatPostsData,
   otherUserExchangePostsData,
 } from "../data/duckTalkMockData";
 
 function DuckTalkUserPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const params = new URLSearchParams(location.search);
+  const userId = params.get("id");
+
   const [activeTab, setActiveTab] = useState("chat"); // 'chat' | 'exchange'
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchUserProfile = async () => {
+      try {
+        const result = await getUserProfile(userId);
+
+        console.log(
+          "다른 유저 프로필 조회:",
+          result.data
+        );
+
+        setProfile(result.data);
+      } catch (error) {
+        console.error(
+          "다른 유저 프로필 조회 실패:",
+          error.response?.data || error
+        );
+      }
+    };
+
+    fetchUserProfile();
+  }, [userId]);
 
   return (
     <div className="min-h-screen bg-white pb-28">
@@ -46,8 +77,12 @@ function DuckTalkUserPage() {
       </header>
 
       {/* 2. 다른 사람 프로필 영역 */}
-      <DuckTalkProfile profile={otherUserProfileData} isMe={false} />
-
+      {profile && (
+        <DuckTalkProfile
+          profile={profile}
+          isMe={false}
+        />
+      )}
       {/* 3. 잡담 / 교환 탭 */}
       <div className="flex border-b border-[#EEEEEE] text-center">
         <button
