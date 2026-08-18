@@ -107,3 +107,21 @@ export const getExhibitionItem = async (
 
   return response.data;
 };
+
+export const getMyImages = async (
+  cursor,
+  size = 20
+) => {
+  const params = { size };
+
+  if (cursor) {
+    params.cursor = cursor;
+  }
+
+  const response = await api.get(
+    "/api/images/me",
+    { params }
+  );
+
+  return response.data;
+};

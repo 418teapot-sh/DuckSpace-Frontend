@@ -3,7 +3,8 @@ import { useGoodsStore } from "../../store/goodsStore";
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDisplayStore } from "../../store/displayStore";
-import { addExhibitionItem, getExhibitionItem, } from "../../apis/displayApi";
+import { useEffect } from "react";
+import { addExhibitionItem, getExhibitionItem, getMyImages } from "../../apis/displayApi";
 
 function DisplayList() {
     const location = useLocation();
@@ -14,6 +15,26 @@ function DisplayList() {
     const addItem = useDisplayStore((state) => state.addItem);
     const mode = location.state?.mode || "view";
     const goods = useGoodsStore((state) => state.goods);
+    const setGoods = useGoodsStore((state) => state.setGoods);
+
+    useEffect(() => {
+      const fetchMyImages = async () => {
+        try {
+          const result = await getMyImages();
+
+          console.log("보관함 조회 결과:", result.data);
+
+          setGoods(result.data.items || []);
+        } catch (error) {
+          console.error(
+            "보관함 조회 실패:",
+            JSON.stringify(error.response?.data, null, 2)
+          );
+        }
+      };
+
+      fetchMyImages();
+    }, [setGoods]);
 
     const handleSelectItem = async(good) => {
         try {
@@ -42,7 +63,7 @@ function DisplayList() {
           );
 
           console.log("단건 GET 결과:", getResult.data);
-          
+
           addItem({
               id: item.itemId,
               itemId: item.itemId,
