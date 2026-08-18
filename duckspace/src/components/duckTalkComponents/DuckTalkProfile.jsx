@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { IoCheckmarkCircle } from "react-icons/io5";
 
 function DuckTalkProfile({ profile, isMe = true }) {
   // 팔로우 상태 토글 (다른 사람 프로필용)
   const [isFollowing, setIsFollowing] = useState(profile.isFollowing || false);
-
+  const navigate = useNavigate();
+  
   return (
     <div className="flex flex-col items-center justify-center pt-5 pb-3 px-5">
       {/* 아바타 원 */}
@@ -44,6 +46,7 @@ function DuckTalkProfile({ profile, isMe = true }) {
         {isMe ? (
           <button
             type="button"
+            onClick={() => navigate("/ducktalk/profile/edit")}
             className="h-6 px-4 flex items-center justify-center rounded bg-[#FCFCFC] border border-[#A6C3F8] text-[11px] font-semibold leading-[17.6px] text-[#2F78FD] cursor-pointer"
           >
             프로필 편집
