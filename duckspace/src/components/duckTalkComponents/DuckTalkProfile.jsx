@@ -1,36 +1,131 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoCheckmarkCircle } from "react-icons/io5";
-import { followUser, unfollowUser } from "../../apis/followApi";
+import { followUser, unfollowUser, getFollowing } from "../../apis/followApi";
+import { getUserProfile, getMyProfile, } from "../../apis/userApi";
 
 function DuckTalkProfile({ profile, isMe = true }) {
-  // 팔로우 상태 토글 (다른 사람 프로필용) — isFollowing은 백엔드가 아직 안 내려줘서 당분간 로컬 state로만 관리
-  const [isFollowing, setIsFollowing] = useState(profile.isFollowing || false);
-  const navigate = useNavigate();
-  
-  const handleFollow = async () => {
-    try {
-      await followUser(profile.userId);
 
-      setIsFollowing(true);
+  // 팔로우 상태 토글 (다른 사람 프로필용) — isFollowing은 백엔드가 아직 안 내려줘서 당분간 로컬 state로만 관리
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [currentProfile, setCurrentProfile] = useState(profile || null);
+  const [followLoading, setFollowLoading] = useState(false);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setCurrentProfile(profile || null);
+  }, [profile]);
+
+  useEffect(() => {
+    if (isMe || !profile?.userId) return;
+
+    const fetchFollowStatus = async () => {
+      try {
+        // 1. 내 userId 조회
+        const myResult = await getMyProfile();
+
+        console.log("내 프로필 응답:", myResult);
+
+        const myProfile = myResult?.data ?? myResult;
+        const myUserId = myProfile?.userId;
+
+        if (!myUserId) {
+          console.error("내 userId를 찾을 수 없음:", myResult);
+          return;
+        }
+
+        // 2. 내가 팔로우하고 있는 사람들 조회
+        const followingResult = await getFollowing(myUserId);
+
+        console.log(
+          "내 팔로잉 목록:",
+          followingResult.data
+        );
+
+        // 아래 배열 위치는 실제 GET following 응답에 맞춰야 함
+        const followingData =
+          followingResult?.data ?? followingResult;
+
+        const followingList =
+          followingData?.items ??
+          (Array.isArray(followingData) ? followingData : []);
+
+        // 3. 현재 보고 있는 상대가 목록에 있는지 확인
+        const following = followingList.some(
+          (user) =>
+            Number(user.userId) ===
+            Number(profile.userId)
+        );
+
+        setIsFollowing(following);
+      } catch (error) {
+        console.error(
+          "팔로우 상태 조회 실패:",
+          error.response?.data || error
+        );
+      }
+    };
+
+    fetchFollowStatus();
+  }, [profile?.userId, isMe]);
+
+  const refreshProfile = async () => {
+    try {
+      const result = await getUserProfile(profile.userId);
+
+      console.log("프로필 재조회:",result);
+      setCurrentProfile(result);
     } catch (error) {
       console.error(
-        "팔로우 실패:",
+        "프로필 재조회 실패:",
         error.response?.data || error
       );
     }
   };
+  const handleFollow = async () => {
+    if (followLoading) return;
+
+    setIsFollowing(true);
+
+    try {
+      setFollowLoading(true);
+
+      await followUser(profile.userId);
+
+      await refreshProfile();
+    } catch (error) {
+      setIsFollowing(false);
+
+      console.error(
+        "팔로우 실패:",
+        error.response?.data || error
+      );
+    } finally {
+      setFollowLoading(false);
+    }
+  };
 
   const handleUnfollow = async () => {
+    if (followLoading) return;
+
+    setIsFollowing(false);
+
     try {
+      setFollowLoading(true);
+
       await unfollowUser(profile.userId);
 
-      setIsFollowing(false);
+      await refreshProfile();
     } catch (error) {
+      setIsFollowing(true);
+
       console.error(
         "언팔로우 실패:",
         error.response?.data || error
       );
+    } finally {
+      setFollowLoading(false);
     }
   };
 
@@ -64,9 +159,38 @@ function DuckTalkProfile({ profile, isMe = true }) {
       </div>
 
       {/* 팔로잉 / 팔로워 */}
+      {/* <div className="flex items-center gap-2 text-[12px] font-normal leading-[19.2px] text-[#A2A2A2] mb-3">
+        <span>
+          팔로잉 {currentProfile?.followingCount ?? profile?.followingCount ?? 0}
+        </span>
+        <span>
+          팔로워 {currentProfile?.followerCount ?? profile?.followerCount ?? 0}
+        </span>
+      </div> */}
       <div className="flex items-center gap-2 text-[12px] font-normal leading-[19.2px] text-[#A2A2A2] mb-3">
-        <span>팔로잉 {profile.followingCount}</span>
-        <span>팔로워 {profile.followerCount}</span>
+        <button
+          type="button"
+          onClick={() =>
+            navigate(
+              `/ducktalk/follow?userId=${profile.userId}&tab=following`
+            )
+          }
+          className="cursor-pointer"
+        >
+          팔로잉 {currentProfile?.followingCount ?? profile?.followingCount ?? 0}
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            navigate(
+              `/ducktalk/follow?userId=${profile.userId}&tab=followers`
+            )
+          }
+          className="cursor-pointer"
+        >
+          팔로워 {currentProfile?.followerCount ?? profile?.followerCount ?? 0}
+        </button>
       </div>
 
       {/* 버튼 (내 글: 프로필 편집 / 타인 글: 팔로우/팔로잉 토글) */}
@@ -83,6 +207,7 @@ function DuckTalkProfile({ profile, isMe = true }) {
           <button
             type="button"
             onClick={handleUnfollow}
+            disabled={followLoading}
             className="h-6 px-4 flex items-center justify-center rounded bg-[#FCFCFC] border border-[#A6C3F8] text-[11px] font-semibold leading-[17.6px] text-[#2F78FD] cursor-pointer"
           >
             팔로잉
@@ -90,7 +215,8 @@ function DuckTalkProfile({ profile, isMe = true }) {
         ) : (
           <button
             type="button"
-            onClick={() => setIsFollowing(true)}
+            onClick={handleFollow}
+            disabled={followLoading}
             className="h-6 px-4 flex items-center justify-center rounded bg-[#5791FB] border border-[#2F78FD] text-[11px] font-semibold leading-[17.6px] text-white cursor-pointer"
           >
             팔로우
