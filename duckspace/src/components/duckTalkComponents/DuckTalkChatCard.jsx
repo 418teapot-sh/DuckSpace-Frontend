@@ -26,6 +26,7 @@ function DuckTalkChatCard({ post }) {
   //     navigate("/ducktalk/mypage");
   //   }
   // };
+  //
   {/* 수정한 코드 여기부터  */}
   const handleAuthorClick = () => {
     if (post.mine) {
