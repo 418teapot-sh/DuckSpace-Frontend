@@ -3,7 +3,8 @@ import { useGoodsStore } from "../../store/goodsStore";
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDisplayStore } from "../../store/displayStore";
-import { addExhibitionItem, getExhibitionItem } from "../../apis/displayApi";
+import { addExhibitionItem, getExhibitionItem, getExhibitionItems, } from "../../apis/displayApi";
+import { useEffect, useState } from "react";
 
 function DisplayList() {
     const location = useLocation();
@@ -13,18 +14,33 @@ function DisplayList() {
 
     const addItem = useDisplayStore((state) => state.addItem);
     const mode = location.state?.mode || "view";
-    const goods = useGoodsStore((state) => state.goods);
-    // 테스트 코드 나중에 지울거/..
-    const testGoods = [
-      {
-        id: 1,
-        imageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg",
-        name: "테스트 굿즈",
-        price: 10000,
-        category: "테스트",
-        date: "2026.08.18",
-      },
-    ];
+    const [goods, setGoods] = useState([]);
+
+    useEffect(() => {
+      if (!exhibitionId) return;
+
+      const fetchGoods = async () => {
+        try {
+          const result = await getExhibitionItems(
+            exhibitionId
+          );
+
+          console.log(
+            "전시 굿즈 목록:",
+            result.data
+          );
+
+          setGoods(result.data.items || []);
+        } catch (error) {
+          console.error(
+            "전시 굿즈 목록 조회 실패:",
+            error.response?.data || error
+          );
+        }
+      };
+
+      fetchGoods();
+    }, [exhibitionId]);
 
     const handleSelectItem = async(good) => {
         try {
@@ -39,7 +55,7 @@ function DisplayList() {
                       rotation: 0,
                   },
                   imageUrl: good.imageUrl,
-                  itemName: good.name,
+                  itemName: good.itemName,
                   price: good.price ?? 0,
                   comment: "",
               }
@@ -113,9 +129,9 @@ function DisplayList() {
 
       {/* 굿즈 리스트 */}
       <div className="flex flex-col gap-4">
-        {testGoods.map((item) => (
+        {goods.map((item) => (
             <div
-                key={item.id}
+                key={item.itemId}
                 onClick={() => {
                     if (mode === "select") {
                         handleSelectItem(item);
@@ -129,7 +145,7 @@ function DisplayList() {
             <div className="flex w-[45%] items-center justify-center">
               <img
                 src={item.imageUrl}
-                alt={item.name}
+                alt={item.itemName}
                 className="h-36 w-36 object-contain"
               />
             </div>
@@ -137,7 +153,7 @@ function DisplayList() {
             {/* 굿즈 정보 */}
             <div className="flex flex-1 flex-col items-start">
               <div className="mb-4 rounded-tl-[16px] rounded-tr-[16px] rounded-br-[16px] rounded-bl-[0px] bg-[#2F78FD] px-4 py-2 text-sm font-medium text-white">
-                {item.category}
+                {item.status}
               </div>
 
               <p className="mb-1 text-base font-semibold">
@@ -145,11 +161,13 @@ function DisplayList() {
               </p>
 
               <p className="mb-1 text-xl font-bold">
-                {item.name}
+                {item.itemName}
               </p>
 
               <p className="mb-5 text-sm text-[#666666]">
-                {item.date}
+                {item.createdAt
+                  ? item.createdAt.slice(0, 10).replace(/-/g, ".")
+                  : ""}
               </p>
 
               <button className="text-sm text-[#B5B5B5]">

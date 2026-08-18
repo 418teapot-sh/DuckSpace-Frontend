@@ -5,7 +5,7 @@ import { useGoodsStore } from "../../store/goodsStore";
 
 {/* 아래는 개발용 코드 주석이 진짜 실전용 코드임 */}
 import { addExhibitionItem } from "../../apis/displayApi";
-// import { uploadExhibitionItem } from "../../apis/displayApi";
+// import { uploadExhibitionItem, getExhibitionItem } from "../../apis/displayApi";
 
 
 function DisplayUpload() {
@@ -69,12 +69,53 @@ function DisplayUpload() {
           data
         );
         console.log( "개발용 굿즈 등록 성공:", result.data);
-        // const result = await uploadExhibitionItem(
-        //   exhibitionId,
-        //   imageFile,
-        //   data
-        // );
-
+        
+        /*
+        const uploadResult = await uploadExhibitionItem(
+          exhibitionId,
+          imageFile,
+          data
+        );
+        console.log(
+          "실제 이미지 업로드 결과:",
+          uploadResult.data
+        );
+        const uploadedItem = uploadResult.data;
+        const itemId = uploadedItem.itemId;
+        let finalItem = uploadedItem;
+        // PENDING이면 2초마다 단건 GET
+        while (finalItem.status === "PENDING") {
+          await new Promise((resolve) =>
+            setTimeout(resolve, 2000)
+          );
+          const pollResult = await getExhibitionItem(
+            exhibitionId,
+            itemId
+          );
+          finalItem = pollResult.data;
+          console.log(
+            "굿즈 처리 상태:",
+            finalItem.status,
+            finalItem
+          );
+        }
+        // 처리 실패
+        if (finalItem.status === "FAILED") {
+          console.error(
+            "이미지 처리 실패:",
+            finalItem
+          );
+          alert("이미지 처리에 실패했습니다.");
+          return;
+        }
+        // 처리 완료
+        if (finalItem.status === "READY") {
+          console.log(
+            "굿즈 READY:",
+            finalItem
+          );
+        }
+        */
         console.log("굿즈 업로드 성공:", result.data);
 
         alert("굿즈가 등록되었습니다.");
