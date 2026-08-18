@@ -18,10 +18,11 @@ export const uploadImage = async (file) => {
 
 // ===== 잡담 게시판 =====
 
-export const getCasualPosts = async ({ keyword, cursor, size = 10 } = {}) => {
+export const getCasualPosts = async ({ keyword, cursor, size = 10, authorId } = {}) => {
   const params = { size };
   if (keyword) params.keyword = keyword;
   if (cursor) params.cursor = cursor;
+  if (authorId) params.authorId = authorId;
   const res = await api.get("/api/posts/casual", { params });
   return res.data.data;
 };
@@ -37,10 +38,11 @@ export const createCasualPost = async ({ content, hashtags = [], images = [] }) 
 
 // ===== 교환 게시판 =====
 
-export const getExchangePosts = async ({ keyword, cursor, size = 10 } = {}) => {
+export const getExchangePosts = async ({ keyword, cursor, size = 10, authorId } = {}) => {
   const params = { size };
   if (keyword) params.keyword = keyword;
   if (cursor) params.cursor = cursor;
+  if (authorId) params.authorId = authorId;
   const res = await api.get("/api/posts/exchange", { params });
   return res.data.data;
 };
@@ -106,6 +108,10 @@ export const reportPost = async (postId, { reason }) => {
   await api.post(`/api/posts/${postId}/report`, { reason });
 };
 
+export const reportComment = async (commentId, { reason } = {}) => {
+  await api.post(`/api/comments/${commentId}/report`, { reason });
+};
+
 // ===== 댓글 =====
 
 export const getComments = async (postId) => {
@@ -144,6 +150,12 @@ export const applyExchange = async (
 
 export const getApplications = async (filter = "sent") => {
   const res = await api.get("/api/applications", { params: { filter } });
+  return res.data.data;
+};
+
+/** 글쓴이만 조회할 수 있습니다. */
+export const getPostApplications = async (postId) => {
+  const res = await api.get(`/api/posts/exchange/${postId}/applications`);
   return res.data.data;
 };
 

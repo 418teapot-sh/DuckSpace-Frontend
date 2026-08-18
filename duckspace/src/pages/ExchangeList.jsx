@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
 
 import ExchangeListCard from "../components/duckTalkComponents/ExchangeListCard";
@@ -7,10 +7,15 @@ import { getApplications } from "../apis/postApi";
 
 function ExchangeList() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("sent");
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(
+    ["sent", "received", "progress", "completed"].includes(initialTab) ? initialTab : "sent"
+  );
   const [sentList, setSentList] = useState([]);
   const [receivedList, setReceivedList] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const tabList = [
     { key: "sent", label: "보낸 신청" },
@@ -39,7 +44,9 @@ function ExchangeList() {
     };
 
     fetchAllApplications();
-  }, []);
+  }, [refreshKey]);
+
+  const refreshApplications = () => setRefreshKey((key) => key + 1);
 
   // 2. 탭에 따라 프론트엔드에서 status 필드로 걸러내기 (클라이언트 필터링)
   const getFilteredItems = () => {
@@ -114,6 +121,7 @@ function ExchangeList() {
               key={item.id || item.applicationId}
               item={item}
               activeTab={activeTab}
+              onRefresh={refreshApplications}
             />
           ))
         )}

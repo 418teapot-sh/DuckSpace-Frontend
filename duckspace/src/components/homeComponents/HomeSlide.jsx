@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
-import { homeMockData } from "../../data/homeMockData";
 
-function HomeSlide() {
+function HomeSlide({ banners = [] }) {
   const sliderRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -37,6 +36,8 @@ function HomeSlide() {
     setCurrentIndex(closestIndex);
   };
 
+  if (banners.length === 0) return null;
+
   return (
     <section className="mt-5">
       {/* 슬라이드 영역 */}
@@ -54,12 +55,12 @@ function HomeSlide() {
           scrollbar-hide
         "
       >
-        {homeMockData.map((popup, index) => {
+        {banners.map((banner, index) => {
           const isActive = currentIndex === index;
 
           return (
             <div
-              key={popup.id}
+              key={banner.id}
               className={`
                 relative
                 shrink-0
@@ -77,20 +78,20 @@ function HomeSlide() {
               `}
             >
               <img
-                src={popup.imageUrl}
-                alt={popup.title}
+                src={banner.imageUrl}
+                alt={banner.title}
                 className="h-full w-full object-cover"
               />
 
               {/* 제목 + 현재 슬라이드 번호 */}
               <div className="absolute bottom-[8px] left-0 right-0 flex flex-col items-center justify-center">
                 <p className="text-lg font-semibold text-[#FCFCFC]">
-                  {popup.title}
+                  {banner.title}
                 </p>
 
                 {isActive && (
                   <p className="mt-1 text-sm text-[#FCFCFC]">
-                    {currentIndex + 1} / {homeMockData.length}
+                    {currentIndex + 1} / {banners.length}
                   </p>
                 )}
               </div>

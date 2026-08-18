@@ -10,7 +10,6 @@ function DuckTalkProfileEdit() {
 
   const [nickname, setNickname] = useState("");
   const [profileImageUrl, setProfileImageUrl] = useState("");
-
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -18,10 +17,8 @@ function DuckTalkProfileEdit() {
       try {
         const result = await getMyProfile();
 
-        setNickname(result.data.nickname || "");
-        setProfileImageUrl(
-          result.data.profileImageUrl || ""
-        );
+        setNickname(result.nickname || "");
+        setProfileImageUrl(result.profileImageUrl || "");
       } catch (error) {
         console.error(
           "프로필 조회 실패:",
@@ -35,7 +32,6 @@ function DuckTalkProfileEdit() {
 
   const handleImageChange = async (e) => {
     const file = e.target.files?.[0];
-
     if (!file) return;
 
     const previewUrl = URL.createObjectURL(file);
@@ -43,18 +39,11 @@ function DuckTalkProfileEdit() {
 
     try {
       setUploading(true);
-
       const imageUrl = await uploadImage(file);
-
       setProfileImageUrl(imageUrl);
-
       URL.revokeObjectURL(previewUrl);
     } catch (error) {
-      console.error(
-        "프로필 이미지 업로드 실패:",
-        error.response?.data || error
-      );
-
+      console.error("프로필 이미지 업로드 실패:", error.response?.data || error);
       alert("이미지 업로드 중 오류가 발생했습니다.");
     } finally {
       setUploading(false);
@@ -153,9 +142,9 @@ function DuckTalkProfileEdit() {
           type="button"
           onClick={handleSubmit}
           disabled={uploading}
-          className="flex h-6 cursor-pointer items-center justify-center rounded border border-[#2F78FD] bg-[#5791FB] px-4 text-[11px] font-semibold text-white"
+          className="flex h-6 cursor-pointer items-center justify-center rounded border border-[#2F78FD] bg-[#5791FB] px-4 text-[11px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
-            {uploading ? "업로드 중..." : "완료"}
+          {uploading ? "업로드 중..." : "완료"}
         </button>
       </div>
 

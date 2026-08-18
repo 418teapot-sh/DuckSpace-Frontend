@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { IoCheckmarkCircle } from "react-icons/io5";
 
 function DuckTalkProfile({ profile, isMe = true }) {
-  // 팔로우 상태 토글 (다른 사람 프로필용)
+  // 팔로우 상태 토글 (다른 사람 프로필용) — isFollowing은 백엔드가 아직 안 내려줘서 당분간 로컬 state로만 관리
   const [isFollowing, setIsFollowing] = useState(profile.isFollowing || false);
   const navigate = useNavigate();
   
@@ -28,11 +28,11 @@ function DuckTalkProfile({ profile, isMe = true }) {
         </span>
       </div>
 
-      {/* 신뢰도 | 후기 */}
+      {/* 신뢰도 | 후기 — 백엔드 스코프 밖이라 당분간 보류, 값 없으면 자리만 채움 */}
       <div className="flex items-center gap-1 text-[14px] font-semibold leading-[21px] text-[#2F78FD] mb-2">
-        <span>신뢰도 98</span>
+        <span>신뢰도 {profile.score ?? "-"}</span>
         <span>|</span>
-        <span>후기 5개</span>
+        <span>후기 {profile.reviewCount ?? 0}개</span>
       </div>
 
       {/* 팔로잉 / 팔로워 */}

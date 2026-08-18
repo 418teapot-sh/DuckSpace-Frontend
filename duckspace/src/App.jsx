@@ -11,6 +11,7 @@ import DuckTalkUserPage from "./pages/DuckTalkUserPage";
 import ExchangeApply from "./pages/ExchangeApply";
 import ExchangeList from "./pages/ExchangeList";       // 교환 목록 페이지
 import ExchangeDetail from "./pages/ExchangeDetail";   // 교환 상세 페이지
+import CasualPostDetail from "./pages/CasualPostDetail"; // 잡담 게시글 상세/댓글 페이지
 import Display from "./pages/Display";
 import PopupSchedule from "./pages/PopupSchedule";
 import PopupWishlist from "./pages/PopupWishlist";
@@ -18,7 +19,6 @@ import Login from "./pages/Login";
 import Chat from "./pages/Chat"; 
 
 import ChatRoom from "./pages/chatPage/ChatRoom"; 
-
 import PostTextPages from './pages/PostTextPages';
 import PostExchangePages from './pages/PostExchangePages';
 import DisplayList from './pages/displayPage/DisplayList';
@@ -56,6 +56,9 @@ function App() {
 
         {/* 교환 상세 페이지 라우트 */}
         <Route path="/ducktalk/exchange/detail/:id" element={<LoginRoute> <ExchangeDetail /> </LoginRoute>} />
+
+        {/* 잡담 게시글 상세/댓글 페이지 라우트 */}
+        <Route path="/ducktalk/post/:id" element={<LoginRoute> <CasualPostDetail /> </LoginRoute>} />
 
         <Route path="/display" element={<LoginRoute> <Display /> </LoginRoute>} />
 

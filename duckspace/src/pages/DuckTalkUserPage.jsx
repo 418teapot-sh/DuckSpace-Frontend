@@ -1,5 +1,5 @@
-import { useState, useEffect} from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
 
 import NavBar from "../components/NavBar";
@@ -9,46 +9,50 @@ import DuckTalkExchangeCard from "../components/duckTalkComponents/DuckTalkExcha
 import shelfIcon from "../assets/shelfIcon.svg";
 
 import { getUserProfile } from "../apis/userApi";
-
-// 다른 사람 목데이터 불러오기
-import {
-  otherUserChatPostsData,
-  otherUserExchangePostsData,
-} from "../data/duckTalkMockData";
+import { getCasualPosts, getExchangePosts } from "../apis/postApi";
 
 function DuckTalkUserPage() {
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const params = new URLSearchParams(location.search);
-  const userId = params.get("id");
+  const [searchParams] = useSearchParams();
+  const userId = searchParams.get("id");
 
   const [activeTab, setActiveTab] = useState("chat"); // 'chat' | 'exchange'
   const [profile, setProfile] = useState(null);
+  const [chatPosts, setChatPosts] = useState([]);
+  const [exchangePosts, setExchangePosts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
+  // 해당 유저 프로필 조회
+  useEffect(() => {
+    if (!userId) return;
+    getUserProfile(userId)
+      .then(setProfile)
+      .catch((error) => console.error("유저 프로필 조회 실패:", error));
+  }, [userId]);
+
+  // 탭에 맞춰 해당 유저가 쓴 글만 조회 (authorId로 필터링)
   useEffect(() => {
     if (!userId) return;
 
-    const fetchUserProfile = async () => {
+    const fetchUserPosts = async () => {
       try {
-        const result = await getUserProfile(userId);
-
-        console.log(
-          "다른 유저 프로필 조회:",
-          result.data
-        );
-
-        setProfile(result.data);
+        setLoading(true);
+        if (activeTab === "chat") {
+          const data = await getCasualPosts({ authorId: userId });
+          setChatPosts(data || []);
+        } else {
+          const data = await getExchangePosts({ authorId: userId });
+          setExchangePosts(data || []);
+        }
       } catch (error) {
-        console.error(
-          "다른 유저 프로필 조회 실패:",
-          error.response?.data || error
-        );
+        console.error("유저 게시글 조회 실패:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchUserProfile();
-  }, [userId]);
+    fetchUserPosts();
+  }, [userId, activeTab]);
 
   return (
     <div className="min-h-screen bg-white pb-28">
@@ -77,12 +81,8 @@ function DuckTalkUserPage() {
       </header>
 
       {/* 2. 다른 사람 프로필 영역 */}
-      {profile && (
-        <DuckTalkProfile
-          profile={profile}
-          isMe={false}
-        />
-      )}
+      {profile && <DuckTalkProfile profile={profile} isMe={false} />}
+
       {/* 3. 잡담 / 교환 탭 */}
       <div className="flex border-b border-[#EEEEEE] text-center">
         <button
@@ -111,17 +111,27 @@ function DuckTalkUserPage() {
 
       {/* 4. 게시글 목록 영역 */}
       <main className="flex flex-col gap-3 px-5 pt-4">
-        {activeTab === "chat" ? (
-          otherUserChatPostsData.map((post) => (
-            <DuckTalkChatCard key={post.id} post={post} />
-          ))
+        {loading ? (
+          <div className="py-20 text-center text-sm text-[#A2A2A2]">
+            불러오는 중...
+          </div>
+        ) : activeTab === "chat" ? (
+          chatPosts.length === 0 ? (
+            <div className="py-20 text-center text-sm text-[#A2A2A2]">
+              작성한 잡담 글이 없습니다.
+            </div>
+          ) : (
+            chatPosts.map((post) => (
+              <DuckTalkChatCard key={post.id} post={post} mode="otherUser" />
+            ))
+          )
+        ) : exchangePosts.length === 0 ? (
+          <div className="py-20 text-center text-sm text-[#A2A2A2]">
+            작성한 교환 글이 없습니다.
+          </div>
         ) : (
-          otherUserExchangePostsData.map((post) => (
-            <DuckTalkExchangeCard
-              key={post.id}
-              post={post}
-              mode="otherUser"
-            />
+          exchangePosts.map((post) => (
+            <DuckTalkExchangeCard key={post.id} post={post} mode="otherUser" />
           ))
         )}
       </main>

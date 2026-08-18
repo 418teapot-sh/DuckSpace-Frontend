@@ -1,9 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { IoChevronForward } from "react-icons/io5";
-import exhibitionImage from "../../assets/displaybackgrounds/display_back.png";
 
-function HomeExhibition() {
+function HomeExhibition({ exhibitions = [] }) {
   const navigate = useNavigate();
+  const [big, ...rest] = exhibitions;
+  const smalls = rest.slice(0, 2);
+
+  if (!big) return null;
 
   return (
     <section className="mt-7 px-5">
@@ -26,40 +29,36 @@ function HomeExhibition() {
       {/* 전시장 카드 */}
       <div className="flex gap-4">
         {/* 왼쪽 큰 카드 */}
-        <div 
+        <div
           onClick={() => navigate("/search")}
-          className="h-[300px] w-[230px] shrink-0 overflow-hidden rounded-[8px] cursor-pointer"
+          className="h-[300px] w-[230px] shrink-0 overflow-hidden rounded-[8px] cursor-pointer bg-[#CDDCF7]"
         >
-          <img
-            src={exhibitionImage}
-            alt="유저 전시장"
-            className="h-full w-full object-cover"
-          />
+          {big.thumbnailUrl && (
+            <img
+              src={big.thumbnailUrl}
+              alt={big.name}
+              className="h-full w-full object-cover"
+            />
+          )}
         </div>
 
         {/* 오른쪽 작은 카드 2개 */}
         <div className="flex flex-col gap-4">
-          <div 
-            onClick={() => navigate("/search")}
-            className="h-[140px] w-[110px] overflow-hidden rounded-[8px] cursor-pointer"
-          >
-            <img
-              src={exhibitionImage}
-              alt="유저 전시장"
-              className="h-full w-full object-cover"
-            />
-          </div>
-
-          <div 
-            onClick={() => navigate("/search")}
-            className="h-[140px] w-[110px] overflow-hidden rounded-[8px] cursor-pointer"
-          >
-            <img
-              src={exhibitionImage}
-              alt="유저 전시장"
-              className="h-full w-full object-cover"
-            />
-          </div>
+          {smalls.map((exhibition) => (
+            <div
+              key={exhibition.exhibitionId}
+              onClick={() => navigate("/search")}
+              className="h-[140px] w-[110px] overflow-hidden rounded-[8px] cursor-pointer bg-[#CDDCF7]"
+            >
+              {exhibition.thumbnailUrl && (
+                <img
+                  src={exhibition.thumbnailUrl}
+                  alt={exhibition.name}
+                  className="h-full w-full object-cover"
+                />
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </section>

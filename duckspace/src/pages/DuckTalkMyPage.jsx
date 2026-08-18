@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoChevronBack, IoSwapHorizontal } from "react-icons/io5";
 
@@ -8,37 +8,51 @@ import DuckTalkProfile from "../components/duckTalkComponents/DuckTalkProfile";
 import DuckTalkChatCard from "../components/duckTalkComponents/DuckTalkChatCard";
 import DuckTalkExchangeCard from "../components/duckTalkComponents/DuckTalkExchangeCard";
 
-import {
-  myChatPostsData,
-  myExchangePostsData,
-} from "../data/duckTalkMockData";
-
 import { getMyProfile } from "../apis/userApi";
+import { getCasualPosts, getExchangePosts } from "../apis/postApi";
 
 function DuckTalkMyPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("chat"); // 'chat' | 'exchange'
 
   const [profile, setProfile] = useState(null);
+  const [chatPosts, setChatPosts] = useState([]);
+  const [exchangePosts, setExchangePosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
+  // 내 프로필 조회
   useEffect(() => {
-    const fetchMyProfile = async () => {
+    getMyProfile()
+      .then(setProfile)
+      .catch((error) => console.error("내 프로필 조회 실패:", error));
+  }, []);
+
+  // 내 프로필이 로드된 후, 탭에 맞춰 내가 쓴 글만 조회 (authorId로 필터링)
+  useEffect(() => {
+    if (!profile?.userId) return;
+
+    const fetchMyPosts = async () => {
       try {
-        const result = await getMyProfile();
-
-        console.log("내 프로필 조회:", result.data);
-
-        setProfile(result.data);
+        setLoading(true);
+        if (activeTab === "chat") {
+          const data = await getCasualPosts({ authorId: profile.userId });
+          setChatPosts(data || []);
+        } else {
+          const data = await getExchangePosts({ authorId: profile.userId });
+          setExchangePosts(data || []);
+        }
       } catch (error) {
-        console.error(
-          "내 프로필 조회 실패:",
-          error.response?.data || error
-        );
+        console.error("내가 쓴 글 조회 실패:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchMyProfile();
-  }, []);
+    fetchMyPosts();
+  }, [profile, activeTab, refreshKey]);
+
+  const refreshMyPosts = useCallback(() => setRefreshKey((key) => key + 1), []);
 
   return (
     <div className="min-h-screen bg-white pb-28">
@@ -67,12 +81,7 @@ function DuckTalkMyPage() {
       </header>
 
       {/* 2. 내 프로필 영역 */}
-      {profile && (
-        <DuckTalkProfile
-          profile={profile}
-          isMe={true}
-        />
-      )}
+      {profile && <DuckTalkProfile profile={profile} isMe={true} />}
 
       {/* 3. 잡담 / 교환 탭 */}
       <div className="flex border-b border-[#EEEEEE] text-center">
@@ -102,16 +111,36 @@ function DuckTalkMyPage() {
 
       {/* 4. 게시글 리스트 */}
       <main className="flex flex-col gap-3 px-5 pt-4">
-        {activeTab === "chat" ? (
-          myChatPostsData.map((post) => (
-            <DuckTalkChatCard key={post.id} post={post} />
-          ))
+        {loading ? (
+          <div className="py-20 text-center text-sm text-[#A2A2A2]">
+            불러오는 중...
+          </div>
+        ) : activeTab === "chat" ? (
+          chatPosts.length === 0 ? (
+            <div className="py-20 text-center text-sm text-[#A2A2A2]">
+              작성한 잡담 글이 없습니다.
+            </div>
+          ) : (
+            chatPosts.map((post) => (
+              <DuckTalkChatCard
+                key={post.id}
+                post={post}
+                mode="myPage"
+                onRefresh={refreshMyPosts}
+              />
+            ))
+          )
+        ) : exchangePosts.length === 0 ? (
+          <div className="py-20 text-center text-sm text-[#A2A2A2]">
+            작성한 교환 글이 없습니다.
+          </div>
         ) : (
-          myExchangePostsData.map((post) => (
+          exchangePosts.map((post) => (
             <DuckTalkExchangeCard
               key={post.id}
               post={post}
               mode="myPage"
+              onRefresh={refreshMyPosts}
             />
           ))
         )}
