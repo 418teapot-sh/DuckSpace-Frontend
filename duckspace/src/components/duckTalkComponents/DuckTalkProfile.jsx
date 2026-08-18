@@ -1,12 +1,40 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoCheckmarkCircle } from "react-icons/io5";
+import { followUser, unfollowUser } from "../../apis/followApi";
 
 function DuckTalkProfile({ profile, isMe = true }) {
   // 팔로우 상태 토글 (다른 사람 프로필용) — isFollowing은 백엔드가 아직 안 내려줘서 당분간 로컬 state로만 관리
   const [isFollowing, setIsFollowing] = useState(profile.isFollowing || false);
   const navigate = useNavigate();
   
+  const handleFollow = async () => {
+    try {
+      await followUser(profile.userId);
+
+      setIsFollowing(true);
+    } catch (error) {
+      console.error(
+        "팔로우 실패:",
+        error.response?.data || error
+      );
+    }
+  };
+
+  const handleUnfollow = async () => {
+    try {
+      await unfollowUser(profile.userId);
+
+      setIsFollowing(false);
+    } catch (error) {
+      console.error(
+        "언팔로우 실패:",
+        error.response?.data || error
+      );
+    }
+  };
+
+
   return (
     <div className="flex flex-col items-center justify-center pt-5 pb-3 px-5">
       {/* 아바타 원 */}
@@ -54,7 +82,7 @@ function DuckTalkProfile({ profile, isMe = true }) {
         ) : isFollowing ? (
           <button
             type="button"
-            onClick={() => setIsFollowing(false)}
+            onClick={handleUnfollow}
             className="h-6 px-4 flex items-center justify-center rounded bg-[#FCFCFC] border border-[#A6C3F8] text-[11px] font-semibold leading-[17.6px] text-[#2F78FD] cursor-pointer"
           >
             팔로잉
