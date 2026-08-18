@@ -4,7 +4,7 @@ export const getMyProfile = async () => {
   const response = await api.get("/api/users/me");
   return response.data;
 };
-
+// 주석 태스트
 export const updateMyProfile = async ({
   nickname,
   profileImageUrl,
