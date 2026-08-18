@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoChevronBack, IoSwapHorizontal } from "react-icons/io5";
 
@@ -9,14 +9,36 @@ import DuckTalkChatCard from "../components/duckTalkComponents/DuckTalkChatCard"
 import DuckTalkExchangeCard from "../components/duckTalkComponents/DuckTalkExchangeCard";
 
 import {
-  myProfileData,
   myChatPostsData,
   myExchangePostsData,
 } from "../data/duckTalkMockData";
 
+import { getMyProfile } from "../apis/userApi";
+
 function DuckTalkMyPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("chat"); // 'chat' | 'exchange'
+
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    const fetchMyProfile = async () => {
+      try {
+        const result = await getMyProfile();
+
+        console.log("내 프로필 조회:", result.data);
+
+        setProfile(result.data);
+      } catch (error) {
+        console.error(
+          "내 프로필 조회 실패:",
+          error.response?.data || error
+        );
+      }
+    };
+
+    fetchMyProfile();
+  }, []);
 
   return (
     <div className="min-h-screen bg-white pb-28">
@@ -45,7 +67,12 @@ function DuckTalkMyPage() {
       </header>
 
       {/* 2. 내 프로필 영역 */}
-      <DuckTalkProfile profile={myProfileData} isMe={true} />
+      {profile && (
+        <DuckTalkProfile
+          profile={profile}
+          isMe={true}
+        />
+      )}
 
       {/* 3. 잡담 / 교환 탭 */}
       <div className="flex border-b border-[#EEEEEE] text-center">
