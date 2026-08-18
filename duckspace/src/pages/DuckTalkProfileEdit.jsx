@@ -3,12 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { IoChevronBack, IoAdd } from "react-icons/io5";
 
 import { getMyProfile, updateMyProfile } from "../apis/userApi";
+import { uploadImage } from "../apis/postApi";
 
 function DuckTalkProfileEdit() {
   const navigate = useNavigate();
 
   const [nickname, setNickname] = useState("");
   const [profileImageUrl, setProfileImageUrl] = useState("");
+
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -29,6 +32,34 @@ function DuckTalkProfileEdit() {
 
     fetchProfile();
   }, []);
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    const previewUrl = URL.createObjectURL(file);
+    setProfileImageUrl(previewUrl);
+
+    try {
+      setUploading(true);
+
+      const imageUrl = await uploadImage(file);
+
+      setProfileImageUrl(imageUrl);
+
+      URL.revokeObjectURL(previewUrl);
+    } catch (error) {
+      console.error(
+        "프로필 이미지 업로드 실패:",
+        error.response?.data || error
+      );
+
+      alert("이미지 업로드 중 오류가 발생했습니다.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!nickname.trim()) {
@@ -89,6 +120,7 @@ function DuckTalkProfileEdit() {
           <input
             type="file"
             accept="image/*"
+            onChange={handleImageChange}
             className="hidden"
           />
         </label>
@@ -120,9 +152,10 @@ function DuckTalkProfileEdit() {
         <button
           type="button"
           onClick={handleSubmit}
+          disabled={uploading}
           className="flex h-6 cursor-pointer items-center justify-center rounded border border-[#2F78FD] bg-[#5791FB] px-4 text-[11px] font-semibold text-white"
         >
-          완료
+            {uploading ? "업로드 중..." : "완료"}
         </button>
       </div>
 
