@@ -43,7 +43,11 @@ function DisplayGoods() {
         {/* 새 굿즈 등록 */}
         <button
           className="flex h-[60px] w-[60px] shrink-0 cursor-pointer items-center justify-center rounded-xl border border-[#EEEEEE]"
-          onClick={() => navigate("/display/upload")}
+          onClick={() =>
+            navigate("/display/upload", {
+            state: { exhibitionId },
+            })
+          }
         >
           <IoAdd size={30} />
         </button>

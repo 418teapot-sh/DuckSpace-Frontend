@@ -1,10 +1,17 @@
 import { useState } from "react";
 import { IoChevronBack, IoAdd } from "react-icons/io5";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useGoodsStore } from "../../store/goodsStore";
+
+{/* 아래는 개발용 코드 주석이 진짜 실전용 코드임 */}
+import { addExhibitionItem } from "../../apis/displayApi";
+// import { uploadExhibitionItem, getExhibitionItem } from "../../apis/displayApi";
+
 
 function DisplayUpload() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const exhibitionId = location.state?.exhibitionId;
 
     const [name, setName] = useState("");
     const [price, setPrice] = useState("");
@@ -12,7 +19,6 @@ function DisplayUpload() {
 
     const [imageFile, setImageFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState("");
-    const addGoods = useGoodsStore((state) => state.addGoods);
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -25,31 +31,104 @@ function DisplayUpload() {
         setPreviewUrl(imageUrl);
     };
 
-    const handleSubmit = () => {
-        if (!imageFile) {
-            alert("굿즈 이미지를 등록해주세요.");
-            return;
-        }
+    const handleSubmit = async () => {
+      if (!imageFile) {
+        alert("굿즈 이미지를 등록해주세요.");
+        return;
+      }
 
-        if (!name.trim()) {
-            alert("굿즈 이름을 입력해주세요.");
-            return;
-        }
+      if (!name.trim()) {
+        alert("굿즈 이름을 입력해주세요.");
+        return;
+      }
 
-        const newGood = {
-            id: Date.now(),
-            name: name.trim(),
-            category: comment.trim() || "새 굿즈",
-            price: price ? Number(price) : 0,
-            date: new Date().toLocaleDateString("ko-KR"),
-            imageUrl: previewUrl,
+      if (!exhibitionId) {
+        alert("장식장 정보를 찾을 수 없습니다.");
+        return;
+      }
+
+      try {
+        const data = {
+          placement: {
+            posX: 100 / 360,
+            posY: 100 / 400,
+            width: 70 / 360,
+            height: 70 / 400,
+            rotation: 0,
+          },
+          /* 아래 url은 개발용, 실전에서는 삭제 */
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg",
+
+          itemName: name.trim(),
+          price: price ? Number(price) : 0,
+          comment: comment.trim(),
         };
-
-        addGoods(newGood);
+        // 이거도 개발용 코드, 후에 전체 삭제후 아래 주석 코드 사용
+        const result = await addExhibitionItem(
+          exhibitionId,
+          data
+        );
+        console.log( "개발용 굿즈 등록 성공:", result.data);
+        
+        /*
+        const uploadResult = await uploadExhibitionItem(
+          exhibitionId,
+          imageFile,
+          data
+        );
+        console.log(
+          "실제 이미지 업로드 결과:",
+          uploadResult.data
+        );
+        const uploadedItem = uploadResult.data;
+        const itemId = uploadedItem.itemId;
+        let finalItem = uploadedItem;
+        // PENDING이면 2초마다 단건 GET
+        while (finalItem.status === "PENDING") {
+          await new Promise((resolve) =>
+            setTimeout(resolve, 2000)
+          );
+          const pollResult = await getExhibitionItem(
+            exhibitionId,
+            itemId
+          );
+          finalItem = pollResult.data;
+          console.log(
+            "굿즈 처리 상태:",
+            finalItem.status,
+            finalItem
+          );
+        }
+        // 처리 실패
+        if (finalItem.status === "FAILED") {
+          console.error(
+            "이미지 처리 실패:",
+            finalItem
+          );
+          alert("이미지 처리에 실패했습니다.");
+          return;
+        }
+        // 처리 완료
+        if (finalItem.status === "READY") {
+          console.log(
+            "굿즈 READY:",
+            finalItem
+          );
+        }
+        */
+        console.log("굿즈 업로드 성공:", result.data);
 
         alert("굿즈가 등록되었습니다.");
 
         navigate("/display");
+      } catch (error) {
+        console.error(
+          "굿즈 업로드 실패:",
+          error.response?.data || error
+        );
+
+        alert("굿즈 등록에 실패했습니다.");
+      }
     };
 
   return (

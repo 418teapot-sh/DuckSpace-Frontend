@@ -11,6 +11,8 @@ import closeIcon from "../assets/displayIcon/close.svg";
 import addIcon from "../assets/displayIcon/add.svg";
 import saveIcon from "../assets/displayIcon/save.svg";
 
+import { updateExhibitionItemPosition } from "../apis/displayApi";
+// 테스트
 function DraggableImage({ item, onChange, isEditing, isSelected, onSelect, }) {  
     const [image] = useImage(item.src);
     const imageRef = useRef(null);
@@ -133,7 +135,7 @@ function CircleButton({ x, y, icon, onClick }) {
   );
 }
 
-function DisplayEdit() {
+function DisplayEdit({ exhibitionId }) {
 
     const navigate = useNavigate();
     const [displayBack] = useImage(displayBackImg);
@@ -149,29 +151,47 @@ function DisplayEdit() {
     const setIsEditing = useDisplayStore((state) => state.setIsEditing);
 
     const [selectedId, setSelectedId] = useState(null);
-
-    useEffect(() => {
-        if (isEditing) return;
-        const saved = localStorage.getItem("displayItems");
-
-        if (saved) {
-            setItems(JSON.parse(saved));
-        } else{
-            setItems([]);
-        }
-    }, []);
+    const [originalItems, setOriginalItems] = useState([]);
 
     
-    const handleSave = () => {
-        localStorage.setItem(
-        "displayItems",
-        JSON.stringify(items)
-        );
 
-        alert("저장되었습니다.")
+    
+    const handleSave = async () => {
+        try {
+            const requests = items.map((item) => {
+            const placement = {
+                posX: item.x / 360,
+                posY: item.y / 400,
+                width: item.width / 360,
+                height: item.height / 400,
+                rotation: item.rotation ?? 0,
+            };
 
-        setIsEditing(false);
-        setSelectedId(null);
+            return updateExhibitionItemPosition(
+                exhibitionId,
+                item.itemId,
+                placement
+            );
+            });
+
+            await Promise.all(requests);
+
+            alert("저장되었습니다.");
+
+            setIsEditing(false);
+            setSelectedId(null);
+
+            setOriginalItems(
+            items.map((item) => ({ ...item }))
+            );
+        } catch (error) {
+            console.error(
+            "장식장 위치 저장 실패:",
+            error.response?.data || error
+            );
+
+            alert("저장에 실패했습니다.");
+        }
     };
 
   return (
@@ -204,12 +224,9 @@ function DisplayEdit() {
                     y={360}
                     icon={addImage}
                     onClick={() => {
-                        const saved = localStorage.getItem("displayItems");
-                        if (saved) {
-                            setItems(JSON.parse(saved));
-                        } else {
-                            setItems([]);
-                        }
+                        setOriginalItems(
+                            items.map((item) => ({ ...item }))
+                        );
                         setIsEditing(true);
                         setSelectedId(null);
                     }}
@@ -222,12 +239,8 @@ function DisplayEdit() {
                         y={225}
                         icon={closeImage}
                         onClick={() => {
-                            const saved = localStorage.getItem("displayItems");
-                            if (saved) {
-                                setItems(JSON.parse(saved));
-                            } else {
-                                setItems([]);
-                            }
+                            setItems(originalItems);
+
                             setIsEditing(false);
                             setSelectedId(null);
                         }}
@@ -241,7 +254,10 @@ function DisplayEdit() {
                         onClick={() => {
                             console.log("객체 추가");
                             navigate("/display/list", {
-                                state: { mode: "select" },
+                                state: {  
+                                    mode: "select",
+                                    exhibitionId,
+                                },
                             });
                         }}
                     />

@@ -1,8 +1,7 @@
 import { create } from "zustand";
-import displayMockData from "../data/displayMockData";
 
 export const useGoodsStore = create((set) => ({
-  goods: displayMockData,
+  goods: [],
 
   addGoods: (good) =>
     set((state) => ({

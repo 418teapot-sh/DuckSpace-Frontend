@@ -3,28 +3,90 @@ import { useGoodsStore } from "../../store/goodsStore";
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDisplayStore } from "../../store/displayStore";
+import { addExhibitionItem, getExhibitionItem, getExhibitionItems, } from "../../apis/displayApi";
+import { useEffect, useState } from "react";
 
 function DisplayList() {
     const location = useLocation();
     const navigate = useNavigate();
+
+    const exhibitionId = location.state?.exhibitionId;
+
     const addItem = useDisplayStore((state) => state.addItem);
     const mode = location.state?.mode || "view";
-    const goods = useGoodsStore((state) => state.goods);
+    const [goods, setGoods] = useState([]);
 
-    const handleSelectItem = (good) => {
-        const newItem = {
-            id: Date.now(),
-            goodsId: good.id,
-            src: good.imageUrl,
-            x: 100,
-            y: 100,
-            width: 70,
-            height: 70,
-            rotation: 0,
-        };
+    useEffect(() => {
+      if (!exhibitionId) return;
 
-        addItem(newItem);
-        navigate("/display");
+      const fetchGoods = async () => {
+        try {
+          const result = await getExhibitionItems(
+            exhibitionId
+          );
+
+          console.log(
+            "전시 굿즈 목록:",
+            result.data
+          );
+
+          setGoods(result.data.items || []);
+        } catch (error) {
+          console.error(
+            "전시 굿즈 목록 조회 실패:",
+            error.response?.data || error
+          );
+        }
+      };
+
+      fetchGoods();
+    }, [exhibitionId]);
+
+    const handleSelectItem = async(good) => {
+        try {
+          const result = await addExhibitionItem(
+              exhibitionId,
+              {
+                  placement: {
+                      posX: 100 / 360,
+                      posY: 100 / 400,
+                      width: 70 / 360,
+                      height: 70 / 400,
+                      rotation: 0,
+                  },
+                  imageUrl: good.imageUrl,
+                  itemName: good.itemName,
+                  price: good.price ?? 0,
+                  comment: "",
+              }
+          );
+          const item = result.data;
+          console.log("POST 결과:", item);
+
+          const getResult = await getExhibitionItem(
+            exhibitionId,
+            item.itemId
+          );
+
+          console.log("단건 GET 결과:", getResult.data);
+
+          addItem({
+              id: item.itemId,
+              itemId: item.itemId,
+              src: item.imageUrl,
+              x: item.posX * 360,
+              y: item.posY * 400,
+              width: item.width * 360,
+              height: item.height * 400,
+              rotation: item.rotation ?? 0,
+          });
+          navigate("/display");
+      } catch (error) {
+          console.error(
+              "굿즈 배치 실패:",
+              error.response?.data || error
+          );
+      }
     };
 
   return (
@@ -40,7 +102,13 @@ function DisplayList() {
 
         <h1 className="text-xl font-bold">장식장</h1>
 
-        <button>
+        <button
+          onClick={() =>
+            navigate("/display/upload", {
+              state: { exhibitionId },
+            })
+          }
+        >
           <IoAdd size={32} />
         </button>
       </div>
@@ -63,7 +131,7 @@ function DisplayList() {
       <div className="flex flex-col gap-4">
         {goods.map((item) => (
             <div
-                key={item.id}
+                key={item.itemId}
                 onClick={() => {
                     if (mode === "select") {
                         handleSelectItem(item);
@@ -77,7 +145,7 @@ function DisplayList() {
             <div className="flex w-[45%] items-center justify-center">
               <img
                 src={item.imageUrl}
-                alt={item.name}
+                alt={item.itemName}
                 className="h-36 w-36 object-contain"
               />
             </div>
@@ -85,7 +153,7 @@ function DisplayList() {
             {/* 굿즈 정보 */}
             <div className="flex flex-1 flex-col items-start">
               <div className="mb-4 rounded-tl-[16px] rounded-tr-[16px] rounded-br-[16px] rounded-bl-[0px] bg-[#2F78FD] px-4 py-2 text-sm font-medium text-white">
-                {item.category}
+                {item.status}
               </div>
 
               <p className="mb-1 text-base font-semibold">
@@ -93,11 +161,13 @@ function DisplayList() {
               </p>
 
               <p className="mb-1 text-xl font-bold">
-                {item.name}
+                {item.itemName}
               </p>
 
               <p className="mb-5 text-sm text-[#666666]">
-                {item.date}
+                {item.createdAt
+                  ? item.createdAt.slice(0, 10).replace(/-/g, ".")
+                  : ""}
               </p>
 
               <button className="text-sm text-[#B5B5B5]">
