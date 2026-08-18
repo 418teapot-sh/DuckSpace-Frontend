@@ -17,7 +17,7 @@ function DuckTalkChatCard({ post }) {
     ? post.createdAt.slice(0, 10).replace(/-/g, ".")
     : "";
   {/* 수정한 코드 여기까지  */}
-
+  // 배포하기 위해서 주석다는 중
   // 작성자 클릭 시 라우팅 분기
   // const handleAuthorClick = () => {
   //   if (post.author === "다른사람") {
