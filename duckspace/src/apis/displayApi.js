@@ -9,11 +9,6 @@ export const createExhibition = async (name, themeCode) => {
   return response.data;
 };
 
-export const getMyExhibitions = async () => {
-  const response = await api.get("/api/exhibitions/me");
-
-  return response.data;
-};
 
 export const getExhibitionDetail = async (exhibitionId) => {
   const response = await api.get(
@@ -48,6 +43,26 @@ export const addExhibitionItem = async (
   return response.data;
 };
 
+export const getExhibitionItems = async (
+  exhibitionId,
+  cursor,
+  size = 20
+) => {
+  const params = { size };
+
+  if (cursor) {
+    params.cursor = cursor;
+  }
+
+  const response = await api.get(
+    `/api/exhibitions/${exhibitionId}/items`,
+    { params }
+  );
+
+  return response.data;
+};
+
+// 실제 사용 코드 지금은 X
 export const uploadExhibitionItem = async (
   exhibitionId,
   file,
@@ -78,24 +93,6 @@ export const uploadExhibitionItem = async (
   return response.data;
 };
 
-export const getExhibitionItems = async (
-  exhibitionId,
-  cursor,
-  size = 20
-) => {
-  const params = { size };
-
-  if (cursor) {
-    params.cursor = cursor;
-  }
-
-  const response = await api.get(
-    `/api/exhibitions/${exhibitionId}/items`,
-    { params }
-  );
-
-  return response.data;
-};
 
 export const getExhibitionItem = async (
   exhibitionId,
@@ -108,20 +105,9 @@ export const getExhibitionItem = async (
   return response.data;
 };
 
-export const getMyImages = async (
-  cursor,
-  size = 20
-) => {
-  const params = { size };
 
-  if (cursor) {
-    params.cursor = cursor;
-  }
-
-  const response = await api.get(
-    "/api/images/me",
-    { params }
-  );
+export const getMyExhibitions = async () => {
+  const response = await api.get("/api/exhibitions/me");
 
   return response.data;
 };

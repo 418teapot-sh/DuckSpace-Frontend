@@ -22,13 +22,15 @@ function Display() {
   const [exhibitions, setExhibitions] = useState([]);
   const [activeExhibitionId, setActiveExhibitionId] = useState(null);
   const [displayGoods, setDisplayGoods] = useState([]);
-  
+
   useEffect(() => {
     const fetchMyExhibitions = async () => {
       try {
         const result = await getMyExhibitions();
 
-        const exhibitionList = result.data;
+        console.log("내 장식장 목록:", result.data);
+
+        const exhibitionList = result.data || [];
 
         setExhibitions(exhibitionList);
 
@@ -48,14 +50,17 @@ function Display() {
     fetchMyExhibitions();
   }, []);
   
+  
   const handleAddExhibition = async () => {
     try {
+      console.log("장식장 추가 버튼 클릭");
       const nextNumber = exhibitions.length + 1;
 
       const result = await createExhibition(
         `장식장 ${nextNumber}`,
         "BASIC"
       );
+      console.log("장식장 생성 응답:", result);
 
       const newExhibition = result.data;
 
@@ -84,9 +89,9 @@ function Display() {
           
         );
 
-        setDisplayGoods(result.data.items);
-
-        const convertedItems = result.data.items.map(
+        const items = result.data.items || [];
+        setDisplayGoods(items);
+        const convertedItems = items.map(
           (item) => ({
             id: item.itemId,
             itemId: item.itemId,

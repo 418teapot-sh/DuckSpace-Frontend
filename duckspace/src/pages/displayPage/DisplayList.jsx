@@ -3,8 +3,7 @@ import { useGoodsStore } from "../../store/goodsStore";
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDisplayStore } from "../../store/displayStore";
-import { useEffect } from "react";
-import { addExhibitionItem, getExhibitionItem, getMyImages } from "../../apis/displayApi";
+import { addExhibitionItem, getExhibitionItem } from "../../apis/displayApi";
 
 function DisplayList() {
     const location = useLocation();
@@ -15,26 +14,17 @@ function DisplayList() {
     const addItem = useDisplayStore((state) => state.addItem);
     const mode = location.state?.mode || "view";
     const goods = useGoodsStore((state) => state.goods);
-    const setGoods = useGoodsStore((state) => state.setGoods);
-
-    useEffect(() => {
-      const fetchMyImages = async () => {
-        try {
-          const result = await getMyImages();
-
-          console.log("보관함 조회 결과:", result.data);
-
-          setGoods(result.data.items || []);
-        } catch (error) {
-          console.error(
-            "보관함 조회 실패:",
-            JSON.stringify(error.response?.data, null, 2)
-          );
-        }
-      };
-
-      fetchMyImages();
-    }, [setGoods]);
+    // 테스트 코드 나중에 지울거/..
+    const testGoods = [
+      {
+        id: 1,
+        imageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg",
+        name: "테스트 굿즈",
+        price: 10000,
+        category: "테스트",
+        date: "2026.08.18",
+      },
+    ];
 
     const handleSelectItem = async(good) => {
         try {
@@ -123,7 +113,7 @@ function DisplayList() {
 
       {/* 굿즈 리스트 */}
       <div className="flex flex-col gap-4">
-        {goods.map((item) => (
+        {testGoods.map((item) => (
             <div
                 key={item.id}
                 onClick={() => {

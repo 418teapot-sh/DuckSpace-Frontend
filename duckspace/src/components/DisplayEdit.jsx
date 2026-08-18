@@ -12,7 +12,7 @@ import addIcon from "../assets/displayIcon/add.svg";
 import saveIcon from "../assets/displayIcon/save.svg";
 
 import { updateExhibitionItemPosition } from "../apis/displayApi";
-
+// 테스트
 function DraggableImage({ item, onChange, isEditing, isSelected, onSelect, }) {  
     const [image] = useImage(item.src);
     const imageRef = useRef(null);
