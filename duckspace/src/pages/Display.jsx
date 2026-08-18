@@ -10,10 +10,13 @@ import { useDisplayStore } from "../store/displayStore";
 
 import { createExhibition , getMyExhibitions, getExhibitionDetail } from "../apis/displayApi";
 
+import { getMyProfile } from "../apis/userApi";
+
 
 function Display() {
   const navigate = useNavigate();
-  
+  const [profile, setProfile] = useState(null);
+
   const setEditingItems = useDisplayStore(
     (state) => state.setEditingItems
   );
@@ -22,6 +25,25 @@ function Display() {
   const [exhibitions, setExhibitions] = useState([]);
   const [activeExhibitionId, setActiveExhibitionId] = useState(null);
   const [displayGoods, setDisplayGoods] = useState([]);
+
+  useEffect(() => {
+    const fetchMyProfile = async () => {
+      try {
+        const result = await getMyProfile();
+
+        console.log("내 프로필:", result.data);
+
+        setProfile(result.data);
+      } catch (error) {
+        console.error(
+          "내 프로필 조회 실패:",
+          error.response?.data || error
+        );
+      }
+    };
+
+    fetchMyProfile();
+  }, []);
 
   useEffect(() => {
     const fetchMyExhibitions = async () => {
@@ -137,22 +159,23 @@ function Display() {
       {/* 프로필 영역 */}
       <section className="flex items-center justify-between px-7 py-5">
         <div className="flex items-center gap-3">
-          {/* 임시 프로필 이미지 */}
           <div className="h-14 w-14 overflow-hidden rounded-full bg-[#F4F4F4]">
-            <img
-              src="/favicon.svg"
-              alt="프로필"
-              className="h-full w-full object-cover"
-            />
+            {profile?.profileImageUrl && (
+              <img
+                src={profile.profileImageUrl}
+                alt={profile.nickname}
+                className="h-full w-full object-cover"
+              />
+            )}
           </div>
 
           <div>
             <p className="text-[20px] font-semibold text-black">
-              나(기능 구현 예정)
+              {profile?.nickname || "사용자"}
             </p>
 
             <p className="mt-1 text-[14px] text-[#A2A2A2]">
-              팔로워 30 | 팔로잉30
+              팔로워 {profile?.followerCount ?? 0} | 팔로잉 {profile?.followingCount ?? 0}
             </p>
           </div>
         </div>
