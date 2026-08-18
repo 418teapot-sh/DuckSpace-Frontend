@@ -206,7 +206,9 @@ function ExchangeListCard({ item, activeTab, onRefresh }) {
 
       {/* 4. 자세히 보기 버튼 */}
       <div
-        onClick={() => navigate(`/ducktalk/exchange/detail/${item.postId || item.id}`)}
+        onClick={() =>
+          navigate(`/ducktalk/exchange/detail/${item.postId}?applicationId=${item.id}&tab=${activeTab}`)
+        }
         className="flex items-center justify-end gap-1 cursor-pointer text-[#A2A2A2] hover:text-[#545454] transition-colors"
       >
         <span className="text-[14px] font-normal leading-[24px]">게시글 보기</span>

@@ -1,29 +1,17 @@
+// src/apis/userApi.js
 import api from "./api";
 
 export const getMyProfile = async () => {
-  const response = await api.get("/api/users/me");
-  return response.data;
-};
-// 주석 태스트
-export const updateMyProfile = async ({
-  nickname,
-  profileImageUrl,
-}) => {
-  const response = await api.patch(
-    "/api/users/me",
-    {
-      nickname,
-      profileImageUrl,
-    }
-  );
-
-  return response.data;
+  const res = await api.get("/api/users/me");
+  return res.data.data;
 };
 
 export const getUserProfile = async (userId) => {
-  const response = await api.get(
-    `/api/users/${userId}`
-  );
+  const res = await api.get(`/api/users/${userId}`);
+  return res.data.data;
+};
 
-  return response.data;
+export const updateMyProfile = async ({ nickname, profileImageUrl }) => {
+  const res = await api.patch("/api/users/me", { nickname, profileImageUrl });
+  return res.data.data;
 };

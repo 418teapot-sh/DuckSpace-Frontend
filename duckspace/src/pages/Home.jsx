@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import NavBar from "../components/NavBar";
 
 import HomeSlide from "../components/homeComponents/HomeSlide";
@@ -7,9 +8,18 @@ import DuckSpaceIcon from "../assets/DuckSpaceIcon.svg";
 
 import { useNavigate } from "react-router-dom";
 import { logout } from "../apis/authApi";
-  
+import { getHome } from "../apis/homeApi";
+
 const Home = () => {
   const navigate = useNavigate();
+  const [home, setHome] = useState(null);
+
+  useEffect(() => {
+    getHome()
+      .then(setHome)
+      .catch((error) => console.error("홈 데이터 조회 실패:", error));
+  }, []);
+
   const handleLogout = async () => {
     const refreshToken =
       localStorage.getItem("refreshToken");
@@ -49,18 +59,18 @@ const Home = () => {
 
       {/* 상단 팝업 슬라이드 */}
       <div className="pt-4">
-        <HomeSlide/>
+        <HomeSlide banners={home?.banners ?? []} />
       </div>
 
       {/* 다가오는 팝업 */}
-      <HomePopupCard/>
+      <HomePopupCard popups={home?.upcomingPopups ?? []} />
 
       {/* 다른 유저 전시장 */}
-      <HomeExhibition />
+      <HomeExhibition exhibitions={home?.popularExhibitions ?? []} />
 
       <NavBar />
     </div>
   );
 }
 
-export default Home 
+export default Home

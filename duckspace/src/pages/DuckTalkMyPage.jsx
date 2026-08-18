@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback  } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoChevronBack, IoSwapHorizontal } from "react-icons/io5";
 
@@ -8,9 +8,8 @@ import DuckTalkProfile from "../components/duckTalkComponents/DuckTalkProfile";
 import DuckTalkChatCard from "../components/duckTalkComponents/DuckTalkChatCard";
 import DuckTalkExchangeCard from "../components/duckTalkComponents/DuckTalkExchangeCard";
 
-import { getCasualPosts, getExchangePosts } from "../apis/postApi";
-
 import { getMyProfile } from "../apis/userApi";
+import { getCasualPosts, getExchangePosts } from "../apis/postApi";
 
 function DuckTalkMyPage() {
   const navigate = useNavigate();
@@ -22,57 +21,29 @@ function DuckTalkMyPage() {
   const [loading, setLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // 내 프로필 조회
   useEffect(() => {
-    const fetchMyProfile = async () => {
-      try {
-        const result = await getMyProfile();
-
-        console.log("내 프로필 조회:", result.data);
-
-        setProfile(result.data);
-      } catch (error) {
-        console.error(
-          "내 프로필 조회 실패:",
-          error.response?.data || error
-        );
-      }
-    };
-
-    fetchMyProfile();
+    getMyProfile()
+      .then(setProfile)
+      .catch((error) => console.error("내 프로필 조회 실패:", error));
   }, []);
 
+  // 내 프로필이 로드된 후, 탭에 맞춰 내가 쓴 글만 조회 (authorId로 필터링)
   useEffect(() => {
     if (!profile?.userId) return;
 
     const fetchMyPosts = async () => {
       try {
         setLoading(true);
-
         if (activeTab === "chat") {
-          const data = await getCasualPosts({
-            authorId: profile.userId,
-          });
-
-          const myPosts = (data || []).filter(
-            (post) => post.authorId === profile.userId
-          )
-
+          const data = await getCasualPosts({ authorId: profile.userId });
           setChatPosts(data || []);
         } else {
-          const data = await getExchangePosts({
-            authorId: profile.userId,
-          });
-          const myPosts = (data || []).filter(
-            (post) => post.authorId === profile.userId
-          );
-          
+          const data = await getExchangePosts({ authorId: profile.userId });
           setExchangePosts(data || []);
         }
       } catch (error) {
-        console.error(
-          "내가 쓴 글 조회 실패:",
-          error.response?.data || error
-        );
+        console.error("내가 쓴 글 조회 실패:", error);
       } finally {
         setLoading(false);
       }
@@ -81,9 +52,7 @@ function DuckTalkMyPage() {
     fetchMyPosts();
   }, [profile, activeTab, refreshKey]);
 
-  const refreshMyPosts = useCallback(() => {
-    setRefreshKey((key) => key + 1);
-  }, []);
+  const refreshMyPosts = useCallback(() => setRefreshKey((key) => key + 1), []);
 
   return (
     <div className="min-h-screen bg-white pb-28">
@@ -112,12 +81,7 @@ function DuckTalkMyPage() {
       </header>
 
       {/* 2. 내 프로필 영역 */}
-      {profile && (
-        <DuckTalkProfile
-          profile={profile}
-          isMe={true}
-        />
-      )}
+      {profile && <DuckTalkProfile profile={profile} isMe={true} />}
 
       {/* 3. 잡담 / 교환 탭 */}
       <div className="flex border-b border-[#EEEEEE] text-center">

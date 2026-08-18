@@ -1,10 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { IoChevronForward } from "react-icons/io5";
-import { homeMockData } from "../../data/homeMockData";
 
-function HomePopupCard() {
+function HomePopupCard({ popups = [] }) {
   const navigate = useNavigate();
-  const popupList = homeMockData.slice(0, 2);
+  const popupList = popups.slice(0, 2);
 
   return (
     <section className="mt-6 px-5">

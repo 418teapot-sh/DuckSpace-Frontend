@@ -17,9 +17,11 @@ import { createOrGetChatRoom } from "../apis/chatApi";
 
 export default function ExchangeDetail() {
   const navigate = useNavigate();
-  const { id } = useParams(); // URL 파라미터 ID (postId 또는 applicationId)
+  const { id } = useParams(); // URL 파라미터 postId (게시글 상세 조회용)
   const [searchParams] = useSearchParams();
   const tabType = searchParams.get("tab") || "feed"; // 'sent' | 'received' | 'progress' | 'completed' | 'feed'
+  // 신청 관련 액션(수락/거절/취소/완료)은 applicationId가 필요 — postId(id)와 다른 값이므로 쿼리로 별도 전달받음
+  const applicationId = searchParams.get("applicationId") || id;
 
   const [postDetail, setPostDetail] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -76,7 +78,7 @@ export default function ExchangeDetail() {
   const handleAccept = async () => {
     if (!window.confirm("이 교환 신청을 수락하시겠습니까?")) return;
     try {
-      await acceptApplication(id);
+      await acceptApplication(applicationId);
       alert("신청을 수락했습니다.");
       navigate("/ducktalk/exchange/list");
     } catch (error) {
@@ -89,7 +91,7 @@ export default function ExchangeDetail() {
   const handleReject = async () => {
     if (!window.confirm("이 교환 신청을 거절하시겠습니까?")) return;
     try {
-      await rejectApplication(id);
+      await rejectApplication(applicationId);
       setActionComplete("rejected");
     } catch (error) {
       console.error("신청 거절 실패:", error);
@@ -101,7 +103,7 @@ export default function ExchangeDetail() {
   const handleCancel = async () => {
     if (!window.confirm("교환 신청을 취소하시겠습니까?")) return;
     try {
-      await cancelApplication(id);
+      await cancelApplication(applicationId);
       setActionComplete("canceled");
     } catch (error) {
       console.error("신청 취소 실패:", error);
@@ -113,7 +115,7 @@ export default function ExchangeDetail() {
   const handleComplete = async () => {
     if (!window.confirm("교환을 완료 처리하시겠습니까?")) return;
     try {
-      await completeApplication(id);
+      await completeApplication(applicationId);
       alert("교환이 완료 처리되었습니다.");
       navigate("/ducktalk/exchange/list");
     } catch (error) {

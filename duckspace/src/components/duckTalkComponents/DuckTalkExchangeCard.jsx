@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   IoHeartOutline,
@@ -5,9 +6,63 @@ import {
   IoEllipsisHorizontal,
   IoSwapHorizontal,
 } from "react-icons/io5";
+import {
+  reportPost,
+  getPostDetail,
+  getPostApplications,
+  completeExchange,
+} from "../../apis/postApi";
 
-function DuckTalkExchangeCard({ post, mode = "feed" }) {
+function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
   const navigate = useNavigate();
+  const [offeredItemDetail, setOfferedItemDetail] = useState(null);
+  const [applicationCount, setApplicationCount] = useState(null);
+
+  // 마이페이지에서는 목록 API가 안 주는 아이템 이미지/상태와 신청 건수를 카드마다 따로 가져옴
+  useEffect(() => {
+    if (mode !== "myPage") return;
+
+    getPostDetail(post.id)
+      .then((detail) => setOfferedItemDetail(detail?.exchangeInfo?.offeredItem || null))
+      .catch((error) => console.error("교환 글 상세 조회 실패:", error));
+
+    if (post.status !== "COMPLETED") {
+      getPostApplications(post.id)
+        .then((applications) => setApplicationCount((applications || []).length))
+        .catch((error) => console.error("게시글별 신청 목록 조회 실패:", error));
+    }
+  }, [mode, post.id, post.status]);
+
+  const handleCompleteExchange = async (e) => {
+    e.stopPropagation();
+    if (!window.confirm("교환을 완료 처리하시겠습니까?")) return;
+    try {
+      await completeExchange(post.id);
+      onRefresh?.();
+    } catch (error) {
+      console.error("교환 완료 처리 실패:", error);
+      alert("교환 완료 처리 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleViewApplications = (e) => {
+    e.stopPropagation();
+    navigate("/ducktalk/exchange/list?tab=received");
+  };
+
+  // 게시글 신고
+  const handleReport = async (e) => {
+    e.stopPropagation();
+    const reason = window.prompt("신고 사유를 입력해주세요. (선택 사항)", "");
+    if (reason === null) return;
+    try {
+      await reportPost(post.id, { reason });
+      alert("신고가 접수되었습니다.");
+    } catch (error) {
+      console.error("게시글 신고 실패:", error);
+      alert("신고 접수 중 오류가 발생했습니다.");
+    }
+  };
 
   // 1. 백엔드 필드 매핑 및 기본값 안전 처리
   const authorName = post.authorNickname || post.author || "사용자";
@@ -74,10 +129,7 @@ function DuckTalkExchangeCard({ post, mode = "feed" }) {
         ) : (
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              alert("게시글이 신고되었습니다.");
-            }}
+            onClick={handleReport}
             className="text-[12px] text-[#858485] cursor-pointer hover:underline"
           >
             신고하기
@@ -100,24 +152,51 @@ function DuckTalkExchangeCard({ post, mode = "feed" }) {
         )}
       </div>
 
-      {/* 3. 교환 물품 카드 (내 굿즈 <-> 원하는 굿즈) */}
-      <div className="flex items-center justify-between rounded-lg border border-white/60 bg-[#F9FAFB] p-3.5 shadow-sm">
-        <div className="flex flex-col items-center flex-1">
-          <span className="text-[11px] font-medium text-[#858485] mb-1">보유 굿즈</span>
-          <span className="text-[14px] font-semibold text-[#171617] text-center truncate max-w-[120px]">
-            {offeredItem}
-          </span>
+      {/* 3. 교환 물품 카드 */}
+      {mode === "myPage" ? (
+        <div className="flex items-center gap-3 rounded-lg border border-white/60 bg-[#F9FAFB] p-3.5 shadow-sm">
+          <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md bg-[#E5E5E5]">
+            {offeredItemDetail?.imageUrl && (
+              <img
+                src={offeredItemDetail.imageUrl}
+                alt={offeredItemDetail.itemName}
+                className="h-full w-full object-cover"
+              />
+            )}
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[14px] font-semibold text-[#171617]">
+              {offeredItemDetail?.itemName || offeredItem}
+            </span>
+            {offeredItemDetail?.brand && (
+              <span className="text-[12px] text-[#858485]">{offeredItemDetail.brand}</span>
+            )}
+            {offeredItemDetail?.condition && (
+              <span className="text-[12px] text-[#858485]">
+                {offeredItemDetail.condition === "UNOPENED" ? "미개봉" : "개봉"}
+              </span>
+            )}
+          </div>
         </div>
+      ) : (
+        <div className="flex items-center justify-between rounded-lg border border-white/60 bg-[#F9FAFB] p-3.5 shadow-sm">
+          <div className="flex flex-col items-center flex-1">
+            <span className="text-[11px] font-medium text-[#858485] mb-1">보유 굿즈</span>
+            <span className="text-[14px] font-semibold text-[#171617] text-center truncate max-w-[120px]">
+              {offeredItem}
+            </span>
+          </div>
 
-        <IoSwapHorizontal size={20} className="text-[#2F78FD] shrink-0 mx-2" />
+          <IoSwapHorizontal size={20} className="text-[#2F78FD] shrink-0 mx-2" />
 
-        <div className="flex flex-col items-center flex-1">
-          <span className="text-[11px] font-medium text-[#858485] mb-1">희망 굿즈</span>
-          <span className="text-[14px] font-semibold text-[#2F78FD] text-center truncate max-w-[120px]">
-            {wantedItem}
-          </span>
+          <div className="flex flex-col items-center flex-1">
+            <span className="text-[11px] font-medium text-[#858485] mb-1">희망 굿즈</span>
+            <span className="text-[14px] font-semibold text-[#2F78FD] text-center truncate max-w-[120px]">
+              {wantedItem}
+            </span>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 4. 좋아요 / 댓글 수 */}
       <div className="flex items-center gap-3 text-[#545454]">
@@ -133,7 +212,30 @@ function DuckTalkExchangeCard({ post, mode = "feed" }) {
 
       {/* 5. 하단 버튼 영역 */}
       <div className="flex gap-4 pt-1" onClick={(e) => e.stopPropagation()}>
-        {isCompleted ? (
+        {mode === "myPage" ? (
+          isCompleted ? (
+            <div className="flex h-11 flex-1 items-center justify-center rounded-lg bg-[#F4F4F4] border border-[#DEDEDE] text-[14px] font-semibold text-[#858485]">
+              교환 완료
+            </div>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={handleViewApplications}
+                className="flex h-11 flex-1 items-center justify-center rounded-lg border border-[#A6C3F8] bg-[#FCFCFC] text-[14px] font-semibold text-[#2F78FD] cursor-pointer"
+              >
+                교환 신청 {applicationCount ?? 0}건
+              </button>
+              <button
+                type="button"
+                onClick={handleCompleteExchange}
+                className="flex h-11 flex-1 items-center justify-center rounded-lg bg-[#2F78FD] border border-[#2F78FD] text-[14px] font-semibold text-white shadow-sm hover:bg-[#1E67EC] cursor-pointer transition-all"
+              >
+                교환 완료하기
+              </button>
+            </>
+          )
+        ) : isCompleted ? (
           <div className="flex h-11 flex-1 items-center justify-center rounded-lg bg-[#F4F4F4] border border-[#DEDEDE] text-[14px] font-semibold text-[#858485]">
             교환 완료
           </div>

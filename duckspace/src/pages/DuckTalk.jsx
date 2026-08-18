@@ -14,6 +14,7 @@ import DuckTalkExchangeCard from "../components/duckTalkComponents/DuckTalkExcha
 
 // 실제 백엔드 API
 import { getCasualPosts, getExchangePosts } from "../apis/postApi";
+import { getMyProfile } from "../apis/userApi";
 
 function DuckTalk() {
   const navigate = useNavigate();
@@ -25,6 +26,15 @@ function DuckTalk() {
   const [chatPosts, setChatPosts] = useState([]);
   const [exchangePosts, setExchangePosts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [myUserId, setMyUserId] = useState(null);
+
+  // 목록 응답엔 mine 필드가 없어서, 작성자 클릭 시 마이페이지/유저페이지를 구분하려면
+  // 내 프로필의 userId를 따로 받아와 authorId와 비교해야 함
+  useEffect(() => {
+    getMyProfile()
+      .then((profile) => setMyUserId(profile.userId))
+      .catch((error) => console.error("내 프로필 조회 실패:", error));
+  }, []);
 
   // 탭 변경 또는 검색어 변경 시 서버에서 게시글 목록 조회
   useEffect(() => {
@@ -138,7 +148,10 @@ function DuckTalk() {
           ) : (
             <div className="flex flex-col gap-4">
               {chatPosts.map((post) => (
-                <DuckTalkChatCard key={post.id} post={post} />
+                <DuckTalkChatCard
+                  key={post.id}
+                  post={{ ...post, mine: post.authorId === myUserId }}
+                />
               ))}
             </div>
           )
@@ -150,7 +163,11 @@ function DuckTalk() {
           ) : (
             <div className="flex flex-col gap-4">
               {exchangePosts.map((post) => (
-                <DuckTalkExchangeCard key={post.id} post={post} mode="feed" />
+                <DuckTalkExchangeCard
+                  key={post.id}
+                  post={{ ...post, mine: post.authorId === myUserId }}
+                  mode="feed"
+                />
               ))}
             </div>
           )
