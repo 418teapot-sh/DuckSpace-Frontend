@@ -53,12 +53,19 @@ function DuckTalkMyPage() {
             authorId: profile.userId,
           });
 
+          const myPosts = (data || []).filter(
+            (post) => post.authorId === profile.userId
+          )
+
           setChatPosts(data || []);
         } else {
           const data = await getExchangePosts({
             authorId: profile.userId,
           });
-
+          const myPosts = (data || []).filter(
+            (post) => post.authorId === profile.userId
+          );
+          
           setExchangePosts(data || []);
         }
       } catch (error) {

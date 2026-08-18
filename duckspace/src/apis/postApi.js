@@ -18,10 +18,12 @@ export const uploadImage = async (file) => {
 
 // ===== 잡담 게시판 =====
 
-export const getCasualPosts = async ({ keyword, cursor, size = 10 } = {}) => {
+export const getCasualPosts = async ({ keyword, cursor, size = 10 , authorId} = {}) => {
   const params = { size };
   if (keyword) params.keyword = keyword;
   if (cursor) params.cursor = cursor;
+  if (authorId) params.authorId = authorId;
+
   const res = await api.get("/api/posts/casual", { params });
   return res.data.data;
 };
@@ -37,10 +39,12 @@ export const createCasualPost = async ({ content, hashtags = [], images = [] }) 
 
 // ===== 교환 게시판 =====
 
-export const getExchangePosts = async ({ keyword, cursor, size = 10 } = {}) => {
+export const getExchangePosts = async ({ keyword, cursor, size = 10, authorId } = {}) => {
   const params = { size };
   if (keyword) params.keyword = keyword;
   if (cursor) params.cursor = cursor;
+  if (authorId) params.authorId = authorId;
+
   const res = await api.get("/api/posts/exchange", { params });
   return res.data.data;
 };
