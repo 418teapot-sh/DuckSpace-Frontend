@@ -27,6 +27,8 @@ import DisplayUpload from './pages/displayPage/DisplayUpload';
 import LoginRoute from "./components/LoginRoute";
 import Signup from "./pages/Signup";
 
+import DuckTalkProfileEdit from "./pages/DuckTalkProfileEdit"
+
 function App() {
   return (
     <BrowserRouter>
@@ -40,6 +42,7 @@ function App() {
         
         {/* 덕톡 마이페이지(내가 쓴 글) 라우트 */}
         <Route path="/ducktalk/mypage" element={<LoginRoute> <DuckTalkMyPage /> </LoginRoute>} />
+        <Route path="/ducktalk/profile/edit" element={<LoginRoute> <DuckTalkProfileEdit /> </LoginRoute>} />
 
         {/* 덕톡 다른사람 프로필 라우트 */}
         <Route path="/ducktalk/user" element={<LoginRoute> <DuckTalkUserPage /> </LoginRoute>} />

@@ -1,18 +1,20 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { IoCheckmarkCircle } from "react-icons/io5";
 
 function DuckTalkProfile({ profile, isMe = true }) {
   // 팔로우 상태 토글 (다른 사람 프로필용)
   const [isFollowing, setIsFollowing] = useState(profile.isFollowing || false);
-
+  const navigate = useNavigate();
+  
   return (
     <div className="flex flex-col items-center justify-center pt-5 pb-3 px-5">
       {/* 아바타 원 */}
       <div className="h-20 w-20 rounded-full bg-[#858485] mb-3 overflow-hidden">
-        {profile.avatarUrl && (
+        {profile.profileImageUrl && (
           <img
-            src={profile.avatarUrl}
-            alt={profile.name}
+            src={profile.profileImageUrl}
+            alt={profile.nickname}
             className="h-full w-full object-cover"
           />
         )}
@@ -22,15 +24,15 @@ function DuckTalkProfile({ profile, isMe = true }) {
       <div className="flex items-center gap-1 mb-1">
         <IoCheckmarkCircle className="text-[#2F78FD] text-lg" />
         <span className="text-[16px] font-semibold leading-[20.8px] text-[#545454]">
-          {profile.name}
+          {profile.nickname}
         </span>
       </div>
 
       {/* 신뢰도 | 후기 */}
       <div className="flex items-center gap-1 text-[14px] font-semibold leading-[21px] text-[#2F78FD] mb-2">
-        <span>신뢰도 {profile.score}</span>
+        <span>신뢰도 98</span>
         <span>|</span>
-        <span>후기 {profile.reviewCount}개</span>
+        <span>후기 5개</span>
       </div>
 
       {/* 팔로잉 / 팔로워 */}
@@ -44,6 +46,7 @@ function DuckTalkProfile({ profile, isMe = true }) {
         {isMe ? (
           <button
             type="button"
+            onClick={() => navigate("/ducktalk/profile/edit")}
             className="h-6 px-4 flex items-center justify-center rounded bg-[#FCFCFC] border border-[#A6C3F8] text-[11px] font-semibold leading-[17.6px] text-[#2F78FD] cursor-pointer"
           >
             프로필 편집
