@@ -54,6 +54,50 @@ function DuckTalkMyPage() {
 
   const refreshMyPosts = useCallback(() => setRefreshKey((key) => key + 1), []);
 
+  useEffect(() => {
+    if (!profile?.userId) return;
+
+    const fetchMyPosts = async () => {
+      try {
+        setLoading(true);
+
+        if (activeTab === "chat") {
+          const data = await getCasualPosts({
+            authorId: profile.userId,
+          });
+
+          const myPosts = (data || []).filter(
+            (post) => post.authorId === profile.userId
+          )
+
+          setChatPosts(data || []);
+        } else {
+          const data = await getExchangePosts({
+            authorId: profile.userId,
+          });
+          const myPosts = (data || []).filter(
+            (post) => post.authorId === profile.userId
+          );
+          
+          setExchangePosts(data || []);
+        }
+      } catch (error) {
+        console.error(
+          "내가 쓴 글 조회 실패:",
+          error.response?.data || error
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMyPosts();
+  }, [profile, activeTab, refreshKey]);
+
+  const refreshMyPosts = useCallback(() => {
+    setRefreshKey((key) => key + 1);
+  }, []);
+
   return (
     <div className="min-h-screen bg-white pb-28">
       {/* 1. 상단 헤더 */}
