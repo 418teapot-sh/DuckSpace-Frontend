@@ -8,7 +8,6 @@ export const getChatRooms = async () => {
 
 // 2. 채팅방 생성 또는 기존 방 조회 (상대방 partnerId 기준)
 export const createOrGetChatRoom = async (partnerId) => {
-  // ✅ 백엔드 명세에 맞게 파라미터를 postId가 아닌 partnerId로 전송!
   const res = await api.post("/api/chat/rooms", {
     partnerId: Number(partnerId),
   });
@@ -29,9 +28,4 @@ export const sendChatMessage = async (roomId, content) => {
     content,
   });
   return res.data.data;
-};
-
-// 5. 채팅방 나가기
-export const leaveChatRoom = async (roomId) => {
-  await api.delete(`/api/chat/rooms/${roomId}`);
 };
