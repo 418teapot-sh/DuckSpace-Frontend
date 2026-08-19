@@ -11,7 +11,7 @@ import closeIcon from "../assets/displayIcon/close.svg";
 import addIcon from "../assets/displayIcon/add.svg";
 import saveIcon from "../assets/displayIcon/save.svg";
 
-import { updateExhibitionItemPosition, updateExhibition, } from "../apis/displayApi";
+import { updateExhibitionItemPosition, updateExhibition, deleteExhibition } from "../apis/displayApi";
 // 테스트
 function DraggableImage({ item, onChange, isEditing, isSelected, onSelect, }) {  
     const [image] = useImage(item.src);
@@ -225,6 +225,32 @@ function DisplayEdit({ exhibitionId, readOnly = false }) {
             alert("장식장 이름 수정에 실패했습니다.");
         }
     };
+    const handleDeleteExhibition = async () => {
+        if (!exhibitionId) return;
+
+        const confirmed = window.confirm(
+            "이 장식장을 삭제하시겠습니까?"
+        );
+
+        if (!confirmed) return;
+
+        try {
+            await deleteExhibition(exhibitionId);
+
+            setIsNameModalOpen(false);
+
+            alert("장식장이 삭제되었습니다.");
+
+            window.location.reload();
+        } catch (error) {
+            console.error(
+            "장식장 삭제 실패:",
+            error.response?.data || error
+            );
+
+            alert("장식장 삭제에 실패했습니다.");
+        }
+    };
 
   return (
     <>
@@ -348,6 +374,13 @@ function DisplayEdit({ exhibitionId, readOnly = false }) {
                 저장
                 </button>
             </div>
+            <button
+                type="button"
+                onClick={handleDeleteExhibition}
+                className="mt-4 w-full cursor-pointer text-center text-[14px] text-[#A2A2A2]"
+                >
+                삭제하기
+            </button>
             </div>
         </div>
         )}
