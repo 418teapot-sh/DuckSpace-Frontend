@@ -9,15 +9,35 @@ import DuckSpaceIcon from "../assets/DuckSpaceIcon.svg";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../apis/authApi";
 import { getHome } from "../apis/homeApi";
+import { getBanners } from "../apis/bannerApi";
 
 const Home = () => {
   const navigate = useNavigate();
   const [home, setHome] = useState(null);
+  const [banners, setBanners] = useState([]);
 
   useEffect(() => {
     getHome()
       .then(setHome)
       .catch((error) => console.error("홈 데이터 조회 실패:", error));
+  }, []);
+
+  useEffect(() => {
+    getBanners()
+      .then((data) => {
+        console.log("배너 조회:", data);
+
+        const bannerList = data?.banners ?? [];
+
+        setBanners(
+          bannerList
+            .filter((banner) => banner.active)
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+        );
+      })
+      .catch((error) =>
+        console.error("배너 조회 실패:", error)
+      );
   }, []);
 
   const handleLogout = async () => {
@@ -59,7 +79,7 @@ const Home = () => {
 
       {/* 상단 팝업 슬라이드 */}
       <div className="pt-4">
-        <HomeSlide banners={home?.banners ?? []} />
+        <HomeSlide banners={banners} />
       </div>
 
       {/* 다가오는 팝업 */}
