@@ -21,15 +21,34 @@ import {
   deleteComment,
   reportComment,
 } from "../apis/postApi";
+import { getUserProfile } from "../apis/userApi";
 
 function CommentItem({ comment, isReply = false, onReply, onDelete, onReport }) {
   const formattedDate = comment.createdAt ? comment.createdAt.slice(0, 10).replace(/-/g, ".") : "";
   const isHiddenSecret = comment.secret && !comment.content;
 
+  const [authorProfileImage, setAuthorProfileImage] = useState(null);
+
+  // 댓글 목록 API는 작성자 프로필 이미지를 안 주므로, 유저 정보로 채움
+  useEffect(() => {
+    if (!comment.authorId) return;
+    getUserProfile(comment.authorId)
+      .then((profile) => setAuthorProfileImage(profile?.profileImageUrl || null))
+      .catch((error) => console.error("댓글 작성자 프로필 조회 실패:", error));
+  }, [comment.authorId]);
+
   return (
     <div className={isReply ? "flex flex-col gap-3 border-l border-[#F4F4F4] pl-4" : "flex flex-col gap-3"}>
       <div className="flex items-center justify-center gap-3">
-        <div className="h-6 w-6 shrink-0 rounded-full bg-[#DEDEDE]" />
+        <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-[#DEDEDE]">
+          {authorProfileImage && (
+            <img
+              src={authorProfileImage}
+              alt={comment.authorNickname || "사용자"}
+              className="h-full w-full object-cover"
+            />
+          )}
+        </div>
         <div className="flex flex-1 items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-[16px] font-semibold text-[#171617]">{comment.authorNickname || "사용자"}</span>
@@ -85,6 +104,7 @@ export default function CasualPostDetail() {
   const { id } = useParams();
 
   const [postDetail, setPostDetail] = useState(null);
+  const [authorProfileImage, setAuthorProfileImage] = useState(null);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -117,6 +137,14 @@ export default function CasualPostDetail() {
     };
     fetchAll();
   }, [id, fetchComments]);
+
+  // 상세 API는 작성자 프로필 이미지를 안 주므로, 유저 정보로 채움
+  useEffect(() => {
+    if (!postDetail?.authorId) return;
+    getUserProfile(postDetail.authorId)
+      .then((profile) => setAuthorProfileImage(profile?.profileImageUrl || null))
+      .catch((error) => console.error("작성자 프로필 조회 실패:", error));
+  }, [postDetail?.authorId]);
 
   const handleToggleLike = async () => {
     if (!postDetail || isLiking) return;
@@ -244,7 +272,15 @@ export default function CasualPostDetail() {
         <div className="flex flex-col gap-3 rounded-lg border border-white/60 bg-white/75 p-5 shadow-[0_15px_40px_rgba(205,205,205,0.08)] backdrop-blur-[10px]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-6 w-6 rounded-full bg-[#DEDEDE]" />
+              <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-[#DEDEDE]">
+                {authorProfileImage && (
+                  <img
+                    src={authorProfileImage}
+                    alt={postDetail.authorNickname || "사용자"}
+                    className="h-full w-full object-cover"
+                  />
+                )}
+              </div>
               <span className="text-[16px] font-semibold text-[#171617]">
                 {postDetail.authorNickname || "사용자"}
               </span>

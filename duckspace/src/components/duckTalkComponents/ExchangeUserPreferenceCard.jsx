@@ -6,7 +6,15 @@ function ExchangeUserPreferenceCard({ user, preferences }) {
       {/* 상단 사용자 이름 & 신뢰도 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-full bg-[#858485] overflow-hidden" />
+          <div className="h-12 w-12 shrink-0 rounded-full bg-[#858485] overflow-hidden">
+            {user.profileImageUrl && (
+              <img
+                src={user.profileImageUrl}
+                alt={user.name}
+                className="h-full w-full object-cover"
+              />
+            )}
+          </div>
           <span className="text-[18px] font-semibold leading-[25.2px] text-[#171617]">
             {user.name}
           </span>

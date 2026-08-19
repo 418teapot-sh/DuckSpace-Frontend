@@ -135,7 +135,7 @@ function CircleButton({ x, y, icon, onClick }) {
   );
 }
 
-function DisplayEdit({ exhibitionId }) {
+function DisplayEdit({ exhibitionId, readOnly = false }) {
 
     const navigate = useNavigate();
     const [displayBack] = useImage(displayBackImg);
@@ -249,9 +249,9 @@ function DisplayEdit({ exhibitionId }) {
             ))}
         </Layer>
 
-        {/* 버튼 */}
+        {/* 버튼 — 남의 장식장은 편집할 수 없으니 아예 안 그린다 */}
         <Layer>
-            {!isEditing ? (
+            {readOnly ? null : !isEditing ? (
                 <CircleButton
                     x={320}
                     y={360}

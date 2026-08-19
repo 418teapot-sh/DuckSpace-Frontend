@@ -1,12 +1,49 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoSwapHorizontal, IoChevronForward } from "react-icons/io5";
 import { acceptApplication, rejectApplication, cancelApplication, getPostDetail } from "../../apis/postApi";
+import { getUserProfile } from "../../apis/userApi";
 import { createOrGetChatRoom } from "../../apis/chatApi";
 
-function ExchangeListCard({ item, activeTab, onRefresh }) {
+function ExchangeListCard({ item, activeTab, myUserId, onRefresh }) {
   const navigate = useNavigate();
 
-  const partnerName = item.applicantNickname || item.authorNickname || item.partnerNickname || "상대방";
+  // 신청 목록 API는 신청자(applicant) 관점 필드만 줘서, 내가 보낸 신청이면
+  // applicantUserId/applicantNickname이 상대방이 아니라 나 자신을 가리킴 —
+  // 이 경우 상대방은 게시글 작성자이므로 상세 조회로 따로 구해야 함
+  const isSentByMe = item.applicantUserId === myUserId;
+
+  // 받은 신청이면 applicantUserId/닉네임이 곧 상대방이라 바로 계산 가능
+  const knownPartner =
+    myUserId != null && !isSentByMe
+      ? { id: item.applicantUserId, nickname: item.applicantNickname }
+      : null;
+
+  // 보낸 신청이면 상대방은 게시글 작성자라, 상세 조회로 별도 확인해야 함
+  const [fetchedPartner, setFetchedPartner] = useState(null);
+
+  useEffect(() => {
+    if (myUserId == null || !isSentByMe) return;
+    const targetPostId = item.postId || item.exchangePostId;
+    if (!targetPostId) return;
+    getPostDetail(targetPostId)
+      .then((detail) =>
+        setFetchedPartner({ id: detail?.authorId, nickname: detail?.authorNickname || "상대방" })
+      )
+      .catch((error) => console.error("게시글 작성자 조회 실패:", error));
+  }, [myUserId, isSentByMe, item.postId, item.exchangePostId]);
+
+  const partner = knownPartner || fetchedPartner;
+  const [partnerProfileImage, setPartnerProfileImage] = useState(null);
+
+  useEffect(() => {
+    if (!partner?.id) return;
+    getUserProfile(partner.id)
+      .then((profile) => setPartnerProfileImage(profile?.profileImageUrl || null))
+      .catch((error) => console.error("상대방 프로필 조회 실패:", error));
+  }, [partner?.id]);
+
+  const partnerName = partner?.nickname || "상대방";
 
   // 1:1 채팅방 진입 핸들러
   const handleStartChat = async () => {
@@ -16,40 +53,12 @@ function ExchangeListCard({ item, activeTab, onRefresh }) {
         return;
       }
 
-      // 1. 목록 데이터(item)에서 1차적으로 ID 추출 시도
-      let pId = activeTab === "sent"
-        ? (item.authorId || item.postAuthorId || item.writerId || item.targetUserId || item.partnerId)
-        : (item.applicantUserId || item.applicantId || item.userId || item.partnerId);
-
-      // 2. 목록에 ID가 없다면 게시글 상세 정보를 불러와서 깊은 탐색으로 추출
-      const targetPostId = item.postId || item.exchangePostId;
-      if (!pId && targetPostId) {
-        const postRes = await getPostDetail(targetPostId);
-        
-        // 데이터가 몇 겹의 data 객체로 싸여있든 재귀적으로 파고들어서 authorId를 찾아내는 방어 로직
-        const findAuthorId = (obj) => {
-          if (!obj) return null;
-          if (obj.authorId) return obj.authorId;
-          if (obj.writerId) return obj.writerId;
-          if (obj.data) return findAuthorId(obj.data);
-          return null;
-        };
-        
-        pId = findAuthorId(postRes);
-      }
-
-      const numericPartnerId = Number(pId);
-      
-      // 3. 만약 그래도 NaN이거나 null이면 여기서 즉시 멈추고 경고 띄움 (null 전송 방지)
-      if (!numericPartnerId || isNaN(numericPartnerId)) {
-        alert("상대방 유저 고유 번호를 찾지 못했습니다. 백엔드 데이터에 작성자 ID가 누락되었습니다.");
+      if (!partner?.id) {
+        alert("상대방 유저 정보를 찾지 못했습니다.");
         return;
       }
 
-      console.log("✅ 백엔드로 전송할 정확한 파트너 ID:", numericPartnerId);
-
-      // 4. 안전하게 파싱된 숫자를 담아 방 생성 API 호출
-      const roomData = await createOrGetChatRoom(numericPartnerId);
+      const roomData = await createOrGetChatRoom(partner.id);
       const targetRoomId =
         roomData?.roomId || roomData?.id || roomData?.chatRoomId || (typeof roomData === "number" ? roomData : null);
 
@@ -108,9 +117,9 @@ function ExchangeListCard({ item, activeTab, onRefresh }) {
       {/* 1. 상대방 프로필 정보 */}
       <div className="flex items-center justify-between rounded-lg border border-[#F4F4F4] px-5 py-2">
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-full bg-[#858485] overflow-hidden flex items-center justify-center text-white text-xs">
-            {item.offeredImageUrl ? (
-              <img src={item.offeredImageUrl} alt="프로필" className="h-full w-full object-cover" />
+          <div className="h-9 w-9 shrink-0 rounded-full bg-[#858485] overflow-hidden flex items-center justify-center text-white text-xs">
+            {partnerProfileImage ? (
+              <img src={partnerProfileImage} alt={partnerName} className="h-full w-full object-cover" />
             ) : (
               partnerName.slice(0, 1)
             )}

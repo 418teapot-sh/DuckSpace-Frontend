@@ -5,6 +5,8 @@ function HomePopupCard({ popups = [] }) {
   const navigate = useNavigate();
   const popupList = popups.slice(0, 2);
 
+  if (popupList.length === 0) return null;
+
   return (
     <section className="mt-6 px-5">
       {/* 타이틀 영역 */}
@@ -36,7 +38,7 @@ function HomePopupCard({ popups = [] }) {
               bg-[#CDDCF7]
               cursor-pointer
             "
-            onClick={() => navigate("/popup")}
+            onClick={() => navigate(`/popup/detail?id=${popup.id}`)}
           >
             <img
               src={popup.imageUrl}
