@@ -8,7 +8,7 @@ import NavBar from "../components/NavBar";
 
 import { useDisplayStore } from "../store/displayStore";
 
-import { createExhibition , getMyExhibitions, getExhibitionDetail } from "../apis/displayApi";
+import { createExhibition , getMyExhibitions, getExhibitionDetail,  } from "../apis/displayApi";
 
 import { getMyProfile, getUserProfile } from "../apis/userApi";
 

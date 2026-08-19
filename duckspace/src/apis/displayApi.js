@@ -126,3 +126,11 @@ export const updateExhibition = async (
 
   return response.data;
 };
+
+export const deleteExhibition = async (exhibitionId) => {
+  const response = await api.delete(
+    `/api/exhibitions/${exhibitionId}`
+  );
+
+  return response.data;
+};
