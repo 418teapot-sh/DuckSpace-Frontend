@@ -278,7 +278,15 @@ export default function CasualPostDetail() {
               }
               className="flex cursor-pointer items-center gap-3"
             >
-              <div className="h-6 w-6 rounded-full bg-[#DEDEDE]" />
+              <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-[#DEDEDE]">
+                {authorProfileImage && (
+                  <img
+                    src={authorProfileImage}
+                    alt={postDetail.authorNickname || "사용자"}
+                    className="h-full w-full object-cover"
+                  />
+                )}
+              </div>
 
               <span className="text-[16px] font-semibold text-[#171617]">
                 {postDetail.authorNickname || "사용자"}

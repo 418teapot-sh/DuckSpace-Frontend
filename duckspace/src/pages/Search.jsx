@@ -10,9 +10,8 @@ import {
   clearUserSearchHistory,
 } from "../apis/searchApi";
 import { getExhibitionFeed } from "../apis/displayApi";
+import ExhibitionCardPreview from "../components/ExhibitionCardPreview";
 
-// 전시장 배경 이미지 불러오기
-import displayBack from "../assets/displaybackgrounds/display_back.png";
 import defaultProfile from "../assets/defaultProfile.png";
 
 const FEED_PAGE_SIZE = 12;
@@ -203,10 +202,11 @@ function Search() {
                     onClick={() => navigate(`/display?id=${exhibition.exhibitionId}`)}
                     className="aspect-[9/10] cursor-pointer overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm"
                   >
-                    <img
-                      src={exhibition.thumbnailUrl || displayBack}
+                    <ExhibitionCardPreview
+                      items={exhibition.items}
+                      themeCode={exhibition.themeCode}
                       alt={exhibition.name}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full rounded-xl"
                     />
                   </div>
                 ))}
