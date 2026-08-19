@@ -170,12 +170,12 @@ function Search() {
               아직 등록된 장식장이 없습니다.
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
               {exhibitionFeed.map((exhibition) => (
                 <div
                   key={exhibition.exhibitionId}
                   onClick={() => navigate(`/display?id=${exhibition.exhibitionId}`)}
-                  className="h-[141px] cursor-pointer overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm"
+                  className="aspect-[9/10] cursor-pointer overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm"
                 >
                   <img
                     src={exhibition.thumbnailUrl || displayBack}
