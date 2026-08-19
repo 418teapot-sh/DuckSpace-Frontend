@@ -163,6 +163,8 @@ function DisplayEdit({ exhibitionId, readOnly = false, themeCode = "BASIC", }) {
     const [isNameModalOpen, setIsNameModalOpen] = useState(false);
     const [exhibitionName, setExhibitionName] = useState("");
 
+    const [themeStartIndex, setThemeStartIndex] = useState(0);
+
 
     useEffect(() => {
         setSelectedTheme(themeCode);
@@ -265,30 +267,77 @@ function DisplayEdit({ exhibitionId, readOnly = false, themeCode = "BASIC", }) {
   return (
     <>
     {!readOnly && isEditing && (
-        <div className="mb-4">
-            <h3 className="mb-3 text-center text-[18px] font-semibold">
+        <div className="mb-2">
+            <h3 className="mb-2 text-center text-[18px] font-semibold">
             테마
             </h3>
-
-            <div className="flex gap-3 overflow-x-auto px-1 pb-2">
-            {DISPLAY_THEMES.map((theme) => (
+            <div className="flex items-center justify-center gap-3">
+                {/* 왼쪽 버튼 */}
                 <button
-                key={theme.code}
-                type="button"
-                onClick={() => setSelectedTheme(theme.code)}
-                className={`h-[72px] w-[72px] shrink-0 overflow-hidden rounded-xl border-2 ${
-                    selectedTheme === theme.code
-                    ? "border-[#5791FB]"
-                    : "border-transparent"
-                }`}
+                    type="button"
+                    onClick={() =>
+                    setThemeStartIndex((prev) =>
+                        Math.max(0, prev - 1)
+                    )
+                    }
+                    disabled={themeStartIndex === 0}
+                    className={`flex h-[72px] w-[24px] shrink-0 items-center justify-center text-[32px] ${
+                    themeStartIndex === 0
+                        ? "cursor-default text-[#CFCFCF]"
+                        : "cursor-pointer text-[#171617]"
+                    }`}
                 >
-                <img
-                    src={theme.image}
-                    alt={theme.code}
-                    className="h-full w-full object-cover"
-                />
+                    ‹
                 </button>
-            ))}
+
+                {/* 테마 4개 */}
+                <div className="flex shrink-0 gap-3">
+                    {DISPLAY_THEMES
+                    .slice(themeStartIndex, themeStartIndex + 4)
+                    .map((theme) => (
+                        <button
+                        key={theme.code}
+                        type="button"
+                        onClick={() =>
+                            setSelectedTheme(theme.code)
+                        }
+                        className={`flex h-[72px] w-[64px] shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 ${
+                            selectedTheme === theme.code
+                            ? "border-[#5791FB]"
+                            : "border-transparent"
+                        }`}
+                        >
+                        <img
+                            src={theme.image}
+                            alt={theme.code}
+                            className="h-full w-full object-cover"
+                        />
+                        </button>
+                    ))}
+                </div>
+
+                {/* 오른쪽 버튼 */}
+                <button
+                    type="button"
+                    onClick={() =>
+                    setThemeStartIndex((prev) =>
+                        Math.min(
+                        DISPLAY_THEMES.length - 4,
+                        prev + 1
+                        )
+                    )
+                    }
+                    disabled={
+                    themeStartIndex >= DISPLAY_THEMES.length - 4
+                    }
+                    className={`flex h-[72px] w-[24px] shrink-0 items-center justify-center text-[32px] ${
+                    themeStartIndex >= DISPLAY_THEMES.length - 4
+                        ? "cursor-default text-[#CFCFCF]"
+                        : "cursor-pointer text-[#171617]"
+                    }`}
+                >
+                    ›
+                </button>
             </div>
         </div>
     )}
