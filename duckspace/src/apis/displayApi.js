@@ -154,3 +154,14 @@ export const deleteExhibition = async (exhibitionId) => {
 
   return response.data;
 };
+
+export const deleteExhibitionItem = async (
+  exhibitionId,
+  itemId
+) => {
+  const response = await api.delete(
+    `/api/exhibitions/${exhibitionId}/items/${itemId}`
+  );
+
+  return response.data;
+};
