@@ -31,9 +31,9 @@ function Display() {
       try {
         const result = await getMyProfile();
 
-        console.log("내 프로필:", result.data);
+        console.log("내 프로필:", result);
 
-        setProfile(result.data);
+        setProfile(result);
       } catch (error) {
         console.error(
           "내 프로필 조회 실패:",
