@@ -250,7 +250,8 @@ function Display() {
       {/* 전시된 굿즈 */}
       <section className="px-7">
         <DisplayGoods
-          
+          goods={displayGoods}
+          exhibitionId={activeExhibitionId}
         />
       </section>
 
