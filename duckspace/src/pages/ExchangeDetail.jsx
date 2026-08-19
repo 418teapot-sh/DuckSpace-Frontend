@@ -155,6 +155,7 @@ export default function ExchangeDetail() {
   const exchangeInfo = postDetail?.exchangeInfo;
 
   const userObj = {
+    userId: postDetail?.authorId,
     name: postDetail?.authorNickname || "작성자",
     score: 95,
     profileImageUrl: authorProfileImage,
