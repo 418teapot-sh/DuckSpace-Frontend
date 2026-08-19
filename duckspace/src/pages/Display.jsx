@@ -1,5 +1,5 @@
 import { IoChevronBack, IoEllipsisHorizontal, IoHeartOutline } from "react-icons/io5";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 import DisplayEdit from "../components/DisplayEdit";
@@ -10,23 +10,34 @@ import { useDisplayStore } from "../store/displayStore";
 
 import { createExhibition , getMyExhibitions, getExhibitionDetail } from "../apis/displayApi";
 
-import { getMyProfile } from "../apis/userApi";
+import { getMyProfile, getUserProfile } from "../apis/userApi";
 
 
 function Display() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const viewExhibitionId = searchParams.get("id");
+  const isOwnView = !viewExhibitionId;
+
   const [profile, setProfile] = useState(null);
+  const [mine, setMine] = useState(isOwnView);
+  const [viewingExhibitionName, setViewingExhibitionName] = useState("");
 
   const setEditingItems = useDisplayStore(
     (state) => state.setEditingItems
   );
 
-  
+
   const [exhibitions, setExhibitions] = useState([]);
-  const [activeExhibitionId, setActiveExhibitionId] = useState(null);
+  const [activeExhibitionId, setActiveExhibitionId] = useState(
+    viewExhibitionId ? Number(viewExhibitionId) : null
+  );
   const [displayGoods, setDisplayGoods] = useState([]);
 
+  // 내 프로필 조회 (내 장식장을 볼 때만 — 남의 장식장은 상세 조회 후 소유자 프로필을 따로 불러옴)
   useEffect(() => {
+    if (!isOwnView) return;
+
     const fetchMyProfile = async () => {
       try {
         const result = await getMyProfile();
@@ -43,9 +54,12 @@ function Display() {
     };
 
     fetchMyProfile();
-  }, []);
+  }, [isOwnView]);
 
+  // 내 장식장 목록 (내 장식장을 볼 때만). 남의 장식장은 URL의 exhibitionId 하나만 본다(초기 state에서 이미 세팅됨).
   useEffect(() => {
+    if (!isOwnView) return;
+
     const fetchMyExhibitions = async () => {
       try {
         const result = await getMyExhibitions();
@@ -70,9 +84,9 @@ function Display() {
     };
 
     fetchMyExhibitions();
-  }, []);
-  
-  
+  }, [isOwnView]);
+
+
   const handleAddExhibition = async () => {
     try {
       console.log("장식장 추가 버튼 클릭");
@@ -108,10 +122,11 @@ function Display() {
       try {
         const result = await getExhibitionDetail(
           activeExhibitionId
-          
+
         );
 
-        const items = result.data.items || [];
+        const detail = result.data;
+        const items = detail.items || [];
         setDisplayGoods(items);
         const convertedItems = items.map(
           (item) => ({
@@ -129,6 +144,21 @@ function Display() {
         );
 
         setEditingItems(convertedItems);
+
+        // 남의 장식장이면 상세 응답의 ownerId로 그 사람 프로필을 따로 불러온다
+        if (!isOwnView) {
+          setMine(detail.mine);
+          setViewingExhibitionName(detail.name || "");
+          try {
+            const ownerProfile = await getUserProfile(detail.ownerId);
+            setProfile(ownerProfile);
+          } catch (error) {
+            console.error(
+              "장식장 소유자 프로필 조회 실패:",
+              error.response?.data || error
+            );
+          }
+        }
       } catch (error) {
         console.error(
           "장식장 상세 조회 실패:",
@@ -138,7 +168,7 @@ function Display() {
     };
 
     fetchExhibitionDetail();
-  }, [activeExhibitionId, setEditingItems]);
+  }, [activeExhibitionId, setEditingItems, isOwnView]);
 
   return (
     <div className="min-h-screen bg-white pb-20">
@@ -152,7 +182,7 @@ function Display() {
         </button>
 
         <h1 className="text-[20px] font-semibold text-black">
-          장식장
+          {isOwnView ? "장식장" : viewingExhibitionName || "장식장"}
         </h1>
       </header>
 
@@ -180,63 +210,66 @@ function Display() {
           </div>
         </div>
 
-        <button className="cursor-pointer text-2xl text-[#A2A2A2]">
-          <IoEllipsisHorizontal />
-        </button>
+        {isOwnView && (
+          <button className="cursor-pointer text-2xl text-[#A2A2A2]">
+            <IoEllipsisHorizontal />
+          </button>
+        )}
       </section>
 
-      {/* 탭 영역 */}
-      <section className="px-7">
-        <div className="flex overflow-x-auto border-b border-[#EEEEEE]">
-          {exhibitions.map((exhibition) => (
+      {/* 탭 영역 — 남의 장식장은 목록 조회 API가 없어 클릭한 하나만 보여주므로 탭 자체를 숨긴다 */}
+      {isOwnView && (
+        <section className="px-7">
+          <div className="flex overflow-x-auto border-b border-[#EEEEEE]">
+            {exhibitions.map((exhibition) => (
+              <button
+                key={exhibition.exhibitionId}
+                onClick={() =>
+                  setActiveExhibitionId(
+                    exhibition.exhibitionId
+                  )
+                }
+                className={`
+                  shrink-0
+                  min-w-[120px]
+                  py-3
+                  text-[16px]
+                  font-medium
+                  cursor-pointer
+                  ${
+                    activeExhibitionId ===
+                    exhibition.exhibitionId
+                      ? "border-b-2 border-[#5791FB] text-[#5791FB]"
+                      : "text-[#A2A2A2]"
+                  }
+                `}
+              >
+                {exhibition.name}
+              </button>
+            ))}
+
+            {/* 새 장식장 추가 */}
             <button
-              key={exhibition.exhibitionId}
-              onClick={() =>
-                setActiveExhibitionId(
-                  exhibition.exhibitionId
-                )
-              }
-              className={`
+              type="button"
+              onClick={handleAddExhibition}
+              className="
                 shrink-0
                 min-w-[120px]
-                py-3
-                text-[16px]
-                font-medium
                 cursor-pointer
-                ${
-                  activeExhibitionId ===
-                  exhibition.exhibitionId
-                    ? "border-b-2 border-[#5791FB] text-[#5791FB]"
-                    : "text-[#A2A2A2]"
-                }
-              `}
+                py-3
+                text-[26px]
+                text-[#A2A2A2]
+              "
             >
-              {exhibition.name}
+              +
             </button>
-          ))}
-
-          {/* 새 장식장 추가 */}
-          <button
-            type="button"
-            onClick={handleAddExhibition}
-            className="
-              shrink-0
-              min-w-[120px]
-              cursor-pointer
-              py-3
-              text-[26px]
-              text-[#A2A2A2]
-            "
-          >
-            +
-          </button>
-        </div>
-      </section>
-        
+          </div>
+        </section>
+      )}
 
       {/* 전시장 */}
       <section className="px-7 pt-3">
-        <DisplayEdit exhibitionId={activeExhibitionId} />
+        <DisplayEdit exhibitionId={activeExhibitionId} readOnly={!mine} />
       </section>
 
       {/* 좋아요 영역 */}
@@ -252,6 +285,7 @@ function Display() {
         <DisplayGoods
           goods={displayGoods}
           exhibitionId={activeExhibitionId}
+          readOnly={!mine}
         />
       </section>
 

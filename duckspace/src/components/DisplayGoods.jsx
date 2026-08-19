@@ -2,7 +2,7 @@ import { IoChevronForward, IoAdd } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { useGoodsStore } from "../store/goodsStore";
 
-function DisplayGoods({ goods = [], exhibitionId }) {
+function DisplayGoods({ goods = [], exhibitionId, readOnly = false }) {
     const navigate = useNavigate();
     //const goods = useGoodsStore((state) => state.goods);
 
@@ -40,17 +40,19 @@ function DisplayGoods({ goods = [], exhibitionId }) {
           </div>
         ))}
 
-        {/* 새 굿즈 등록 */}
-        <button
-          className="flex h-[60px] w-[60px] shrink-0 cursor-pointer items-center justify-center rounded-xl border border-[#EEEEEE]"
-          onClick={() =>
-            navigate("/display/upload", {
-            state: { exhibitionId },
-            })
-          }
-        >
-          <IoAdd size={30} />
-        </button>
+        {/* 새 굿즈 등록 — 남의 장식장에는 못 넣으니 숨긴다 */}
+        {!readOnly && (
+          <button
+            className="flex h-[60px] w-[60px] shrink-0 cursor-pointer items-center justify-center rounded-xl border border-[#EEEEEE]"
+            onClick={() =>
+              navigate("/display/upload", {
+              state: { exhibitionId },
+              })
+            }
+          >
+            <IoAdd size={30} />
+          </button>
+        )}
       </div>
     </div>
   );
