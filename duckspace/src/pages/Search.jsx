@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoChevronBack, IoSearch, IoClose } from "react-icons/io5";
 import NavBar from "../components/NavBar";
@@ -14,6 +14,9 @@ import { getExhibitionFeed } from "../apis/displayApi";
 // 전시장 배경 이미지 불러오기
 import displayBack from "../assets/displaybackgrounds/display_back.png";
 import defaultProfile from "../assets/defaultProfile.png";
+
+const FEED_PAGE_SIZE = 12;
+const FEED_MAX_FETCH = 50; // /api/exhibitions는 limit만 있고 cursor가 없어 최대치까지 한 번에 받아 프론트에서 나눠 보여준다
 
 function UserRow({ user, onSelect }) {
   return (
@@ -45,6 +48,8 @@ function Search() {
   const [recentSearches, setRecentSearches] = useState([]);
   const [exhibitionFeed, setExhibitionFeed] = useState([]);
   const [feedLoading, setFeedLoading] = useState(true);
+  const [visibleFeedCount, setVisibleFeedCount] = useState(FEED_PAGE_SIZE);
+  const feedSentinelRef = useRef(null);
 
   // 'idle' = 타이핑 전, 'searching' = 포커스만 된 상태(최근 검색 내역), 'results' = 검색어 입력됨
   const mode = query.trim() ? "results" : isFocused ? "searching" : "idle";
@@ -67,12 +72,12 @@ function Search() {
     return () => clearTimeout(debounceTimer);
   }, [query]);
 
-  // 기본 화면 진입 시 최신 장식장 피드 조회
+  // 기본 화면 진입 시 최신 장식장 피드 조회 (최신 등록순 — API가 이미 정렬해서 내려줌)
   useEffect(() => {
     const fetchFeed = async () => {
       try {
         setFeedLoading(true);
-        const data = await getExhibitionFeed({ limit: 12 });
+        const data = await getExhibitionFeed({ limit: FEED_MAX_FETCH });
         setExhibitionFeed(data || []);
       } catch (error) {
         console.error("장식장 피드 조회 실패:", error);
@@ -83,6 +88,26 @@ function Search() {
 
     fetchFeed();
   }, []);
+
+  // 그리드 하단에 닿으면 12개씩 더 보여준다 (백엔드에 cursor 페이징이 없어 이미 받아둔 목록 안에서만 늘림)
+  useEffect(() => {
+    const sentinel = feedSentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleFeedCount((prev) =>
+            Math.min(prev + FEED_PAGE_SIZE, exhibitionFeed.length)
+          );
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [exhibitionFeed.length]);
 
   // 검색창에 포커스가 갈 때마다 최근 검색 내역 조회
   useEffect(() => {
@@ -170,21 +195,30 @@ function Search() {
               아직 등록된 장식장이 없습니다.
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-              {exhibitionFeed.map((exhibition) => (
-                <div
-                  key={exhibition.exhibitionId}
-                  onClick={() => navigate(`/display?id=${exhibition.exhibitionId}`)}
-                  className="aspect-[9/10] cursor-pointer overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm"
-                >
-                  <img
-                    src={exhibition.thumbnailUrl || displayBack}
-                    alt={exhibition.name}
-                    className="h-full w-full object-cover"
-                  />
+            <>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+                {exhibitionFeed.slice(0, visibleFeedCount).map((exhibition) => (
+                  <div
+                    key={exhibition.exhibitionId}
+                    onClick={() => navigate(`/display?id=${exhibition.exhibitionId}`)}
+                    className="aspect-[9/10] cursor-pointer overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm"
+                  >
+                    <img
+                      src={exhibition.thumbnailUrl || displayBack}
+                      alt={exhibition.name}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* 그리드 하단 감지용 — 화면에 보이면 다음 12개를 더 보여준다 */}
+              {visibleFeedCount < exhibitionFeed.length && (
+                <div ref={feedSentinelRef} className="py-4 text-center text-xs text-[#D9D9D9]">
+                  더 불러오는 중...
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </main>
       )}
