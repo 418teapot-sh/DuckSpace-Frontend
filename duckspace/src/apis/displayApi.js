@@ -9,6 +9,16 @@ export const createExhibition = async (name, themeCode) => {
   return response.data;
 };
 
+// 검색 탭 기본 화면용 — 필터 없이 최신 등록순 전체 장식장. 비로그인도 호출 가능.
+export const getExhibitionFeed = async ({ limit } = {}) => {
+  const params = {};
+  if (limit) params.limit = limit;
+
+  const res = await api.get("/api/exhibitions", { params });
+
+  return res.data.data;
+};
+
 
 export const getExhibitionDetail = async (exhibitionId) => {
   const response = await api.get(

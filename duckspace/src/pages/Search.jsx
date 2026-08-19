@@ -9,6 +9,7 @@ import {
   recordUserSearchHistory,
   clearUserSearchHistory,
 } from "../apis/searchApi";
+import { getExhibitionFeed } from "../apis/displayApi";
 
 // 전시장 배경 이미지 불러오기
 import displayBack from "../assets/displaybackgrounds/display_back.png";
@@ -42,6 +43,8 @@ function Search() {
   const [isFocused, setIsFocused] = useState(false);
   const [results, setResults] = useState([]);
   const [recentSearches, setRecentSearches] = useState([]);
+  const [exhibitionFeed, setExhibitionFeed] = useState([]);
+  const [feedLoading, setFeedLoading] = useState(true);
 
   // 'idle' = 타이핑 전, 'searching' = 포커스만 된 상태(최근 검색 내역), 'results' = 검색어 입력됨
   const mode = query.trim() ? "results" : isFocused ? "searching" : "idle";
@@ -63,6 +66,23 @@ function Search() {
 
     return () => clearTimeout(debounceTimer);
   }, [query]);
+
+  // 기본 화면 진입 시 최신 장식장 피드 조회
+  useEffect(() => {
+    const fetchFeed = async () => {
+      try {
+        setFeedLoading(true);
+        const data = await getExhibitionFeed({ limit: 12 });
+        setExhibitionFeed(data || []);
+      } catch (error) {
+        console.error("장식장 피드 조회 실패:", error);
+      } finally {
+        setFeedLoading(false);
+      }
+    };
+
+    fetchFeed();
+  }, []);
 
   // 검색창에 포커스가 갈 때마다 최근 검색 내역 조회
   useEffect(() => {
@@ -141,72 +161,31 @@ function Search() {
       {/* 3-A. 기본 상태: 덕스페이스 유저 전시장(최신순) 그리드 */}
       {mode === "idle" && (
         <main className="flex flex-col gap-3 px-6 pt-2">
-          <div className="grid grid-cols-3 gap-3">
-            <div className="col-span-2 h-[294px] overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm">
-              <img
-                src={displayBack}
-                alt="유저 전시장"
-                className="h-full w-full object-cover"
-              />
+          {feedLoading ? (
+            <div className="py-16 text-center text-sm text-[#A2A2A2]">
+              불러오는 중...
             </div>
-            <div className="col-span-1 flex flex-col gap-3">
-              <div className="h-[141px] overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm">
-                <img
-                  src={displayBack}
-                  alt="유저 전시장"
-                  className="h-full w-full object-cover"
-                />
-              </div>
-              <div className="h-[141px] overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm">
-                <img
-                  src={displayBack}
-                  alt="유저 전시장"
-                  className="h-full w-full object-cover"
-                />
-              </div>
+          ) : exhibitionFeed.length === 0 ? (
+            <div className="py-16 text-center text-sm text-[#A2A2A2]">
+              아직 등록된 장식장이 없습니다.
             </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            <div className="h-[141px] overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm">
-              <img
-                src={displayBack}
-                alt="유저 전시장"
-                className="h-full w-full object-cover"
-              />
+          ) : (
+            <div className="grid grid-cols-3 gap-3">
+              {exhibitionFeed.map((exhibition) => (
+                <div
+                  key={exhibition.exhibitionId}
+                  onClick={() => navigate(`/display?id=${exhibition.exhibitionId}`)}
+                  className="h-[141px] cursor-pointer overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm"
+                >
+                  <img
+                    src={exhibition.thumbnailUrl || displayBack}
+                    alt={exhibition.name}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              ))}
             </div>
-            <div className="h-[141px] overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm">
-              <img
-                src={displayBack}
-                alt="유저 전시장"
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="h-[141px] overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm">
-              <img
-                src={displayBack}
-                alt="유저 전시장"
-                className="h-full w-full object-cover"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            <div className="col-span-1 h-[141px] overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm">
-              <img
-                src={displayBack}
-                alt="유저 전시장"
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="col-span-2 h-[141px] overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm">
-              <img
-                src={displayBack}
-                alt="유저 전시장"
-                className="h-full w-full object-cover"
-              />
-            </div>
-          </div>
+          )}
         </main>
       )}
 
