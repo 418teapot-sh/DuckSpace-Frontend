@@ -243,13 +243,23 @@ export default function CasualPostDetail() {
         {/* 게시글 본문 */}
         <div className="flex flex-col gap-3 rounded-lg border border-white/60 bg-white/75 p-5 shadow-[0_15px_40px_rgba(205,205,205,0.08)] backdrop-blur-[10px]">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() =>
+                navigate(`/ducktalk/user?id=${postDetail.authorId}`)
+              }
+              className="flex cursor-pointer items-center gap-3"
+            >
               <div className="h-6 w-6 rounded-full bg-[#DEDEDE]" />
+
               <span className="text-[16px] font-semibold text-[#171617]">
                 {postDetail.authorNickname || "사용자"}
               </span>
-              <span className="text-[12px] text-[#858485]">{formattedDate}</span>
-            </div>
+            </button>
+
+            <span className="text-[12px] text-[#858485]">
+              {formattedDate}
+            </span>
             {postDetail.mine ? (
               <button
                 type="button"
