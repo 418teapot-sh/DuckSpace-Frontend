@@ -26,7 +26,20 @@ function Display() {
   const setEditingItems = useDisplayStore(
     (state) => state.setEditingItems
   );
+  const handleGoodsDeleted = (itemId) => {
+    setDisplayGoods((prev) =>
+      prev.filter((item) => item.itemId !== itemId)
+    );
 
+    const currentItems =
+      useDisplayStore.getState().editingItems;
+
+    setEditingItems(
+      currentItems.filter(
+        (item) => item.itemId !== itemId
+      )
+    );
+  };
 
   const [exhibitions, setExhibitions] = useState([]);
   const [activeExhibitionId, setActiveExhibitionId] = useState(
@@ -286,6 +299,7 @@ function Display() {
           goods={displayGoods}
           exhibitionId={activeExhibitionId}
           readOnly={!mine}
+          onDeleted={handleGoodsDeleted}
         />
       </section>
 
