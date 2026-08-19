@@ -14,9 +14,6 @@ import ExhibitionCardPreview from "../components/ExhibitionCardPreview";
 
 import defaultProfile from "../assets/defaultProfile.png";
 
-const FEED_PAGE_SIZE = 12;
-const FEED_MAX_FETCH = 50; // /api/exhibitions는 limit만 있고 cursor가 없어 최대치까지 한 번에 받아 프론트에서 나눠 보여준다
-
 function UserRow({ user, onSelect }) {
   return (
     <div
@@ -47,8 +44,11 @@ function Search() {
   const [recentSearches, setRecentSearches] = useState([]);
   const [exhibitionFeed, setExhibitionFeed] = useState([]);
   const [feedLoading, setFeedLoading] = useState(true);
-  const [visibleFeedCount, setVisibleFeedCount] = useState(FEED_PAGE_SIZE);
+  const [feedLoadingMore, setFeedLoadingMore] = useState(false);
+  const [feedCursor, setFeedCursor] = useState(null);
+  const [feedHasNext, setFeedHasNext] = useState(false);
   const feedSentinelRef = useRef(null);
+  const feedLoadingMoreRef = useRef(false); // 옵저버 콜백이 겹쳐 들어와도 중복 요청 안 나가게
 
   // 'idle' = 타이핑 전, 'searching' = 포커스만 된 상태(최근 검색 내역), 'results' = 검색어 입력됨
   const mode = query.trim() ? "results" : isFocused ? "searching" : "idle";
@@ -71,13 +71,15 @@ function Search() {
     return () => clearTimeout(debounceTimer);
   }, [query]);
 
-  // 기본 화면 진입 시 최신 장식장 피드 조회 (최신 등록순 — API가 이미 정렬해서 내려줌)
+  // 기본 화면 진입 시 최신 장식장 피드 첫 페이지 조회 (최신 등록순 — API가 이미 정렬해서 내려줌)
   useEffect(() => {
-    const fetchFeed = async () => {
+    const fetchFirstPage = async () => {
       try {
         setFeedLoading(true);
-        const data = await getExhibitionFeed({ limit: FEED_MAX_FETCH });
-        setExhibitionFeed(data || []);
+        const { items, nextCursor, hasNext } = await getExhibitionFeed({});
+        setExhibitionFeed(items || []);
+        setFeedCursor(nextCursor ?? null);
+        setFeedHasNext(!!hasNext);
       } catch (error) {
         console.error("장식장 피드 조회 실패:", error);
       } finally {
@@ -85,28 +87,39 @@ function Search() {
       }
     };
 
-    fetchFeed();
+    fetchFirstPage();
   }, []);
 
-  // 그리드 하단에 닿으면 12개씩 더 보여준다 (백엔드에 cursor 페이징이 없어 이미 받아둔 목록 안에서만 늘림)
+  // 그리드 하단에 닿으면 커서 기준으로 다음 페이지를 이어서 불러온다
   useEffect(() => {
     const sentinel = feedSentinelRef.current;
-    if (!sentinel) return;
+    if (!sentinel || !feedHasNext) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
-          setVisibleFeedCount((prev) =>
-            Math.min(prev + FEED_PAGE_SIZE, exhibitionFeed.length)
-          );
-        }
+        if (!entries[0].isIntersecting || feedLoadingMoreRef.current) return;
+
+        feedLoadingMoreRef.current = true;
+        setFeedLoadingMore(true);
+
+        getExhibitionFeed({ cursor: feedCursor })
+          .then(({ items, nextCursor, hasNext }) => {
+            setExhibitionFeed((prev) => [...prev, ...(items || [])]);
+            setFeedCursor(nextCursor ?? null);
+            setFeedHasNext(!!hasNext);
+          })
+          .catch((error) => console.error("장식장 피드 추가 조회 실패:", error))
+          .finally(() => {
+            feedLoadingMoreRef.current = false;
+            setFeedLoadingMore(false);
+          });
       },
       { rootMargin: "200px" }
     );
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [exhibitionFeed.length]);
+  }, [feedCursor, feedHasNext]);
 
   // 검색창에 포커스가 갈 때마다 최근 검색 내역 조회
   useEffect(() => {
@@ -196,7 +209,7 @@ function Search() {
           ) : (
             <>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-                {exhibitionFeed.slice(0, visibleFeedCount).map((exhibition) => (
+                {exhibitionFeed.map((exhibition) => (
                   <div
                     key={exhibition.exhibitionId}
                     onClick={() => navigate(`/display?id=${exhibition.exhibitionId}`)}
@@ -212,10 +225,10 @@ function Search() {
                 ))}
               </div>
 
-              {/* 그리드 하단 감지용 — 화면에 보이면 다음 12개를 더 보여준다 */}
-              {visibleFeedCount < exhibitionFeed.length && (
+              {/* 그리드 하단 감지용 — 화면에 보이면 커서로 다음 페이지를 이어서 불러온다 */}
+              {feedHasNext && (
                 <div ref={feedSentinelRef} className="py-4 text-center text-xs text-[#D9D9D9]">
-                  더 불러오는 중...
+                  {feedLoadingMore ? "더 불러오는 중..." : ""}
                 </div>
               )}
             </>

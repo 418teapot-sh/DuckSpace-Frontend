@@ -10,13 +10,14 @@ export const createExhibition = async (name, themeCode) => {
 };
 
 // 검색 탭 기본 화면용 — 필터 없이 최신 등록순 전체 장식장. 비로그인도 호출 가능.
-export const getExhibitionFeed = async ({ limit } = {}) => {
-  const params = {};
-  if (limit) params.limit = limit;
+// 커서 페이지네이션: cursor 없으면 첫 페이지, 응답의 nextCursor를 다음 호출에 그대로 넘기면 됨.
+export const getExhibitionFeed = async ({ cursor, size = 12 } = {}) => {
+  const params = { size };
+  if (cursor) params.cursor = cursor;
 
   const res = await api.get("/api/exhibitions", { params });
 
-  return res.data.data;
+  return res.data.data; // { items, nextCursor, hasNext }
 };
 
 
