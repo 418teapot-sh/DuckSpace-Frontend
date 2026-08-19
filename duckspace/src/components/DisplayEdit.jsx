@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 
 import useImage from "use-image";
 import displayBackImg from "../assets/displaybackgrounds/display_back.png";
+
+import { THEME_BACKGROUNDS, DISPLAY_THEMES } from "./displayThemes";
 import { useDisplayStore } from "../store/displayStore";
 
 
@@ -11,7 +13,7 @@ import closeIcon from "../assets/displayIcon/close.svg";
 import addIcon from "../assets/displayIcon/add.svg";
 import saveIcon from "../assets/displayIcon/save.svg";
 
-import { updateExhibitionItemPosition, updateExhibition, } from "../apis/displayApi";
+import { updateExhibitionItemPosition, updateExhibition, deleteExhibition } from "../apis/displayApi";
 // 테스트
 function DraggableImage({ item, onChange, isEditing, isSelected, onSelect, }) {  
     const [image] = useImage(item.src);
@@ -135,11 +137,16 @@ function CircleButton({ x, y, icon, onClick }) {
   );
 }
 
-function DisplayEdit({ exhibitionId, readOnly = false }) {
+function DisplayEdit({ exhibitionId, readOnly = false, themeCode = "BASIC", }) {
 
     const navigate = useNavigate();
-    const [displayBack] = useImage(displayBackImg);
+    const [selectedTheme, setSelectedTheme] = useState(themeCode);
 
+    const backgroundSrc =
+        THEME_BACKGROUNDS[selectedTheme] ??
+        THEME_BACKGROUNDS.BASIC;
+
+    const [displayBack] = useImage(backgroundSrc);
     const [closeImage] = useImage(closeIcon);
     const [addImage] = useImage(addIcon);
     const [saveImage] = useImage(saveIcon);
@@ -156,7 +163,12 @@ function DisplayEdit({ exhibitionId, readOnly = false }) {
     const [isNameModalOpen, setIsNameModalOpen] = useState(false);
     const [exhibitionName, setExhibitionName] = useState("");
 
-    
+    const [themeStartIndex, setThemeStartIndex] = useState(0);
+
+
+    useEffect(() => {
+        setSelectedTheme(themeCode);
+    }, [themeCode]);
 
     
     const handleSave = async () => {
@@ -207,8 +219,8 @@ function DisplayEdit({ exhibitionId, readOnly = false }) {
             const newName = exhibitionName.trim();
 
             await updateExhibition(exhibitionId, {
-            name: newName,
-            themeCode: "BASIC",
+                name: newName,
+                themeCode: selectedTheme,
             });
 
             setIsNameModalOpen(false);
@@ -225,9 +237,111 @@ function DisplayEdit({ exhibitionId, readOnly = false }) {
             alert("장식장 이름 수정에 실패했습니다.");
         }
     };
+    const handleDeleteExhibition = async () => {
+        if (!exhibitionId) return;
+
+        const confirmed = window.confirm(
+            "이 장식장을 삭제하시겠습니까?"
+        );
+
+        if (!confirmed) return;
+
+        try {
+            await deleteExhibition(exhibitionId);
+
+            setIsNameModalOpen(false);
+
+            alert("장식장이 삭제되었습니다.");
+
+            window.location.reload();
+        } catch (error) {
+            console.error(
+            "장식장 삭제 실패:",
+            error.response?.data || error
+            );
+
+            alert("장식장 삭제에 실패했습니다.");
+        }
+    };
 
   return (
     <>
+    {!readOnly && isEditing && (
+        <div className="mb-2">
+            <h3 className="mb-2 text-center text-[18px] font-semibold">
+            테마
+            </h3>
+            <div className="flex items-center justify-center gap-3">
+                {/* 왼쪽 버튼 */}
+                <button
+                    type="button"
+                    onClick={() =>
+                    setThemeStartIndex((prev) =>
+                        Math.max(0, prev - 1)
+                    )
+                    }
+                    disabled={themeStartIndex === 0}
+                    className={`flex h-[72px] w-[24px] shrink-0 items-center justify-center text-[32px] ${
+                    themeStartIndex === 0
+                        ? "cursor-default text-[#CFCFCF]"
+                        : "cursor-pointer text-[#171617]"
+                    }`}
+                >
+                    ‹
+                </button>
+
+                {/* 테마 4개 */}
+                <div className="flex shrink-0 gap-3">
+                    {DISPLAY_THEMES
+                    .slice(themeStartIndex, themeStartIndex + 4)
+                    .map((theme) => (
+                        <button
+                        key={theme.code}
+                        type="button"
+                        onClick={() =>
+                            setSelectedTheme(theme.code)
+                        }
+                        className={`flex h-[72px] w-[64px] shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 ${
+                            selectedTheme === theme.code
+                            ? "border-[#5791FB]"
+                            : "border-transparent"
+                        }`}
+                        >
+                        <img
+                            src={theme.image}
+                            alt={theme.code}
+                            className="h-full w-full object-cover"
+                        />
+                        </button>
+                    ))}
+                </div>
+
+                {/* 오른쪽 버튼 */}
+                <button
+                    type="button"
+                    onClick={() =>
+                    setThemeStartIndex((prev) =>
+                        Math.min(
+                        DISPLAY_THEMES.length - 4,
+                        prev + 1
+                        )
+                    )
+                    }
+                    disabled={
+                    themeStartIndex >= DISPLAY_THEMES.length - 4
+                    }
+                    className={`flex h-[72px] w-[24px] shrink-0 items-center justify-center text-[32px] ${
+                    themeStartIndex >= DISPLAY_THEMES.length - 4
+                        ? "cursor-default text-[#CFCFCF]"
+                        : "cursor-pointer text-[#171617]"
+                    }`}
+                >
+                    ›
+                </button>
+            </div>
+        </div>
+    )}
+
     <div className="flex justify-center">
       <Stage width={360} height={400}>
         <Layer listening={false}>
@@ -348,6 +462,13 @@ function DisplayEdit({ exhibitionId, readOnly = false }) {
                 저장
                 </button>
             </div>
+            <button
+                type="button"
+                onClick={handleDeleteExhibition}
+                className="mt-4 w-full cursor-pointer text-center text-[14px] text-[#A2A2A2]"
+                >
+                삭제하기
+            </button>
             </div>
         </div>
         )}

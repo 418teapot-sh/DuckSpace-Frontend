@@ -1,74 +1,40 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { IoChevronBack, IoSearch, IoClose, IoCheckmarkCircle } from "react-icons/io5";
+import { IoChevronBack, IoSearch, IoClose } from "react-icons/io5";
 import NavBar from "../components/NavBar";
 
-// 전시장 배경 이미지 불러오기
-import displayBack from "../assets/displaybackgrounds/display_back.png";
+import {
+  searchUsers,
+  getUserSearchHistory,
+  recordUserSearchHistory,
+  clearUserSearchHistory,
+} from "../apis/searchApi";
+import { getExhibitionFeed } from "../apis/displayApi";
+import ExhibitionCardPreview from "../components/ExhibitionCardPreview";
+
 import defaultProfile from "../assets/defaultProfile.png";
 
-const RECENT_SEARCH_STORAGE_KEY = "duckspace_recent_user_searches";
+const FEED_PAGE_SIZE = 12;
+const FEED_MAX_FETCH = 50; // /api/exhibitions는 limit만 있고 cursor가 없어 최대치까지 한 번에 받아 프론트에서 나눠 보여준다
 
-// TODO: 백엔드에 "닉네임으로 유저 검색" API(예: GET /api/search/users?keyword=)가 생기면
-// MOCK_USERS와 아래 client-side filter를 실제 API 호출로 교체
-const MOCK_USERS = [
-  { userId: 1, nickname: "덕톡왕덕후", profileImageUrl: defaultProfile, trustScore: 98 },
-  { userId: 2, nickname: "굿즈수집가", profileImageUrl: defaultProfile, trustScore: 95 },
-  { userId: 3, nickname: "피규어장인", profileImageUrl: defaultProfile, trustScore: 90 },
-  { userId: 4, nickname: "덕스페이스러버", profileImageUrl: defaultProfile, trustScore: 99 },
-  { userId: 5, nickname: "다른 사람", profileImageUrl: defaultProfile, trustScore: 88 },
-];
-
-function loadRecentSearches() {
-  try {
-    const saved = localStorage.getItem(RECENT_SEARCH_STORAGE_KEY);
-    return saved ? JSON.parse(saved) : [];
-  } catch {
-    return [];
-  }
-}
-
-function UserRow({ user, onSelect, onRemove }) {
+function UserRow({ user, onSelect }) {
   return (
     <div
       // blur가 click보다 먼저 발생해서 리스트가 사라지는 것을 막기 위해 mousedown에서 막음
       onMouseDown={(e) => e.preventDefault()}
       onClick={onSelect}
-      className="flex cursor-pointer items-center justify-between rounded-lg border border-[#F4F4F4] px-3 py-2.5 transition-colors hover:bg-[#FAFAFA]"
+      className="flex cursor-pointer items-center gap-3 rounded-lg border border-[#F4F4F4] px-3 py-2.5 transition-colors hover:bg-[#FAFAFA]"
     >
-      <div className="flex items-center gap-3">
-        <div className="h-9 w-9 overflow-hidden rounded-full bg-[#858485]">
-          <img
-            src={user.profileImageUrl}
-            alt={user.nickname}
-            className="h-full w-full object-cover"
-          />
-        </div>
-        <span className="text-[15px] font-semibold text-[#171617]">
-          {user.nickname}
-        </span>
+      <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-[#858485]">
+        <img
+          src={user.profileImageUrl || defaultProfile}
+          alt={user.nickname}
+          className="h-full w-full object-cover"
+        />
       </div>
-
-      <div className="flex items-center gap-2.5">
-        <span className="flex items-center gap-1 text-[13px] font-medium text-[#2F78FD]">
-          <IoCheckmarkCircle size={16} />
-          신뢰도 {user.trustScore}
-        </span>
-        {onRemove && (
-          <button
-            type="button"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove();
-            }}
-            className="cursor-pointer text-[#D9D9D9]"
-            aria-label="검색 기록 삭제"
-          >
-            <IoClose size={16} />
-          </button>
-        )}
-      </div>
+      <span className="text-[15px] font-semibold text-[#171617]">
+        {user.nickname}
+      </span>
     </div>
   );
 }
@@ -77,35 +43,103 @@ function Search() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
-  const [recentSearches, setRecentSearches] = useState(loadRecentSearches);
+  const [results, setResults] = useState([]);
+  const [recentSearches, setRecentSearches] = useState([]);
+  const [exhibitionFeed, setExhibitionFeed] = useState([]);
+  const [feedLoading, setFeedLoading] = useState(true);
+  const [visibleFeedCount, setVisibleFeedCount] = useState(FEED_PAGE_SIZE);
+  const feedSentinelRef = useRef(null);
 
   // 'idle' = 타이핑 전, 'searching' = 포커스만 된 상태(최근 검색 내역), 'results' = 검색어 입력됨
   const mode = query.trim() ? "results" : isFocused ? "searching" : "idle";
 
-  const results = query.trim()
-    ? MOCK_USERS.filter((user) => user.nickname.includes(query.trim()))
-    : [];
+  // 검색어 입력 시 실제 유저 검색 API 호출 (디바운스 300ms)
+  useEffect(() => {
+    const debounceTimer = setTimeout(async () => {
+      if (!query.trim()) {
+        setResults([]);
+        return;
+      }
+      try {
+        const data = await searchUsers({ keyword: query.trim() });
+        setResults(data || []);
+      } catch (error) {
+        console.error("유저 검색 실패:", error);
+      }
+    }, 300);
 
-  const persistRecentSearches = (next) => {
-    setRecentSearches(next);
-    localStorage.setItem(RECENT_SEARCH_STORAGE_KEY, JSON.stringify(next));
-  };
+    return () => clearTimeout(debounceTimer);
+  }, [query]);
 
-  const handleSelectUser = (user) => {
-    const next = [
-      user,
-      ...recentSearches.filter((item) => item.userId !== user.userId),
-    ].slice(0, 10);
-    persistRecentSearches(next);
+  // 기본 화면 진입 시 최신 장식장 피드 조회 (최신 등록순 — API가 이미 정렬해서 내려줌)
+  useEffect(() => {
+    const fetchFeed = async () => {
+      try {
+        setFeedLoading(true);
+        const data = await getExhibitionFeed({ limit: FEED_MAX_FETCH });
+        setExhibitionFeed(data || []);
+      } catch (error) {
+        console.error("장식장 피드 조회 실패:", error);
+      } finally {
+        setFeedLoading(false);
+      }
+    };
+
+    fetchFeed();
+  }, []);
+
+  // 그리드 하단에 닿으면 12개씩 더 보여준다 (백엔드에 cursor 페이징이 없어 이미 받아둔 목록 안에서만 늘림)
+  useEffect(() => {
+    const sentinel = feedSentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleFeedCount((prev) =>
+            Math.min(prev + FEED_PAGE_SIZE, exhibitionFeed.length)
+          );
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [exhibitionFeed.length]);
+
+  // 검색창에 포커스가 갈 때마다 최근 검색 내역 조회
+  useEffect(() => {
+    if (!isFocused) return;
+
+    const fetchHistory = async () => {
+      try {
+        const data = await getUserSearchHistory();
+        setRecentSearches(data || []);
+      } catch (error) {
+        console.error("최근 검색 내역 조회 실패:", error);
+      }
+    };
+
+    fetchHistory();
+  }, [isFocused]);
+
+  const handleSelectUser = async (user) => {
+    try {
+      await recordUserSearchHistory(user.userId);
+    } catch (error) {
+      console.error("검색 내역 기록 실패:", error);
+    }
     navigate(`/ducktalk/user?id=${user.userId}`);
   };
 
-  const handleRemoveRecent = (userId) => {
-    persistRecentSearches(recentSearches.filter((item) => item.userId !== userId));
-  };
-
-  const handleClearAllRecent = () => {
-    persistRecentSearches([]);
+  const handleClearAllRecent = async () => {
+    try {
+      await clearUserSearchHistory();
+      setRecentSearches([]);
+    } catch (error) {
+      console.error("검색 내역 삭제 실패:", error);
+    }
   };
 
   return (
@@ -151,72 +185,41 @@ function Search() {
       {/* 3-A. 기본 상태: 덕스페이스 유저 전시장(최신순) 그리드 */}
       {mode === "idle" && (
         <main className="flex flex-col gap-3 px-6 pt-2">
-          <div className="grid grid-cols-3 gap-3">
-            <div className="col-span-2 h-[294px] overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm">
-              <img
-                src={displayBack}
-                alt="유저 전시장"
-                className="h-full w-full object-cover"
-              />
+          {feedLoading ? (
+            <div className="py-16 text-center text-sm text-[#A2A2A2]">
+              불러오는 중...
             </div>
-            <div className="col-span-1 flex flex-col gap-3">
-              <div className="h-[141px] overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm">
-                <img
-                  src={displayBack}
-                  alt="유저 전시장"
-                  className="h-full w-full object-cover"
-                />
+          ) : exhibitionFeed.length === 0 ? (
+            <div className="py-16 text-center text-sm text-[#A2A2A2]">
+              아직 등록된 장식장이 없습니다.
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+                {exhibitionFeed.slice(0, visibleFeedCount).map((exhibition) => (
+                  <div
+                    key={exhibition.exhibitionId}
+                    onClick={() => navigate(`/display?id=${exhibition.exhibitionId}`)}
+                    className="aspect-[9/10] cursor-pointer overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm"
+                  >
+                    <ExhibitionCardPreview
+                      items={exhibition.items}
+                      themeCode={exhibition.themeCode}
+                      alt={exhibition.name}
+                      className="h-full w-full rounded-xl"
+                    />
+                  </div>
+                ))}
               </div>
-              <div className="h-[141px] overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm">
-                <img
-                  src={displayBack}
-                  alt="유저 전시장"
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <div className="h-[141px] overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm">
-              <img
-                src={displayBack}
-                alt="유저 전시장"
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="h-[141px] overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm">
-              <img
-                src={displayBack}
-                alt="유저 전시장"
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="h-[141px] overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm">
-              <img
-                src={displayBack}
-                alt="유저 전시장"
-                className="h-full w-full object-cover"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            <div className="col-span-1 h-[141px] overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm">
-              <img
-                src={displayBack}
-                alt="유저 전시장"
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="col-span-2 h-[141px] overflow-hidden rounded-xl border border-white/60 bg-[#F7F7F7] shadow-sm">
-              <img
-                src={displayBack}
-                alt="유저 전시장"
-                className="h-full w-full object-cover"
-              />
-            </div>
-          </div>
+              {/* 그리드 하단 감지용 — 화면에 보이면 다음 12개를 더 보여준다 */}
+              {visibleFeedCount < exhibitionFeed.length && (
+                <div ref={feedSentinelRef} className="py-4 text-center text-xs text-[#D9D9D9]">
+                  더 불러오는 중...
+                </div>
+              )}
+            </>
+          )}
         </main>
       )}
 
@@ -250,7 +253,6 @@ function Search() {
                   key={user.userId}
                   user={user}
                   onSelect={() => handleSelectUser(user)}
-                  onRemove={() => handleRemoveRecent(user.userId)}
                 />
               ))}
             </div>

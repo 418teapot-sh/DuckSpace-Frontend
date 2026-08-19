@@ -1,24 +1,27 @@
 import { IoCheckmarkCircle } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 
 function ExchangeUserPreferenceCard({ user, preferences }) {
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-white/60 bg-white/75 p-4 sm:p-5 shadow-[0px_15px_40px_rgba(205.52,205.52,205.52,0.08)] backdrop-blur-[10px]">
       {/* 상단 사용자 이름 & 신뢰도 */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-12 w-12 shrink-0 rounded-full bg-[#858485] overflow-hidden">
-            {user.profileImageUrl && (
-              <img
-                src={user.profileImageUrl}
-                alt={user.name}
-                className="h-full w-full object-cover"
-              />
-            )}
-          </div>
+        <button
+          type="button"
+          onClick={() => {
+            if (!user?.userId) return;
+
+            navigate(`/ducktalk/user?id=${user.userId}`);
+          }}
+          className="flex cursor-pointer items-center gap-3"
+        >
+          <div className="h-12 w-12 rounded-full bg-[#858485] overflow-hidden" />
+
           <span className="text-[18px] font-semibold leading-[25.2px] text-[#171617]">
             {user.name}
           </span>
-        </div>
+        </button>
         <div className="flex items-center gap-1 text-[#2F78FD]">
           <IoCheckmarkCircle size={20} />
           <span className="text-[16px] font-semibold leading-[20.8px]">

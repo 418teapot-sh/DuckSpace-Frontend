@@ -9,6 +9,16 @@ export const createExhibition = async (name, themeCode) => {
   return response.data;
 };
 
+// 검색 탭 기본 화면용 — 필터 없이 최신 등록순 전체 장식장. 비로그인도 호출 가능.
+export const getExhibitionFeed = async ({ limit } = {}) => {
+  const params = {};
+  if (limit) params.limit = limit;
+
+  const res = await api.get("/api/exhibitions", { params });
+
+  return res.data.data;
+};
+
 
 export const getExhibitionDetail = async (exhibitionId) => {
   const response = await api.get(
@@ -16,6 +26,14 @@ export const getExhibitionDetail = async (exhibitionId) => {
   );
 
   return response.data;
+};
+
+export const likeExhibition = async (exhibitionId) => {
+  await api.post(`/api/exhibitions/${exhibitionId}/like`);
+};
+
+export const unlikeExhibition = async (exhibitionId) => {
+  await api.delete(`/api/exhibitions/${exhibitionId}/like`);
 };
 
 export const updateExhibitionItemPosition = async (
@@ -112,6 +130,16 @@ export const getMyExhibitions = async () => {
   return response.data;
 };
 
+// 프로필 화면에서 "이 사람의 장식장" 버튼으로 이동할 때 사용.
+// 장식장이 하나도 없는 유저면 404(EXHIBITION_NOT_FOUND).
+export const getPrimaryExhibition = async (userId) => {
+  const response = await api.get(
+    `/api/exhibitions/users/${userId}/primary`
+  );
+
+  return response.data;
+};
+
 export const updateExhibition = async (
   exhibitionId,
   { name, themeCode }
@@ -122,6 +150,25 @@ export const updateExhibition = async (
       name,
       themeCode,
     }
+  );
+
+  return response.data;
+};
+
+export const deleteExhibition = async (exhibitionId) => {
+  const response = await api.delete(
+    `/api/exhibitions/${exhibitionId}`
+  );
+
+  return response.data;
+};
+
+export const deleteExhibitionItem = async (
+  exhibitionId,
+  itemId
+) => {
+  const response = await api.delete(
+    `/api/exhibitions/${exhibitionId}/items/${itemId}`
   );
 
   return response.data;

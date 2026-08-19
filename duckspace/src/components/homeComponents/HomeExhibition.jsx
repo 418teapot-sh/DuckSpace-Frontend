@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { IoChevronForward } from "react-icons/io5";
+import ExhibitionCardPreview from "../ExhibitionCardPreview";
 
 function HomeExhibition({ exhibitions = [] }) {
   const navigate = useNavigate();
@@ -27,19 +28,18 @@ function HomeExhibition({ exhibitions = [] }) {
       </div>
 
       {/* 전시장 카드 */}
-      <div className="flex gap-4">
+      <div className="flex items-start gap-4">
         {/* 왼쪽 큰 카드 */}
         <div
           onClick={() => navigate(`/display?id=${big.exhibitionId}`)}
-          className="h-[300px] w-[230px] shrink-0 overflow-hidden rounded-[8px] cursor-pointer bg-[#CDDCF7]"
+          className="aspect-[9/10] w-[230px] shrink-0 overflow-hidden rounded-[8px] cursor-pointer bg-[#CDDCF7]"
         >
-          {big.thumbnailUrl && (
-            <img
-              src={big.thumbnailUrl}
-              alt={big.name}
-              className="h-full w-full object-cover"
-            />
-          )}
+          <ExhibitionCardPreview
+            items={big.items}
+            themeCode={big.themeCode}
+            alt={big.name}
+            className="h-full w-full rounded-[8px]"
+          />
         </div>
 
         {/* 오른쪽 작은 카드 2개 */}
@@ -48,15 +48,14 @@ function HomeExhibition({ exhibitions = [] }) {
             <div
               key={exhibition.exhibitionId}
               onClick={() => navigate(`/display?id=${exhibition.exhibitionId}`)}
-              className="h-[140px] w-[110px] overflow-hidden rounded-[8px] cursor-pointer bg-[#CDDCF7]"
+              className="aspect-[9/10] w-[110px] overflow-hidden rounded-[8px] cursor-pointer bg-[#CDDCF7]"
             >
-              {exhibition.thumbnailUrl && (
-                <img
-                  src={exhibition.thumbnailUrl}
-                  alt={exhibition.name}
-                  className="h-full w-full object-cover"
-                />
-              )}
+              <ExhibitionCardPreview
+                items={exhibition.items}
+                themeCode={exhibition.themeCode}
+                alt={exhibition.name}
+                className="h-full w-full rounded-[8px]"
+              />
             </div>
           ))}
         </div>
