@@ -1,7 +1,4 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
-import NavBar from "./components/NavBar";
 
 import Home from "./pages/Home";
 import Search from "./pages/Search";
@@ -15,6 +12,7 @@ import CasualPostDetail from "./pages/CasualPostDetail"; // 잡담 게시글 상
 import Display from "./pages/Display";
 import PopupSchedule from "./pages/PopupSchedule";
 import PopupWishlist from "./pages/PopupWishlist";
+import PopupDetail from "./pages/PopupDetail";
 import Login from "./pages/Login";
 import Chat from "./pages/Chat"; 
 
@@ -28,6 +26,7 @@ import LoginRoute from "./components/LoginRoute";
 import Signup from "./pages/Signup";
 
 import DuckTalkProfileEdit from "./pages/DuckTalkProfileEdit"
+import DuckTalkFollowPage from "./pages/DuckTalkFollowPage";
 
 function App() {
   return (
@@ -69,6 +68,7 @@ function App() {
 
         {/* 팝업 일정 및 위시리스트 라우트 */}
         <Route path="/popup" element={<LoginRoute> <PopupSchedule /> </LoginRoute> } />
+        <Route path="/popup/detail" element={<LoginRoute> <PopupDetail /> </LoginRoute>} />
         <Route path="/popup/wishlist" element={<LoginRoute> <PopupWishlist /> </LoginRoute>} />
 
         {/* 게시글 작성 경로 */}
@@ -78,6 +78,8 @@ function App() {
         {/* 장식장 관련 페이지 */}
         <Route path="/display/list" element={<LoginRoute> <DisplayList /> </LoginRoute>} />
         <Route path="/display/upload" element={<LoginRoute> <DisplayUpload /> </LoginRoute>} />
+
+        <Route path="/ducktalk/follow" element={<LoginRoute> <DuckTalkFollowPage /> </LoginRoute>}/>
       </Routes>
     </BrowserRouter>
   );

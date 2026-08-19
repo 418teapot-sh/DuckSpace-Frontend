@@ -30,7 +30,7 @@ function HomeExhibition({ exhibitions = [] }) {
       <div className="flex gap-4">
         {/* 왼쪽 큰 카드 */}
         <div
-          onClick={() => navigate("/search")}
+          onClick={() => navigate(`/display?id=${big.exhibitionId}`)}
           className="h-[300px] w-[230px] shrink-0 overflow-hidden rounded-[8px] cursor-pointer bg-[#CDDCF7]"
         >
           {big.thumbnailUrl && (
@@ -47,7 +47,7 @@ function HomeExhibition({ exhibitions = [] }) {
           {smalls.map((exhibition) => (
             <div
               key={exhibition.exhibitionId}
-              onClick={() => navigate("/search")}
+              onClick={() => navigate(`/display?id=${exhibition.exhibitionId}`)}
               className="h-[140px] w-[110px] overflow-hidden rounded-[8px] cursor-pointer bg-[#CDDCF7]"
             >
               {exhibition.thumbnailUrl && (

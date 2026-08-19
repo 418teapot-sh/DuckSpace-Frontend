@@ -111,3 +111,18 @@ export const getMyExhibitions = async () => {
 
   return response.data;
 };
+
+export const updateExhibition = async (
+  exhibitionId,
+  { name, themeCode }
+) => {
+  const response = await api.patch(
+    `/api/exhibitions/${exhibitionId}`,
+    {
+      name,
+      themeCode,
+    }
+  );
+
+  return response.data;
+};

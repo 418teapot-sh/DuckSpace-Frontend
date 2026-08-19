@@ -18,7 +18,7 @@ export const uploadImage = async (file) => {
 
 // ===== 잡담 게시판 =====
 
-export const getCasualPosts = async ({ keyword, cursor, size = 10 , authorId} = {}) => {
+export const getCasualPosts = async ({ keyword, cursor, size = 10, authorId } = {}) => {
   const params = { size };
   if (keyword) params.keyword = keyword;
   if (cursor) params.cursor = cursor;

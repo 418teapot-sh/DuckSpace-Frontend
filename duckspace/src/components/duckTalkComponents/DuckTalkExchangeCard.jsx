@@ -12,11 +12,13 @@ import {
   getPostApplications,
   completeExchange,
 } from "../../apis/postApi";
+import { getUserProfile } from "../../apis/userApi";
 
 function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
   const navigate = useNavigate();
   const [offeredItemDetail, setOfferedItemDetail] = useState(null);
   const [applicationCount, setApplicationCount] = useState(null);
+  const [authorProfileImage, setAuthorProfileImage] = useState(null);
 
   // 마이페이지에서는 목록 API가 안 주는 아이템 이미지/상태와 신청 건수를 카드마다 따로 가져옴
   useEffect(() => {
@@ -32,6 +34,14 @@ function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
         .catch((error) => console.error("게시글별 신청 목록 조회 실패:", error));
     }
   }, [mode, post.id, post.status]);
+
+  // 목록 API는 작성자 프로필 이미지를 안 주므로, 유저 정보로 채움
+  useEffect(() => {
+    if (!post.authorId) return;
+    getUserProfile(post.authorId)
+      .then((profile) => setAuthorProfileImage(profile?.profileImageUrl || null))
+      .catch((error) => console.error("작성자 프로필 조회 실패:", error));
+  }, [post.authorId]);
 
   const handleCompleteExchange = async (e) => {
     e.stopPropagation();
@@ -107,8 +117,16 @@ function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
           onClick={handleAuthorClick}
           className="flex items-center gap-3 cursor-pointer"
         >
-          <div className="h-7 w-7 rounded-full bg-[#E5E5E5] flex items-center justify-center text-xs font-semibold text-[#858485]">
-            {authorName.slice(0, 1)}
+          <div className="h-7 w-7 shrink-0 overflow-hidden rounded-full bg-[#E5E5E5] flex items-center justify-center text-xs font-semibold text-[#858485]">
+            {authorProfileImage ? (
+              <img
+                src={authorProfileImage}
+                alt={authorName}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              authorName.slice(0, 1)
+            )}
           </div>
           <div className="flex items-center gap-3">
             <span className="text-[15px] font-semibold text-[#171617]">

@@ -11,7 +11,7 @@ import closeIcon from "../assets/displayIcon/close.svg";
 import addIcon from "../assets/displayIcon/add.svg";
 import saveIcon from "../assets/displayIcon/save.svg";
 
-import { updateExhibitionItemPosition } from "../apis/displayApi";
+import { updateExhibitionItemPosition, updateExhibition, } from "../apis/displayApi";
 // 테스트
 function DraggableImage({ item, onChange, isEditing, isSelected, onSelect, }) {  
     const [image] = useImage(item.src);
@@ -135,7 +135,7 @@ function CircleButton({ x, y, icon, onClick }) {
   );
 }
 
-function DisplayEdit({ exhibitionId }) {
+function DisplayEdit({ exhibitionId, readOnly = false }) {
 
     const navigate = useNavigate();
     const [displayBack] = useImage(displayBackImg);
@@ -152,6 +152,9 @@ function DisplayEdit({ exhibitionId }) {
 
     const [selectedId, setSelectedId] = useState(null);
     const [originalItems, setOriginalItems] = useState([]);
+
+    const [isNameModalOpen, setIsNameModalOpen] = useState(false);
+    const [exhibitionName, setExhibitionName] = useState("");
 
     
 
@@ -184,6 +187,7 @@ function DisplayEdit({ exhibitionId }) {
             setOriginalItems(
             items.map((item) => ({ ...item }))
             );
+            setIsNameModalOpen(true);
         } catch (error) {
             console.error(
             "장식장 위치 저장 실패:",
@@ -193,8 +197,37 @@ function DisplayEdit({ exhibitionId }) {
             alert("저장에 실패했습니다.");
         }
     };
+    const handleUpdateName = async () => {
+        if (!exhibitionName.trim()) {
+            alert("장식장 이름을 입력해주세요.");
+            return;
+        }
+
+        try {
+            const newName = exhibitionName.trim();
+
+            await updateExhibition(exhibitionId, {
+            name: newName,
+            themeCode: "BASIC",
+            });
+
+            setIsNameModalOpen(false);
+            setExhibitionName("");
+
+            alert("장식장이 저장되었습니다.");
+            window.location.reload();
+        } catch (error) {
+            console.error(
+            "장식장 이름 수정 실패:",
+            error.response?.data || error
+            );
+
+            alert("장식장 이름 수정에 실패했습니다.");
+        }
+    };
 
   return (
+    <>
     <div className="flex justify-center">
       <Stage width={360} height={400}>
         <Layer listening={false}>
@@ -216,9 +249,9 @@ function DisplayEdit({ exhibitionId }) {
             ))}
         </Layer>
 
-        {/* 버튼 */}
+        {/* 버튼 — 남의 장식장은 편집할 수 없으니 아예 안 그린다 */}
         <Layer>
-            {!isEditing ? (
+            {readOnly ? null : !isEditing ? (
                 <CircleButton
                     x={320}
                     y={360}
@@ -274,8 +307,51 @@ function DisplayEdit({ exhibitionId }) {
         </Layer>
 
       </Stage>
+
       
     </div>
+
+    {isNameModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-6">
+            <div className="w-full max-w-[340px] rounded-2xl bg-white p-6">
+            <h2 className="mb-5 text-center text-[18px] font-semibold text-black">
+                장식장 이름 변경
+            </h2>
+
+            <input
+                type="text"
+                value={exhibitionName}
+                onChange={(e) =>
+                setExhibitionName(e.target.value)
+                }
+                placeholder="장식장 이름을 입력해주세요"
+                className="w-full rounded-xl border border-[#DDDDDD] px-4 py-3 text-[15px] outline-none focus:border-[#5791FB]"
+            />
+
+            <div className="mt-5 flex gap-2">
+                <button
+                type="button"
+                onClick={() => {
+                    setIsNameModalOpen(false);
+                    setExhibitionName("");
+                }}
+                className="flex-1 cursor-pointer rounded-xl bg-[#F4F4F4] py-3 text-[15px] text-black"
+                >
+                취소
+                </button>
+
+                <button
+                type="button"
+                onClick={handleUpdateName}
+                className="flex-1 cursor-pointer rounded-xl bg-[#5791FB] py-3 text-[15px] text-white"
+                >
+                저장
+                </button>
+            </div>
+            </div>
+        </div>
+        )}
+    </>
   );
 }
 

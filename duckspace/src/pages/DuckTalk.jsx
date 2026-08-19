@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { IoChevronBack, IoSearch, IoAdd } from "react-icons/io5";
 
 import NavBar from "../components/NavBar";
@@ -19,7 +19,10 @@ import { getMyProfile } from "../apis/userApi";
 function DuckTalk() {
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState("chat"); // 'chat' | 'exchange'
+  // 뒤로가기 시 탭이 잡담으로 초기화되지 않도록 탭 상태를 URL 쿼리에 실어서 유지
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") === "exchange" ? "exchange" : "chat"; // 'chat' | 'exchange'
+  const setActiveTab = (tab) => setSearchParams({ tab }, { replace: true });
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
