@@ -1,74 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { IoChevronBack, IoSearch, IoClose, IoCheckmarkCircle } from "react-icons/io5";
+import { IoChevronBack, IoSearch, IoClose } from "react-icons/io5";
 import NavBar from "../components/NavBar";
+
+import {
+  searchUsers,
+  getUserSearchHistory,
+  recordUserSearchHistory,
+  clearUserSearchHistory,
+} from "../apis/searchApi";
 
 // 전시장 배경 이미지 불러오기
 import displayBack from "../assets/displaybackgrounds/display_back.png";
 import defaultProfile from "../assets/defaultProfile.png";
 
-const RECENT_SEARCH_STORAGE_KEY = "duckspace_recent_user_searches";
-
-// TODO: 백엔드에 "닉네임으로 유저 검색" API(예: GET /api/search/users?keyword=)가 생기면
-// MOCK_USERS와 아래 client-side filter를 실제 API 호출로 교체
-const MOCK_USERS = [
-  { userId: 1, nickname: "덕톡왕덕후", profileImageUrl: defaultProfile, trustScore: 98 },
-  { userId: 2, nickname: "굿즈수집가", profileImageUrl: defaultProfile, trustScore: 95 },
-  { userId: 3, nickname: "피규어장인", profileImageUrl: defaultProfile, trustScore: 90 },
-  { userId: 4, nickname: "덕스페이스러버", profileImageUrl: defaultProfile, trustScore: 99 },
-  { userId: 5, nickname: "다른 사람", profileImageUrl: defaultProfile, trustScore: 88 },
-];
-
-function loadRecentSearches() {
-  try {
-    const saved = localStorage.getItem(RECENT_SEARCH_STORAGE_KEY);
-    return saved ? JSON.parse(saved) : [];
-  } catch {
-    return [];
-  }
-}
-
-function UserRow({ user, onSelect, onRemove }) {
+function UserRow({ user, onSelect }) {
   return (
     <div
       // blur가 click보다 먼저 발생해서 리스트가 사라지는 것을 막기 위해 mousedown에서 막음
       onMouseDown={(e) => e.preventDefault()}
       onClick={onSelect}
-      className="flex cursor-pointer items-center justify-between rounded-lg border border-[#F4F4F4] px-3 py-2.5 transition-colors hover:bg-[#FAFAFA]"
+      className="flex cursor-pointer items-center gap-3 rounded-lg border border-[#F4F4F4] px-3 py-2.5 transition-colors hover:bg-[#FAFAFA]"
     >
-      <div className="flex items-center gap-3">
-        <div className="h-9 w-9 overflow-hidden rounded-full bg-[#858485]">
-          <img
-            src={user.profileImageUrl}
-            alt={user.nickname}
-            className="h-full w-full object-cover"
-          />
-        </div>
-        <span className="text-[15px] font-semibold text-[#171617]">
-          {user.nickname}
-        </span>
+      <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-[#858485]">
+        <img
+          src={user.profileImageUrl || defaultProfile}
+          alt={user.nickname}
+          className="h-full w-full object-cover"
+        />
       </div>
-
-      <div className="flex items-center gap-2.5">
-        <span className="flex items-center gap-1 text-[13px] font-medium text-[#2F78FD]">
-          <IoCheckmarkCircle size={16} />
-          신뢰도 {user.trustScore}
-        </span>
-        {onRemove && (
-          <button
-            type="button"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove();
-            }}
-            className="cursor-pointer text-[#D9D9D9]"
-            aria-label="검색 기록 삭제"
-          >
-            <IoClose size={16} />
-          </button>
-        )}
-      </div>
+      <span className="text-[15px] font-semibold text-[#171617]">
+        {user.nickname}
+      </span>
     </div>
   );
 }
@@ -77,35 +40,62 @@ function Search() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
-  const [recentSearches, setRecentSearches] = useState(loadRecentSearches);
+  const [results, setResults] = useState([]);
+  const [recentSearches, setRecentSearches] = useState([]);
 
   // 'idle' = 타이핑 전, 'searching' = 포커스만 된 상태(최근 검색 내역), 'results' = 검색어 입력됨
   const mode = query.trim() ? "results" : isFocused ? "searching" : "idle";
 
-  const results = query.trim()
-    ? MOCK_USERS.filter((user) => user.nickname.includes(query.trim()))
-    : [];
+  // 검색어 입력 시 실제 유저 검색 API 호출 (디바운스 300ms)
+  useEffect(() => {
+    const debounceTimer = setTimeout(async () => {
+      if (!query.trim()) {
+        setResults([]);
+        return;
+      }
+      try {
+        const data = await searchUsers({ keyword: query.trim() });
+        setResults(data || []);
+      } catch (error) {
+        console.error("유저 검색 실패:", error);
+      }
+    }, 300);
 
-  const persistRecentSearches = (next) => {
-    setRecentSearches(next);
-    localStorage.setItem(RECENT_SEARCH_STORAGE_KEY, JSON.stringify(next));
-  };
+    return () => clearTimeout(debounceTimer);
+  }, [query]);
 
-  const handleSelectUser = (user) => {
-    const next = [
-      user,
-      ...recentSearches.filter((item) => item.userId !== user.userId),
-    ].slice(0, 10);
-    persistRecentSearches(next);
+  // 검색창에 포커스가 갈 때마다 최근 검색 내역 조회
+  useEffect(() => {
+    if (!isFocused) return;
+
+    const fetchHistory = async () => {
+      try {
+        const data = await getUserSearchHistory();
+        setRecentSearches(data || []);
+      } catch (error) {
+        console.error("최근 검색 내역 조회 실패:", error);
+      }
+    };
+
+    fetchHistory();
+  }, [isFocused]);
+
+  const handleSelectUser = async (user) => {
+    try {
+      await recordUserSearchHistory(user.userId);
+    } catch (error) {
+      console.error("검색 내역 기록 실패:", error);
+    }
     navigate(`/ducktalk/user?id=${user.userId}`);
   };
 
-  const handleRemoveRecent = (userId) => {
-    persistRecentSearches(recentSearches.filter((item) => item.userId !== userId));
-  };
-
-  const handleClearAllRecent = () => {
-    persistRecentSearches([]);
+  const handleClearAllRecent = async () => {
+    try {
+      await clearUserSearchHistory();
+      setRecentSearches([]);
+    } catch (error) {
+      console.error("검색 내역 삭제 실패:", error);
+    }
   };
 
   return (
@@ -250,7 +240,6 @@ function Search() {
                   key={user.userId}
                   user={user}
                   onSelect={() => handleSelectUser(user)}
-                  onRemove={() => handleRemoveRecent(user.userId)}
                 />
               ))}
             </div>
