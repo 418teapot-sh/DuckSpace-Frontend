@@ -28,6 +28,7 @@ import LoginRoute from "./components/LoginRoute";
 import Signup from "./pages/Signup";
 
 import DuckTalkProfileEdit from "./pages/DuckTalkProfileEdit"
+import DuckTalkFollowPage from "./pages/DuckTalkFollowPage";
 
 function App() {
   return (
@@ -78,6 +79,8 @@ function App() {
         {/* 장식장 관련 페이지 */}
         <Route path="/display/list" element={<LoginRoute> <DisplayList /> </LoginRoute>} />
         <Route path="/display/upload" element={<LoginRoute> <DisplayUpload /> </LoginRoute>} />
+
+        <Route path="/ducktalk/follow" element={<LoginRoute> <DuckTalkFollowPage /> </LoginRoute>}/>
       </Routes>
     </BrowserRouter>
   );
