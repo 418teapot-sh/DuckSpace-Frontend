@@ -2,9 +2,9 @@ import { IoChevronForward, IoAdd } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { useGoodsStore } from "../store/goodsStore";
 
-function DisplayGoods() {
+function DisplayGoods({ goods = [], exhibitionId }) {
     const navigate = useNavigate();
-    const goods = useGoodsStore((state) => state.goods);
+    //const goods = useGoodsStore((state) => state.goods);
 
   return (
     <div className=" pb-5">
@@ -15,7 +15,7 @@ function DisplayGoods() {
         <button
           onClick={() =>
             navigate("/display/list", {
-              state: { mode: "view" },
+              state: { mode: "view", exhibitionId, },
             })
           }
           className="flex cursor-pointer items-center text-sm text-[#A2A2A2]"
@@ -29,12 +29,12 @@ function DisplayGoods() {
       <div className="flex gap-3 overflow-x-auto">
         {goods.map((item) => (
           <div
-            key={item.id}
+            key={item.itemId}
             className="flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded-xl border border-[#EEEEEE]"
           >
             <img
               src={item.imageUrl}
-              alt={item.name}
+              alt={item.itemName}
               className="h-[55px] w-[55px] object-contain"
             />
           </div>
