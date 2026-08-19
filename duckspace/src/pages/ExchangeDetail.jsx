@@ -14,6 +14,7 @@ import {
 } from "../apis/postApi";
 // ✅ 채팅 API 추가
 import { createOrGetChatRoom } from "../apis/chatApi";
+import { getUserProfile } from "../apis/userApi";
 
 export default function ExchangeDetail() {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ export default function ExchangeDetail() {
   const applicationId = searchParams.get("applicationId") || id;
 
   const [postDetail, setPostDetail] = useState(null);
+  const [authorProfileImage, setAuthorProfileImage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionComplete, setActionComplete] = useState(null);
 
@@ -44,6 +46,14 @@ export default function ExchangeDetail() {
 
     fetchDetail();
   }, [id]);
+
+  // 상세 API는 작성자 프로필 이미지를 안 주므로, 유저 정보로 채움
+  useEffect(() => {
+    if (!postDetail?.authorId) return;
+    getUserProfile(postDetail.authorId)
+      .then((profile) => setAuthorProfileImage(profile?.profileImageUrl || null))
+      .catch((error) => console.error("작성자 프로필 조회 실패:", error));
+  }, [postDetail?.authorId]);
 
   // ✅ 1:1 채팅방 생성 및 바로 입장 핸들러 추가
   const handleStartChat = async () => {
@@ -147,6 +157,7 @@ export default function ExchangeDetail() {
   const userObj = {
     name: postDetail?.authorNickname || "작성자",
     score: 95,
+    profileImageUrl: authorProfileImage,
   };
 
   const preferencesObj = {
