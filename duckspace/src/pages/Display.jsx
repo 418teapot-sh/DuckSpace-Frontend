@@ -46,6 +46,12 @@ function Display() {
     viewExhibitionId ? Number(viewExhibitionId) : null
   );
   const [displayGoods, setDisplayGoods] = useState([]);
+  // URL의 exhibitionId(남의 장식장 보기)가 바뀌면 그대로 반영하고,
+  // 내 장식장으로 돌아오면 일단 비워서 남의 장식장 상세가 잠깐이라도
+  // "내 장식장" 컨텍스트로 다시 그려지는 걸 막는다 (아래 fetchMyExhibitions가 새로 채운다).
+  useEffect(() => {
+    setActiveExhibitionId(viewExhibitionId ? Number(viewExhibitionId) : null);
+  }, [viewExhibitionId]);
   const [activeThemeCode, setActiveThemeCode] = useState("BASIC");
   const [likeCount, setLikeCount] = useState(0);
   const [likedByMe, setLikedByMe] = useState(false);
@@ -164,9 +170,13 @@ function Display() {
 
         setEditingItems(convertedItems);
 
+        // 내 장식장 탭에서 보는 거면 항상 내 것이고, 남의 장식장이면 응답의 mine을 따른다.
+        // (예전엔 남의 장식장 볼 때만 mine을 세팅해서, 거기서 내 장식장으로 돌아와도
+        //  false로 고정된 채 안 바뀌는 버그가 있었다)
+        setMine(isOwnView ? true : detail.mine);
+
         // 남의 장식장이면 상세 응답의 ownerId로 그 사람 프로필을 따로 불러온다
         if (!isOwnView) {
-          setMine(detail.mine);
           setViewingExhibitionName(detail.name || "");
           try {
             const ownerProfile = await getUserProfile(detail.ownerId);
