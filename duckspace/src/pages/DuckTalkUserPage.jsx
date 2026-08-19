@@ -10,6 +10,7 @@ import shelfIcon from "../assets/shelfIcon.svg";
 
 import { getUserProfile } from "../apis/userApi";
 import { getCasualPosts, getExchangePosts } from "../apis/postApi";
+import { getPrimaryExhibition } from "../apis/displayApi";
 
 function DuckTalkUserPage() {
   const navigate = useNavigate();
@@ -21,6 +22,20 @@ function DuckTalkUserPage() {
   const [chatPosts, setChatPosts] = useState([]);
   const [exchangePosts, setExchangePosts] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // 이 유저의 대표 장식장으로 이동. 장식장이 하나도 없으면 404가 옴.
+  const handleViewExhibition = async () => {
+    try {
+      const result = await getPrimaryExhibition(userId);
+      navigate(`/display?id=${result.data.exhibitionId}`);
+    } catch (error) {
+      if (error.response?.status === 404) {
+        alert("아직 만든 장식장이 없는 유저예요.");
+      } else {
+        console.error("대표 장식장 조회 실패:", error.response?.data || error);
+      }
+    }
+  };
 
   // 해당 유저 프로필 조회
   useEffect(() => {
@@ -72,7 +87,7 @@ function DuckTalkUserPage() {
         {/* 우측 상단: 해당 유저 전시장(장식장) 이동 아이콘 */}
         <button
           type="button"
-          onClick={() => navigate("/display")}
+          onClick={handleViewExhibition}
           className="absolute right-5 cursor-pointer flex items-center justify-center"
           aria-label="유저 전시장 보기"
         >

@@ -112,6 +112,16 @@ export const getMyExhibitions = async () => {
   return response.data;
 };
 
+// 프로필 화면에서 "이 사람의 장식장" 버튼으로 이동할 때 사용.
+// 장식장이 하나도 없는 유저면 404(EXHIBITION_NOT_FOUND).
+export const getPrimaryExhibition = async (userId) => {
+  const response = await api.get(
+    `/api/exhibitions/users/${userId}/primary`
+  );
+
+  return response.data;
+};
+
 export const updateExhibition = async (
   exhibitionId,
   { name, themeCode }
