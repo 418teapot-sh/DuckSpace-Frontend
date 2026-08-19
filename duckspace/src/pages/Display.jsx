@@ -1,4 +1,4 @@
-import { IoChevronBack, IoEllipsisHorizontal, IoHeartOutline } from "react-icons/io5";
+import { IoChevronBack, IoEllipsisHorizontal, IoHeart, IoHeartOutline } from "react-icons/io5";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -8,7 +8,7 @@ import NavBar from "../components/NavBar";
 
 import { useDisplayStore } from "../store/displayStore";
 
-import { createExhibition , getMyExhibitions, getExhibitionDetail,  } from "../apis/displayApi";
+import { createExhibition , getMyExhibitions, getExhibitionDetail, likeExhibition, unlikeExhibition } from "../apis/displayApi";
 
 import { getMyProfile, getUserProfile } from "../apis/userApi";
 
@@ -47,6 +47,8 @@ function Display() {
   );
   const [displayGoods, setDisplayGoods] = useState([]);
   const [activeThemeCode, setActiveThemeCode] = useState("BASIC");
+  const [likeCount, setLikeCount] = useState(0);
+  const [likedByMe, setLikedByMe] = useState(false);
 
   // 내 프로필 조회 (내 장식장을 볼 때만 — 남의 장식장은 상세 조회 후 소유자 프로필을 따로 불러옴)
   useEffect(() => {
@@ -143,6 +145,8 @@ function Display() {
         setActiveThemeCode(detail.themeCode || "BASIC");
         const items = detail.items || [];
         setDisplayGoods(items);
+        setLikeCount(detail.likeCount ?? 0);
+        setLikedByMe(detail.likedByMe ?? false);
         const convertedItems = items.map(
           (item) => ({
             id: item.itemId,
@@ -184,6 +188,27 @@ function Display() {
 
     fetchExhibitionDetail();
   }, [activeExhibitionId, setEditingItems, isOwnView]);
+
+  const handleToggleLike = async () => {
+    if (!activeExhibitionId) return;
+
+    const nextLiked = !likedByMe;
+
+    setLikedByMe(nextLiked);
+    setLikeCount((prev) => prev + (nextLiked ? 1 : -1));
+
+    try {
+      if (nextLiked) {
+        await likeExhibition(activeExhibitionId);
+      } else {
+        await unlikeExhibition(activeExhibitionId);
+      }
+    } catch (error) {
+      console.error("좋아요 처리 실패:", error.response?.data || error);
+      setLikedByMe(!nextLiked);
+      setLikeCount((prev) => prev + (nextLiked ? -1 : 1));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white pb-20">
@@ -289,10 +314,19 @@ function Display() {
 
       {/* 좋아요 영역 */}
       <section className="flex items-center justify-center gap-1 py-4">
-        <IoHeartOutline className="text-[24px] text-[#555555]" />
-        <span className="text-[15px] text-[#555555]">
-          2(기능 구현 예정)
-        </span>
+        <button
+          type="button"
+          onClick={handleToggleLike}
+          className="flex cursor-pointer items-center gap-1"
+          aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
+        >
+          {likedByMe ? (
+            <IoHeart className="text-[24px] text-[#FF5A5F]" />
+          ) : (
+            <IoHeartOutline className="text-[24px] text-[#555555]" />
+          )}
+          <span className="text-[15px] text-[#555555]">{likeCount}</span>
+        </button>
       </section>
 
       {/* 전시된 굿즈 */}

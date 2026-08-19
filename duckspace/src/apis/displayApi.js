@@ -28,6 +28,14 @@ export const getExhibitionDetail = async (exhibitionId) => {
   return response.data;
 };
 
+export const likeExhibition = async (exhibitionId) => {
+  await api.post(`/api/exhibitions/${exhibitionId}/like`);
+};
+
+export const unlikeExhibition = async (exhibitionId) => {
+  await api.delete(`/api/exhibitions/${exhibitionId}/like`);
+};
+
 export const updateExhibitionItemPosition = async (
   exhibitionId,
   itemId,
