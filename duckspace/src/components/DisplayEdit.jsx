@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 
 import useImage from "use-image";
 import displayBackImg from "../assets/displaybackgrounds/display_back.png";
+
+import { THEME_BACKGROUNDS, DISPLAY_THEMES } from "./displayThemes";
 import { useDisplayStore } from "../store/displayStore";
 
 
@@ -135,11 +137,16 @@ function CircleButton({ x, y, icon, onClick }) {
   );
 }
 
-function DisplayEdit({ exhibitionId, readOnly = false }) {
+function DisplayEdit({ exhibitionId, readOnly = false, themeCode = "BASIC", }) {
 
     const navigate = useNavigate();
-    const [displayBack] = useImage(displayBackImg);
+    const [selectedTheme, setSelectedTheme] = useState(themeCode);
 
+    const backgroundSrc =
+        THEME_BACKGROUNDS[selectedTheme] ??
+        THEME_BACKGROUNDS.BASIC;
+
+    const [displayBack] = useImage(backgroundSrc);
     const [closeImage] = useImage(closeIcon);
     const [addImage] = useImage(addIcon);
     const [saveImage] = useImage(saveIcon);
@@ -156,7 +163,10 @@ function DisplayEdit({ exhibitionId, readOnly = false }) {
     const [isNameModalOpen, setIsNameModalOpen] = useState(false);
     const [exhibitionName, setExhibitionName] = useState("");
 
-    
+
+    useEffect(() => {
+        setSelectedTheme(themeCode);
+    }, [themeCode]);
 
     
     const handleSave = async () => {
@@ -207,8 +217,8 @@ function DisplayEdit({ exhibitionId, readOnly = false }) {
             const newName = exhibitionName.trim();
 
             await updateExhibition(exhibitionId, {
-            name: newName,
-            themeCode: "BASIC",
+                name: newName,
+                themeCode: selectedTheme,
             });
 
             setIsNameModalOpen(false);
@@ -254,6 +264,35 @@ function DisplayEdit({ exhibitionId, readOnly = false }) {
 
   return (
     <>
+    {!readOnly && isEditing && (
+        <div className="mb-4">
+            <h3 className="mb-3 text-center text-[18px] font-semibold">
+            테마
+            </h3>
+
+            <div className="flex gap-3 overflow-x-auto px-1 pb-2">
+            {DISPLAY_THEMES.map((theme) => (
+                <button
+                key={theme.code}
+                type="button"
+                onClick={() => setSelectedTheme(theme.code)}
+                className={`h-[72px] w-[72px] shrink-0 overflow-hidden rounded-xl border-2 ${
+                    selectedTheme === theme.code
+                    ? "border-[#5791FB]"
+                    : "border-transparent"
+                }`}
+                >
+                <img
+                    src={theme.image}
+                    alt={theme.code}
+                    className="h-full w-full object-cover"
+                />
+                </button>
+            ))}
+            </div>
+        </div>
+    )}
+
     <div className="flex justify-center">
       <Stage width={360} height={400}>
         <Layer listening={false}>

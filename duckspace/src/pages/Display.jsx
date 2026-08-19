@@ -46,6 +46,7 @@ function Display() {
     viewExhibitionId ? Number(viewExhibitionId) : null
   );
   const [displayGoods, setDisplayGoods] = useState([]);
+  const [activeThemeCode, setActiveThemeCode] = useState("BASIC");
 
   // 내 프로필 조회 (내 장식장을 볼 때만 — 남의 장식장은 상세 조회 후 소유자 프로필을 따로 불러옴)
   useEffect(() => {
@@ -139,6 +140,7 @@ function Display() {
         );
 
         const detail = result.data;
+        setActiveThemeCode(detail.themeCode || "BASIC");
         const items = detail.items || [];
         setDisplayGoods(items);
         const convertedItems = items.map(
@@ -282,7 +284,7 @@ function Display() {
 
       {/* 전시장 */}
       <section className="px-7 pt-3">
-        <DisplayEdit exhibitionId={activeExhibitionId} readOnly={!mine} />
+        <DisplayEdit exhibitionId={activeExhibitionId} readOnly={!mine} themeCode={activeThemeCode} />
       </section>
 
       {/* 좋아요 영역 */}
