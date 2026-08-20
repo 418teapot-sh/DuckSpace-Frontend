@@ -8,6 +8,7 @@ import {
 } from "react-icons/io5";
 import { reportPost, deletePost, getPostDetail, likePost, unlikePost } from "../../apis/postApi";
 import { getUserProfile } from "../../apis/userApi";
+import Avatar from "../Avatar";
 
 function DuckTalkChatCard({ post, mode = "feed", onRefresh }) {
   const navigate = useNavigate();
@@ -116,47 +117,39 @@ function DuckTalkChatCard({ post, mode = "feed", onRefresh }) {
       <div className="flex items-center justify-between gap-2">
         <div
           onClick={handleAuthorClick}
-          className="flex min-w-0 items-center gap-3 cursor-pointer"
+          className="flex items-center gap-3 cursor-pointer"
         >
-          <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-[#DEDEDE]">
-            {authorProfileImage && (
-              <img
-                src={authorProfileImage}
-                alt={authorName}
-                className="h-full w-full object-cover"
-              />
-            )}
-          </div>
-          <div className="flex min-w-0 items-center gap-3">
-            <span className="truncate text-[16px] font-semibold text-[#171617]">
-              {/*{post.author} //// 여기!!!! */}
-              {authorName}
-            </span>
-            <span className="shrink-0 text-[12px] text-[#858485]">
-              {/*{post.date} //// 여기!!!! */}
-              {formattedDate}
-            </span>
-          </div>
+          <Avatar src={authorProfileImage} alt={authorName} className="h-6 w-6 shrink-0" />
+          <span className="w-[90px] shrink-0 truncate text-[16px] font-semibold text-[#171617]">
+            {/*{post.author} //// 여기!!!! */}
+            {authorName}
+          </span>
         </div>
 
-        {isMe ? (
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="shrink-0 text-[#A2A2A2] cursor-pointer"
-            aria-label="게시글 삭제"
-          >
-            <IoEllipsisHorizontal size={20} />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={handleReport}
-            className="shrink-0 text-[12px] text-[#858485] cursor-pointer hover:underline"
-          >
-            신고하기
-          </button>
-        )}
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="text-[12px] text-[#858485]">
+            {/*{post.date} //// 여기!!!! */}
+            {formattedDate}
+          </span>
+          {isMe ? (
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="text-[#A2A2A2] cursor-pointer"
+              aria-label="게시글 삭제"
+            >
+              <IoEllipsisHorizontal size={20} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleReport}
+              className="text-[12px] text-[#858485] cursor-pointer hover:underline"
+            >
+              신고하기
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 2. 본문 내용 */}
