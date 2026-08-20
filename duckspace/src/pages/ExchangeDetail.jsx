@@ -74,7 +74,7 @@ export default function ExchangeDetail() {
 
       if (targetRoomId) {
         const partnerName = postDetail?.authorNickname || "상대방";
-        navigate(`/chat/${targetRoomId}`, { state: { partnerNickname: partnerName } });
+        navigate(`/chat/${targetRoomId}`, { state: { partnerId: numericPartnerId, partnerNickname: partnerName } });
       } else {
         alert("채팅방 번호를 응답받지 못했습니다.");
       }
