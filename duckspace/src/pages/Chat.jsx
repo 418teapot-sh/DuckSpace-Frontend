@@ -33,11 +33,7 @@ function Chat() {
   // 채팅방 목록 API는 상대방 프로필 이미지를 안 주므로, partnerId로 유저 정보를 따로 채운다
   useEffect(() => {
     const partnerIds = [
-      ...new Set(
-        rooms
-          .map((room) => room.partnerId || room.opponentId || room.targetId)
-          .filter(Boolean)
-      ),
+      ...new Set(rooms.map((room) => room.partnerId).filter(Boolean)),
     ];
     if (partnerIds.length === 0) return;
 
@@ -70,11 +66,10 @@ function Chat() {
   };
 
   const handleRoomClick = (room) => {
-    const roomId = room.roomId || room.id;
-    const partnerId = room.partnerId || room.opponentId || room.targetId;
-    const partnerNickname =
-      room.partnerNickname || room.opponentNickname || room.targetNickname || "상대방";
-    const partnerProfileImageUrl = profileImages[partnerId] || room.partnerProfileUrl || null;
+    const roomId = room.roomId;
+    const partnerId = room.partnerId;
+    const partnerNickname = room.partnerNickname || "상대방";
+    const partnerProfileImageUrl = profileImages[partnerId] || null;
 
     navigate(`/chat/${roomId}`, {
       state: {
@@ -112,15 +107,13 @@ function Chat() {
           </div>
         ) : (
           rooms.map((room) => {
-            const roomId = room.roomId || room.id;
-            const partnerId = room.partnerId || room.opponentId || room.targetId;
-            const partnerName =
-              room.partnerNickname || room.opponentNickname || room.targetNickname || "상대방";
-            const lastMsg = room.lastMessage || room.latestMessage?.content || "대화 내용이 없습니다.";
-            const lastTime = room.lastMessageAt || room.updatedAt || room.latestMessage?.createdAt;
-            const hasUnread = room.hasUnread || (room.unreadCount && room.unreadCount > 0);
-            const profileImageUrl =
-              profileImages[partnerId] || room.partnerProfileUrl || defaultProfile;
+            const roomId = room.roomId;
+            const partnerId = room.partnerId;
+            const partnerName = room.partnerNickname || "상대방";
+            const lastMsg = room.lastMessage || "대화 내용이 없습니다.";
+            const lastTime = room.lastMessageAt;
+            const hasUnread = room.hasUnread;
+            const profileImageUrl = profileImages[partnerId] || defaultProfile;
 
             return (
               <button
