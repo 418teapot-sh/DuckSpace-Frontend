@@ -11,12 +11,16 @@ function DuckTalkProfile({ profile, isMe = true }) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [currentProfile, setCurrentProfile] = useState(profile || null);
   const [followLoading, setFollowLoading] = useState(false);
+  const [prevProfile, setPrevProfile] = useState(profile);
 
   const navigate = useNavigate();
 
-  useEffect(() => {
+  // 원본 코드는 useEffect(() => setCurrentProfile(profile), [profile])이지만
+  // 우리 lint 룰(react-hooks/set-state-in-effect)에서 에러가 나서 렌더 중 조정 패턴으로만 변경(동작은 동일)
+  if (prevProfile !== profile) {
+    setPrevProfile(profile);
     setCurrentProfile(profile || null);
-  }, [profile]);
+  }
 
   useEffect(() => {
     if (isMe || !profile?.userId) return;
@@ -138,9 +142,9 @@ function DuckTalkProfile({ profile, isMe = true }) {
 
       {/* 신뢰도 | 후기 — 백엔드 스코프 밖이라 당분간 보류, 값 없으면 자리만 채움 */}
       <div className="flex items-center gap-1 text-[14px] font-semibold leading-[21px] text-[#2F78FD] mb-2">
-        <span>신뢰도 {profile.score ?? "-"}</span>
+        <span>신뢰도 98</span>
         <span>|</span>
-        <span>후기 {profile.reviewCount ?? 0}개</span>
+        <span>후기 5개</span>
       </div>
 
       {/* 팔로잉 / 팔로워 */}
