@@ -262,7 +262,15 @@ function Display() {
 
       {/* 프로필 영역 */}
       <section className="flex items-center justify-between px-7 py-5">
-        <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() =>
+            navigate(
+              isOwnView ? "/ducktalk/mypage" : `/ducktalk/user?id=${profile?.userId}`
+            )
+          }
+          className="flex cursor-pointer items-center gap-3"
+        >
           <Avatar src={profile?.profileImageUrl} alt={profile?.nickname} className="h-14 w-14" />
 
           <div>
@@ -274,7 +282,7 @@ function Display() {
               팔로워 {profile?.followerCount ?? 0} | 팔로잉 {profile?.followingCount ?? 0}
             </p>
           </div>
-        </div>
+        </button>
 
         {isOwnView && (
           <button

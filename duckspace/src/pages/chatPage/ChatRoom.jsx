@@ -11,6 +11,7 @@ function ChatRoom() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const partnerId = location.state?.partnerId || null;
   const partnerNickname = location.state?.partnerNickname || "대화 상대";
   const partnerProfileImageUrl = location.state?.partnerProfileImageUrl || null;
   const [messages, setMessages] = useState([]);
@@ -77,9 +78,19 @@ function ChatRoom() {
           <IoChevronBack size={24} />
         </button>
 
-        <h1 className="text-[16px] font-medium text-black">
-          {partnerNickname}
-        </h1>
+        {partnerId ? (
+          <button
+            type="button"
+            onClick={() => navigate(`/ducktalk/user?id=${partnerId}`)}
+            className="cursor-pointer text-[16px] font-medium text-black"
+          >
+            {partnerNickname}
+          </button>
+        ) : (
+          <h1 className="text-[16px] font-medium text-black">
+            {partnerNickname}
+          </h1>
+        )}
       </header>
 
       {/* 2. 대화 메시지 영역 */}
@@ -98,6 +109,7 @@ function ChatRoom() {
               <ChatMessage
                 key={message.messageId}
                 message={message}
+                partnerId={partnerId}
                 partnerNickname={partnerNickname}
                 profileImage={partnerProfileImageUrl}
               />
