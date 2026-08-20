@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   IoHeart,
   IoHeartOutline,
-  IoEllipsisHorizontal,
+  IoTrashOutline,
   IoSwapHorizontal,
 } from "react-icons/io5";
 import {
@@ -12,6 +12,7 @@ import {
   completeExchange,
   likePost,
   unlikePost,
+  deletePost,
 } from "../../apis/postApi";
 import { getUserProfile } from "../../apis/userApi";
 import Avatar from "../Avatar";
@@ -63,6 +64,19 @@ function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
   const handleViewApplications = (e) => {
     e.stopPropagation();
     navigate("/ducktalk/exchange/list?tab=received");
+  };
+
+  // 게시글 삭제 (내 글)
+  const handleDelete = async (e) => {
+    e.stopPropagation();
+    if (!window.confirm("게시글을 삭제하시겠습니까?")) return;
+    try {
+      await deletePost(post.id);
+      onRefresh?.();
+    } catch (error) {
+      console.error("게시글 삭제 실패:", error);
+      alert("게시글 삭제 중 오류가 발생했습니다.");
+    }
   };
 
   // 좋아요 토글 (카드 클릭으로 상세 이동되는 것 방지)
@@ -136,7 +150,7 @@ function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
           className="flex items-center gap-3 cursor-pointer"
         >
           <Avatar src={authorProfileImage} alt={authorName} className="h-7 w-7 shrink-0" />
-          <span className="w-[90px] shrink-0 truncate text-[15px] font-semibold text-[#171617]">
+          <span className="w-[110px] sm:w-[160px] md:w-[200px] shrink-0 truncate text-[15px] font-semibold text-[#171617]">
             {authorName}
           </span>
         </div>
@@ -224,10 +238,11 @@ function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
         {mode === "myPage" && (
           <button
             type="button"
-            onClick={(e) => e.stopPropagation()}
+            onClick={handleDelete}
             className="shrink-0 text-[#A2A2A2] cursor-pointer"
+            aria-label="게시글 삭제"
           >
-            <IoEllipsisHorizontal size={20} />
+            <IoTrashOutline size={13} />
           </button>
         )}
       </div>
