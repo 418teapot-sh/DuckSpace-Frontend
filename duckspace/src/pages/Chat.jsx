@@ -73,10 +73,17 @@ function Chat() {
 
     navigate(`/chat/${roomId}`, {
       state: {
+        partnerId,
         partnerNickname,
         partnerProfileImageUrl,
       },
     });
+  };
+
+  const handleProfileClick = (e, partnerId) => {
+    e.stopPropagation();
+    if (!partnerId) return;
+    navigate(`/ducktalk/user?id=${partnerId}`);
   };
 
   return (
@@ -115,18 +122,29 @@ function Chat() {
             const hasUnread = room.hasUnread;
 
             return (
-              <button
+              <div
                 key={roomId}
-                type="button"
+                role="button"
+                tabIndex={0}
                 onClick={() => handleRoomClick(room)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") handleRoomClick(room);
+                }}
                 className="flex w-full items-center border-b border-[#F4F4F4] px-5 py-4 text-left cursor-pointer hover:bg-gray-50/70 transition-colors"
               >
-                {/* 프로필 이미지 */}
-                <Avatar
-                  src={profileImages[partnerId]}
-                  alt="프로필"
-                  className="h-[40px] w-[40px] shrink-0"
-                />
+                {/* 프로필 이미지 — 누르면 채팅방이 아니라 상대방 프로필로 이동 */}
+                <button
+                  type="button"
+                  onClick={(e) => handleProfileClick(e, partnerId)}
+                  className="shrink-0 cursor-pointer"
+                  aria-label={`${partnerName} 프로필 보기`}
+                >
+                  <Avatar
+                    src={profileImages[partnerId]}
+                    alt="프로필"
+                    className="h-[40px] w-[40px]"
+                  />
+                </button>
 
                 {/* 채팅 요약 정보 */}
                 <div className="ml-3 min-w-0 flex-1">
@@ -152,7 +170,7 @@ function Chat() {
                     {lastMsg}
                   </p>
                 </div>
-              </button>
+              </div>
             );
           })
         )}
