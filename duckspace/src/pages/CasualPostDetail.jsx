@@ -6,9 +6,9 @@ import {
   IoHeartOutline,
   IoChatbubbleOutline,
   IoTrashOutline,
+  IoAlertCircleOutline,
   IoLockClosedOutline,
   IoSend,
-  IoAlertCircleOutline,
 } from "react-icons/io5";
 
 import {
@@ -26,6 +26,7 @@ import { getUserProfile } from "../apis/userApi";
 import Avatar from "../components/Avatar";
 
 function CommentItem({ comment, isReply = false, onReply, onDelete, onReport }) {
+  const navigate = useNavigate();
   const formattedDate = comment.createdAt ? comment.createdAt.slice(0, 10).replace(/-/g, ".") : "";
   const isHiddenSecret = comment.secret && !comment.content;
 
@@ -42,10 +43,20 @@ function CommentItem({ comment, isReply = false, onReply, onDelete, onReport }) 
   return (
     <div className={isReply ? "flex flex-col gap-3 border-l border-[#F4F4F4] pl-4" : "flex flex-col gap-3"}>
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-3">
-          <Avatar src={authorProfileImage} alt={comment.authorNickname || "사용자"} className="h-6 w-6 shrink-0" />
-          <span className="max-w-[110px] sm:max-w-[160px] md:max-w-[200px] shrink-0 truncate text-[16px] font-semibold text-[#171617]">{comment.authorNickname || "사용자"}</span>
-        </div>
+        <button
+          type="button"
+          onClick={() => comment.authorId && navigate(`/ducktalk/user?id=${comment.authorId}`)}
+          className="flex cursor-pointer items-center gap-3"
+        >
+          <Avatar
+            src={authorProfileImage}
+            alt={comment.authorNickname || "사용자"}
+            className="h-6 w-6 shrink-0"
+          />
+          <span className="max-w-[110px] sm:max-w-[160px] md:max-w-[200px] shrink-0 truncate text-[16px] font-semibold text-[#171617]">
+            {comment.authorNickname || "사용자"}
+          </span>
+        </button>
         <span className="shrink-0 text-[12px] text-[#858485]">{formattedDate}</span>
       </div>
 
@@ -274,7 +285,11 @@ export default function CasualPostDetail() {
               }
               className="flex cursor-pointer items-center gap-3"
             >
-              <Avatar src={authorProfileImage} alt={postDetail.authorNickname || "사용자"} className="h-6 w-6 shrink-0" />
+              <Avatar
+                src={authorProfileImage}
+                alt={postDetail.authorNickname || "사용자"}
+                className="h-6 w-6 shrink-0"
+              />
 
               <span className="max-w-[110px] sm:max-w-[160px] md:max-w-[200px] shrink-0 truncate text-[16px] font-semibold text-[#171617]">
                 {postDetail.authorNickname || "사용자"}
