@@ -4,12 +4,14 @@ import { useNavigate } from "react-router-dom";
 
 import NavBar from "../components/NavBar";
 import { getChatRooms } from "../apis/chatApi";
+import { getUserProfile } from "../apis/userApi";
 import defaultProfile from "../assets/defaultProfile.png";
 
 function Chat() {
   const navigate = useNavigate();
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [profileImages, setProfileImages] = useState({}); // partnerId -> profileImageUrl
 
   // 참여 중인 채팅방 목록 조회
   useEffect(() => {
@@ -28,6 +30,31 @@ function Chat() {
     fetchRooms();
   }, []);
 
+  // 채팅방 목록 API는 상대방 프로필 이미지를 안 주므로, partnerId로 유저 정보를 따로 채운다
+  useEffect(() => {
+    const partnerIds = [
+      ...new Set(
+        rooms
+          .map((room) => room.partnerId || room.opponentId || room.targetId)
+          .filter(Boolean)
+      ),
+    ];
+    if (partnerIds.length === 0) return;
+
+    Promise.all(
+      partnerIds.map((id) =>
+        getUserProfile(id)
+          .then((profile) => [id, profile?.profileImageUrl || null])
+          .catch((error) => {
+            console.error("상대방 프로필 조회 실패:", error);
+            return [id, null];
+          })
+      )
+    ).then((results) => {
+      setProfileImages(Object.fromEntries(results));
+    });
+  }, [rooms]);
+
   const formatTime = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -44,12 +71,15 @@ function Chat() {
 
   const handleRoomClick = (room) => {
     const roomId = room.roomId || room.id;
+    const partnerId = room.partnerId || room.opponentId || room.targetId;
     const partnerNickname =
       room.partnerNickname || room.opponentNickname || room.targetNickname || "상대방";
+    const partnerProfileImageUrl = profileImages[partnerId] || room.partnerProfileUrl || null;
 
     navigate(`/chat/${roomId}`, {
       state: {
         partnerNickname,
+        partnerProfileImageUrl,
       },
     });
   };
@@ -83,11 +113,14 @@ function Chat() {
         ) : (
           rooms.map((room) => {
             const roomId = room.roomId || room.id;
+            const partnerId = room.partnerId || room.opponentId || room.targetId;
             const partnerName =
               room.partnerNickname || room.opponentNickname || room.targetNickname || "상대방";
             const lastMsg = room.lastMessage || room.latestMessage?.content || "대화 내용이 없습니다.";
             const lastTime = room.lastMessageAt || room.updatedAt || room.latestMessage?.createdAt;
             const hasUnread = room.hasUnread || (room.unreadCount && room.unreadCount > 0);
+            const profileImageUrl =
+              profileImages[partnerId] || room.partnerProfileUrl || defaultProfile;
 
             return (
               <button
@@ -98,7 +131,7 @@ function Chat() {
               >
                 {/* 프로필 이미지 */}
                 <img
-                  src={room.partnerProfileUrl || defaultProfile}
+                  src={profileImageUrl}
                   alt="프로필"
                   className="h-[40px] w-[40px] shrink-0 rounded-full object-cover bg-gray-100"
                 />

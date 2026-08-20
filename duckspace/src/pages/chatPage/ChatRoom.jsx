@@ -13,6 +13,7 @@ function ChatRoom() {
   const location = useLocation();
 
   const partnerNickname = location.state?.partnerNickname || "대화 상대";
+  const partnerProfileImageUrl = location.state?.partnerProfileImageUrl || defaultProfile;
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef(null);
@@ -99,7 +100,7 @@ function ChatRoom() {
                 key={message.messageId || message.id || `${message.createdAt}-${Math.random()}`}
                 message={message}
                 partnerNickname={partnerNickname}
-                profileImage={defaultProfile}
+                profileImage={partnerProfileImageUrl}
               />
             ))}
           </div>
