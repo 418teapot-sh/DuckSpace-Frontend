@@ -49,7 +49,7 @@ function HomeSlide({ banners = [] }) {
           items-center
           snap-x
           snap-mandatory
-          gap-2
+          gap-3
           overflow-x-auto
           px-[55px]
           scrollbar-hide
@@ -72,8 +72,8 @@ function HomeSlide({ banners = [] }) {
                 duration-300
                 ${
                   isActive
-                    ? "h-[160px] w-[280px]"
-                    : "h-[140px] w-[250px]"
+                    ? "h-[320px] w-[280px]"
+                    : "h-[290px] w-[250px]"
                 }
               `}
             >
