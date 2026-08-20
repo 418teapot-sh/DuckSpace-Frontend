@@ -11,6 +11,8 @@ import { useDisplayStore } from "../store/displayStore";
 import { createExhibition , getMyExhibitions, getExhibitionDetail, likeExhibition, unlikeExhibition } from "../apis/displayApi";
 
 import { getMyProfile, getUserProfile } from "../apis/userApi";
+import userIcon from "../assets/ducktalkIcon/userIcon.svg";
+
 
 
 function Display() {
@@ -266,7 +268,7 @@ function Display() {
             onClick={() => navigate("/ducktalk/mypage")}
             className="cursor-pointer text-2xl text-[#A2A2A2]"
           >
-            <IoEllipsisHorizontal />
+            <img src={userIcon} alt="프로필" className="h-6 w-6 object-contain" />
           </button>
         )}
       </section>
