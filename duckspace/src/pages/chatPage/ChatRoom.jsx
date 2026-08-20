@@ -97,7 +97,7 @@ function ChatRoom() {
           <div className="flex flex-col gap-4">
             {messages.map((message) => (
               <ChatMessage
-                key={message.messageId || message.id || `${message.createdAt}-${Math.random()}`}
+                key={message.messageId}
                 message={message}
                 partnerNickname={partnerNickname}
                 profileImage={partnerProfileImageUrl}
