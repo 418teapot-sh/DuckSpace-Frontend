@@ -113,10 +113,10 @@ function DuckTalkChatCard({ post, mode = "feed", onRefresh }) {
       className="flex flex-col gap-3 rounded-xl border border-[#F4F4F4] bg-white/75 p-5 shadow-[0_15px_40px_rgba(205,205,205,0.08)] backdrop-blur-[10px] cursor-pointer hover:border-[#A6C3F8] transition-all"
     >
       {/* 1. 상단 작성자 정보 (클릭 시 이동) */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <div
           onClick={handleAuthorClick}
-          className="flex items-center gap-3 cursor-pointer"
+          className="flex min-w-0 items-center gap-3 cursor-pointer"
         >
           <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-[#DEDEDE]">
             {authorProfileImage && (
@@ -127,13 +127,13 @@ function DuckTalkChatCard({ post, mode = "feed", onRefresh }) {
               />
             )}
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[16px] font-semibold text-[#171617]">
-              {/*{post.author} //// 여기!!!! */} 
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="truncate text-[16px] font-semibold text-[#171617]">
+              {/*{post.author} //// 여기!!!! */}
               {authorName}
             </span>
-            <span className="text-[12px] text-[#858485]">
-              {/*{post.date} //// 여기!!!! */} 
+            <span className="shrink-0 text-[12px] text-[#858485]">
+              {/*{post.date} //// 여기!!!! */}
               {formattedDate}
             </span>
           </div>
@@ -143,7 +143,7 @@ function DuckTalkChatCard({ post, mode = "feed", onRefresh }) {
           <button
             type="button"
             onClick={handleDelete}
-            className="text-[#A2A2A2] cursor-pointer"
+            className="shrink-0 text-[#A2A2A2] cursor-pointer"
             aria-label="게시글 삭제"
           >
             <IoEllipsisHorizontal size={20} />
@@ -152,7 +152,7 @@ function DuckTalkChatCard({ post, mode = "feed", onRefresh }) {
           <button
             type="button"
             onClick={handleReport}
-            className="text-[12px] text-[#858485] cursor-pointer hover:underline"
+            className="shrink-0 text-[12px] text-[#858485] cursor-pointer hover:underline"
           >
             신고하기
           </button>

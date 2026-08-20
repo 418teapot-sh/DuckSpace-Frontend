@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  IoHeart,
   IoHeartOutline,
   IoChatbubbleOutline,
   IoEllipsisHorizontal,
@@ -11,6 +12,8 @@ import {
   getPostDetail,
   getPostApplications,
   completeExchange,
+  likePost,
+  unlikePost,
 } from "../../apis/postApi";
 import { getUserProfile } from "../../apis/userApi";
 
@@ -19,6 +22,9 @@ function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
   const [offeredItemDetail, setOfferedItemDetail] = useState(null);
   const [applicationCount, setApplicationCount] = useState(null);
   const [authorProfileImage, setAuthorProfileImage] = useState(null);
+  const [liked, setLiked] = useState(post.liked ?? false);
+  const [likeCount, setLikeCount] = useState(post.likeCount ?? 0);
+  const [isLiking, setIsLiking] = useState(false);
 
   // 마이페이지에서는 목록 API가 안 주는 아이템 이미지/상태와 신청 건수를 카드마다 따로 가져옴
   useEffect(() => {
@@ -58,6 +64,33 @@ function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
   const handleViewApplications = (e) => {
     e.stopPropagation();
     navigate("/ducktalk/exchange/list?tab=received");
+  };
+
+  // 좋아요 토글 (카드 클릭으로 상세 이동되는 것 방지)
+  const handleToggleLike = async (e) => {
+    e.stopPropagation();
+    if (isLiking) return;
+    try {
+      setIsLiking(true);
+      if (liked) {
+        await unlikePost(post.id);
+        setLiked(false);
+        setLikeCount((prev) => Math.max(0, prev - 1));
+      } else {
+        await likePost(post.id);
+        setLiked(true);
+        setLikeCount((prev) => prev + 1);
+      }
+    } catch (error) {
+      // 목록 API는 내 좋아요 여부를 안 주므로, 이미 누른 글이면 409가 떨어짐 -> 상태만 동기화
+      if (error.response?.status === 409) {
+        setLiked((prev) => !prev);
+      } else {
+        console.error("좋아요 처리 실패:", error);
+      }
+    } finally {
+      setIsLiking(false);
+    }
   };
 
   // 게시글 신고
@@ -218,10 +251,19 @@ function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
 
       {/* 4. 좋아요 / 댓글 수 */}
       <div className="flex items-center gap-3 text-[#545454]">
-        <div className="flex items-center gap-1.5">
-          <IoHeartOutline size={18} className="text-[#545454]" />
-          <span className="text-[13px] font-semibold">{post.likeCount ?? 0}</span>
-        </div>
+        <button
+          type="button"
+          onClick={handleToggleLike}
+          disabled={isLiking}
+          className="flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"
+        >
+          {liked ? (
+            <IoHeart size={18} className="text-[#FF5A5A]" />
+          ) : (
+            <IoHeartOutline size={18} className="text-[#545454]" />
+          )}
+          <span className="text-[13px] font-semibold">{likeCount}</span>
+        </button>
         <div className="flex items-center gap-1.5">
           <IoChatbubbleOutline size={17} className="text-[#545454]" />
           <span className="text-[13px] font-semibold">{post.commentCount ?? 0}</span>
