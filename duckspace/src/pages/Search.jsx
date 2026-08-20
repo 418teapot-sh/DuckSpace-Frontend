@@ -14,6 +14,8 @@ import ExhibitionCardPreview from "../components/ExhibitionCardPreview";
 
 import defaultProfile from "../assets/defaultProfile.png";
 
+const FEED_PAGE_SIZE = 12;
+
 function UserRow({ user, onSelect }) {
   return (
     <div
@@ -45,10 +47,10 @@ function Search() {
   const [exhibitionFeed, setExhibitionFeed] = useState([]);
   const [feedLoading, setFeedLoading] = useState(true);
   const [feedLoadingMore, setFeedLoadingMore] = useState(false);
-  const [feedCursor, setFeedCursor] = useState(null);
+  const [feedNextCursor, setFeedNextCursor] = useState(null);
   const [feedHasNext, setFeedHasNext] = useState(false);
   const feedSentinelRef = useRef(null);
-  const feedLoadingMoreRef = useRef(false); // 옵저버 콜백이 겹쳐 들어와도 중복 요청 안 나가게
+  const feedLoadingMoreRef = useRef(false);
 
   // 'idle' = 타이핑 전, 'searching' = 포커스만 된 상태(최근 검색 내역), 'results' = 검색어 입력됨
   const mode = query.trim() ? "results" : isFocused ? "searching" : "idle";
@@ -73,13 +75,13 @@ function Search() {
 
   // 기본 화면 진입 시 최신 장식장 피드 첫 페이지 조회 (최신 등록순 — API가 이미 정렬해서 내려줌)
   useEffect(() => {
-    const fetchFirstPage = async () => {
+    const fetchFeed = async () => {
       try {
         setFeedLoading(true);
-        const { items, nextCursor, hasNext } = await getExhibitionFeed({});
-        setExhibitionFeed(items || []);
-        setFeedCursor(nextCursor ?? null);
-        setFeedHasNext(!!hasNext);
+        const data = await getExhibitionFeed({ size: FEED_PAGE_SIZE });
+        setExhibitionFeed(data?.items || []);
+        setFeedNextCursor(data?.nextCursor ?? null);
+        setFeedHasNext(data?.hasNext ?? false);
       } catch (error) {
         console.error("장식장 피드 조회 실패:", error);
       } finally {
@@ -87,39 +89,45 @@ function Search() {
       }
     };
 
-    fetchFirstPage();
+    fetchFeed();
   }, []);
 
-  // 그리드 하단에 닿으면 커서 기준으로 다음 페이지를 이어서 불러온다
+  // 그리드 하단에 닿으면 다음 커서로 12개씩 더 불러온다
   useEffect(() => {
     const sentinel = feedSentinelRef.current;
     if (!sentinel || !feedHasNext) return;
 
     const observer = new IntersectionObserver(
-      (entries) => {
-        if (!entries[0].isIntersecting || feedLoadingMoreRef.current) return;
+      async (entries) => {
+        if (!entries[0].isIntersecting) return;
+        // ref로 즉시(동기) 체크 — state는 비동기라 StrictMode 이중 렌더나 연속
+        // intersection 이벤트에서 같은 커서로 요청이 중복 발생할 수 있다.
+        if (feedLoadingMoreRef.current) return;
 
         feedLoadingMoreRef.current = true;
         setFeedLoadingMore(true);
 
-        getExhibitionFeed({ cursor: feedCursor })
-          .then(({ items, nextCursor, hasNext }) => {
-            setExhibitionFeed((prev) => [...prev, ...(items || [])]);
-            setFeedCursor(nextCursor ?? null);
-            setFeedHasNext(!!hasNext);
-          })
-          .catch((error) => console.error("장식장 피드 추가 조회 실패:", error))
-          .finally(() => {
-            feedLoadingMoreRef.current = false;
-            setFeedLoadingMore(false);
+        try {
+          const data = await getExhibitionFeed({
+            cursor: feedNextCursor,
+            size: FEED_PAGE_SIZE,
           });
+          setExhibitionFeed((prev) => [...prev, ...(data?.items || [])]);
+          setFeedNextCursor(data?.nextCursor ?? null);
+          setFeedHasNext(data?.hasNext ?? false);
+        } catch (error) {
+          console.error("장식장 피드 추가 조회 실패:", error);
+        } finally {
+          feedLoadingMoreRef.current = false;
+          setFeedLoadingMore(false);
+        }
       },
       { rootMargin: "200px" }
     );
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [feedCursor, feedHasNext]);
+  }, [feedHasNext, feedNextCursor]);
 
   // 검색창에 포커스가 갈 때마다 최근 검색 내역 조회
   useEffect(() => {
@@ -225,7 +233,7 @@ function Search() {
                 ))}
               </div>
 
-              {/* 그리드 하단 감지용 — 화면에 보이면 커서로 다음 페이지를 이어서 불러온다 */}
+              {/* 그리드 하단 감지용 — 화면에 보이면 다음 커서로 12개를 더 불러온다 */}
               {feedHasNext && (
                 <div ref={feedSentinelRef} className="py-4 text-center text-xs text-[#D9D9D9]">
                   {feedLoadingMore ? "더 불러오는 중..." : ""}
