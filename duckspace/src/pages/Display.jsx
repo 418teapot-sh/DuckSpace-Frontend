@@ -1,4 +1,4 @@
-import { IoChevronBack, IoHeart, IoHeartOutline } from "react-icons/io5";
+import { IoChevronBack,IoEllipsisHorizontal, IoHeart, IoHeartOutline } from "react-icons/io5";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -12,7 +12,8 @@ import { useDisplayStore } from "../store/displayStore";
 import { createExhibition , getMyExhibitions, getUserExhibitions, getExhibitionDetail, likeExhibition, unlikeExhibition } from "../apis/displayApi";
 
 import { getMyProfile, getUserProfile } from "../apis/userApi";
-import userIcon from "../assets/ducktalkIcon/userIcon.svg";
+
+import { logout } from "../apis/authApi";
 
 
 
@@ -21,6 +22,7 @@ function Display() {
   const [searchParams] = useSearchParams();
   const viewExhibitionId = searchParams.get("id");
   const isOwnView = !viewExhibitionId;
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const [profile, setProfile] = useState(null);
   const [mine, setMine] = useState(isOwnView);
@@ -29,6 +31,24 @@ function Display() {
   const setEditingItems = useDisplayStore(
     (state) => state.setEditingItems
   );
+  const handleLogout = async () => {
+    const refreshToken =
+      localStorage.getItem("refreshToken");
+
+    try {
+      if (refreshToken) {
+        await logout(refreshToken);
+      }
+    } catch (error) {
+      console.error("로그아웃 API 오류:", error);
+    } finally {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+
+      setIsMenuOpen(false);
+      navigate("/login");
+    }
+  };
   const handleGoodsDeleted = (itemId) => {
     setDisplayGoods((prev) =>
       prev.filter((item) => item.itemId !== itemId)
@@ -269,7 +289,7 @@ function Display() {
         >
           <Avatar src={profile?.profileImageUrl} alt={profile?.nickname} className="h-14 w-14" />
 
-          <div>
+          <div className="text-left">
             <p className="text-[20px] font-semibold text-black">
               {profile?.nickname || "사용자"}
             </p>
@@ -280,13 +300,14 @@ function Display() {
           </div>
         </button>
 
-        {isOwnView && (
+        {mine && (
           <button
             type = "button" 
-            onClick={() => navigate("/ducktalk/mypage")}
+            onClick={() => setIsMenuOpen(true)}
             className="cursor-pointer text-2xl text-[#A2A2A2]"
           >
-            <img src={userIcon} alt="프로필" className="h-6 w-6 object-contain" />
+            <IoEllipsisHorizontal/>
+          
           </button>
         )}
       </section>
@@ -377,6 +398,47 @@ function Display() {
 
       {/* 하단 네브바 */}
       <NavBar />
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-6">
+          <div className="w-full max-w-[320px] rounded-2xl bg-white p-6">
+            <h2 className="mb-5 text-center text-[18px] font-semibold text-black">
+              설정
+            </h2>
+
+            <button
+              type="button"
+              onClick={() => navigate("/ducktalk/mypage")}
+              className="mb-3 w-full cursor-pointer rounded-xl bg-[#F4F4F4] py-3 text-[15px] text-black"
+            >
+              내가 쓴 글
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/popup/wishlist")}
+              className="mb-3 w-full cursor-pointer rounded-xl bg-[#F4F4F4] py-3 text-[15px] text-black"
+            >
+              팝업 위시리스트
+            </button>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="w-full cursor-pointer rounded-xl bg-[#F4F4F4] py-3 text-[15px] text-black"
+            >
+              로그아웃
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen(false)}
+              className="mt-4 w-full cursor-pointer text-[14px] text-[#A2A2A2]"
+            >
+              취소
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
