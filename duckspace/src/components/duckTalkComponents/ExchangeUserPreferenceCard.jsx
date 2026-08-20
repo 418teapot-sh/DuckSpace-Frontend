@@ -19,7 +19,7 @@ function ExchangeUserPreferenceCard({ user, preferences, onReport, onDelete }) {
         >
           <Avatar src={user.profileImageUrl} alt={user.name} className="h-12 w-12 shrink-0" />
 
-          <span className="w-[90px] sm:w-[160px] md:w-[200px] shrink-0 truncate text-[18px] font-semibold leading-[25.2px] text-[#171617]">
+          <span className="max-w-[90px] sm:max-w-[160px] md:max-w-[200px] shrink-0 truncate text-[18px] font-semibold leading-[25.2px] text-[#171617]">
             {user.name}
           </span>
         </button>

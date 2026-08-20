@@ -150,7 +150,7 @@ function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
           className="flex items-center gap-3 cursor-pointer"
         >
           <Avatar src={authorProfileImage} alt={authorName} className="h-7 w-7 shrink-0" />
-          <span className="w-[110px] sm:w-[160px] md:w-[200px] shrink-0 truncate text-[15px] font-semibold text-[#171617]">
+          <span className="max-w-[110px] sm:max-w-[160px] md:max-w-[200px] shrink-0 truncate text-[15px] font-semibold text-[#171617]">
             {authorName}
           </span>
         </div>
