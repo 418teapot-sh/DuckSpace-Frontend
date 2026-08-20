@@ -154,8 +154,20 @@ function DisplayEdit({ exhibitionId, readOnly = false, themeCode = "BASIC", }) {
     const items = useDisplayStore((state) => state.editingItems);
     const setItems = useDisplayStore((state) => state.setEditingItems);
     const updateItem = useDisplayStore((state) => state.updateItem);
-    const isEditing = useDisplayStore((state) => state.isEditing);
+    const storeIsEditing = useDisplayStore((state) => state.isEditing);
     const setIsEditing = useDisplayStore((state) => state.setIsEditing);
+    // isEditing은 전역 상태라, 내 장식장을 편집하다가 저장/취소 없이 남의 장식장으로
+    // 넘어오면 readOnly인데도 그대로 true로 남아 굿즈가 드래그/회전되던 버그가 있었다.
+    // readOnly면 무조건 편집 불가로 강제한다.
+    const isEditing = storeIsEditing && !readOnly;
+
+    // 남의 장식장(readOnly)으로 넘어오면 전역 편집 상태 자체도 꺼서, 나중에 내
+    // 장식장으로 돌아갔을 때 엉뚱하게 편집모드가 켜져 있는 것도 막는다.
+    useEffect(() => {
+        if (readOnly && storeIsEditing) {
+            setIsEditing(false);
+        }
+    }, [readOnly, storeIsEditing, setIsEditing]);
 
     const [selectedId, setSelectedId] = useState(null);
     const [originalItems, setOriginalItems] = useState([]);

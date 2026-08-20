@@ -8,7 +8,7 @@ import NavBar from "../components/NavBar";
 
 import { useDisplayStore } from "../store/displayStore";
 
-import { createExhibition , getMyExhibitions, getExhibitionDetail, likeExhibition, unlikeExhibition } from "../apis/displayApi";
+import { createExhibition , getMyExhibitions, getUserExhibitions, getExhibitionDetail, likeExhibition, unlikeExhibition } from "../apis/displayApi";
 
 import { getMyProfile, getUserProfile } from "../apis/userApi";
 
@@ -46,11 +46,13 @@ function Display() {
     viewExhibitionId ? Number(viewExhibitionId) : null
   );
   const [displayGoods, setDisplayGoods] = useState([]);
+  const [viewedOwnerId, setViewedOwnerId] = useState(null);
   // URL의 exhibitionId(남의 장식장 보기)가 바뀌면 그대로 반영하고,
   // 내 장식장으로 돌아오면 일단 비워서 남의 장식장 상세가 잠깐이라도
   // "내 장식장" 컨텍스트로 다시 그려지는 걸 막는다 (아래 fetchMyExhibitions가 새로 채운다).
   useEffect(() => {
     setActiveExhibitionId(viewExhibitionId ? Number(viewExhibitionId) : null);
+    setViewedOwnerId(null); // 다른 사람 장식장으로 넘어가면 이전 사람 탭 목록은 버림
   }, [viewExhibitionId]);
   const [activeThemeCode, setActiveThemeCode] = useState("BASIC");
   const [likeCount, setLikeCount] = useState(0);
@@ -107,6 +109,25 @@ function Display() {
 
     fetchMyExhibitions();
   }, [isOwnView]);
+
+  // 남의 장식장 전체 목록 (탭으로 넘겨보기용). 상세 조회로 ownerId를 알아낸 뒤에야 부를 수 있다.
+  useEffect(() => {
+    if (isOwnView || !viewedOwnerId) return;
+
+    const fetchTheirExhibitions = async () => {
+      try {
+        const result = await getUserExhibitions(viewedOwnerId, { limit: 50 });
+        setExhibitions(result.data || []);
+      } catch (error) {
+        console.error(
+          "남의 장식장 목록 조회 실패:",
+          error.response?.data || error
+        );
+      }
+    };
+
+    fetchTheirExhibitions();
+  }, [isOwnView, viewedOwnerId]);
 
 
   const handleAddExhibition = async () => {
@@ -175,9 +196,11 @@ function Display() {
         //  false로 고정된 채 안 바뀌는 버그가 있었다)
         setMine(isOwnView ? true : detail.mine);
 
-        // 남의 장식장이면 상세 응답의 ownerId로 그 사람 프로필을 따로 불러온다
+        // 남의 장식장이면 상세 응답의 ownerId로 그 사람 프로필을 따로 불러오고,
+        // 그 사람 장식장 목록(탭)도 이 ownerId로 따로 불러온다 (아래 effect).
         if (!isOwnView) {
           setViewingExhibitionName(detail.name || "");
+          setViewedOwnerId(detail.ownerId);
           try {
             const ownerProfile = await getUserProfile(detail.ownerId);
             setProfile(ownerProfile);
@@ -267,8 +290,8 @@ function Display() {
         )}
       </section>
 
-      {/* 탭 영역 — 남의 장식장은 목록 조회 API가 없어 클릭한 하나만 보여주므로 탭 자체를 숨긴다 */}
-      {isOwnView && (
+      {/* 탭 영역 — 내 장식장이든 남의 장식장이든 그 사람이 만든 전체 목록을 탭으로 보여준다 */}
+      {exhibitions.length > 0 && (
         <section className="px-7">
           <div className="flex overflow-x-auto border-b border-[#EEEEEE]">
             {exhibitions.map((exhibition) => (
@@ -298,21 +321,23 @@ function Display() {
               </button>
             ))}
 
-            {/* 새 장식장 추가 */}
-            <button
-              type="button"
-              onClick={handleAddExhibition}
-              className="
-                shrink-0
-                min-w-[120px]
-                cursor-pointer
-                py-3
-                text-[26px]
-                text-[#A2A2A2]
-              "
-            >
-              +
-            </button>
+            {/* 새 장식장 추가 — 남의 장식장엔 못 만드니 숨긴다 */}
+            {isOwnView && (
+              <button
+                type="button"
+                onClick={handleAddExhibition}
+                className="
+                  shrink-0
+                  min-w-[120px]
+                  cursor-pointer
+                  py-3
+                  text-[26px]
+                  text-[#A2A2A2]
+                "
+              >
+                +
+              </button>
+            )}
           </div>
         </section>
       )}
