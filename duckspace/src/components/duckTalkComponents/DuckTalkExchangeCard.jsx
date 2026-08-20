@@ -15,6 +15,7 @@ import {
   unlikePost,
 } from "../../apis/postApi";
 import { getUserProfile } from "../../apis/userApi";
+import Avatar from "../Avatar";
 
 function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
   const navigate = useNavigate();
@@ -144,47 +145,37 @@ function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
       className="flex flex-col gap-4 rounded-xl border border-[#F4F4F4] bg-white/75 p-5 shadow-[0_15px_40px_rgba(205,205,205,0.08)] backdrop-blur-[10px] cursor-pointer hover:border-[#A6C3F8] transition-all"
     >
       {/* 1. 상단 작성자 정보 */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <div
           onClick={handleAuthorClick}
           className="flex items-center gap-3 cursor-pointer"
         >
-          <div className="h-7 w-7 shrink-0 overflow-hidden rounded-full bg-[#E5E5E5] flex items-center justify-center text-xs font-semibold text-[#858485]">
-            {authorProfileImage ? (
-              <img
-                src={authorProfileImage}
-                alt={authorName}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              authorName.slice(0, 1)
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[15px] font-semibold text-[#171617]">
-              {authorName}
-            </span>
-            <span className="text-[12px] text-[#858485]">{formattedDate}</span>
-          </div>
+          <Avatar src={authorProfileImage} alt={authorName} className="h-7 w-7 shrink-0" />
+          <span className="w-[90px] shrink-0 truncate text-[15px] font-semibold text-[#171617]">
+            {authorName}
+          </span>
         </div>
 
-        {mode === "myPage" ? (
-          <button 
-            type="button" 
-            onClick={(e) => e.stopPropagation()} 
-            className="text-[#A2A2A2] cursor-pointer"
-          >
-            <IoEllipsisHorizontal size={20} />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={handleReport}
-            className="text-[12px] text-[#858485] cursor-pointer hover:underline"
-          >
-            신고하기
-          </button>
-        )}
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="text-[12px] text-[#858485]">{formattedDate}</span>
+          {mode === "myPage" ? (
+            <button
+              type="button"
+              onClick={(e) => e.stopPropagation()}
+              className="text-[#A2A2A2] cursor-pointer"
+            >
+              <IoEllipsisHorizontal size={20} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleReport}
+              className="text-[12px] text-[#858485] cursor-pointer hover:underline"
+            >
+              신고하기
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 2. 교환 제목 / 내용 */}
