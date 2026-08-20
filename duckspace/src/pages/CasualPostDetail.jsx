@@ -22,6 +22,7 @@ import {
   reportComment,
 } from "../apis/postApi";
 import { getUserProfile } from "../apis/userApi";
+import Avatar from "../components/Avatar";
 
 function CommentItem({ comment, isReply = false, onReply, onDelete, onReport }) {
   const formattedDate = comment.createdAt ? comment.createdAt.slice(0, 10).replace(/-/g, ".") : "";
@@ -39,40 +40,32 @@ function CommentItem({ comment, isReply = false, onReply, onDelete, onReport }) 
 
   return (
     <div className={isReply ? "flex flex-col gap-3 border-l border-[#F4F4F4] pl-4" : "flex flex-col gap-3"}>
-      <div className="flex items-center justify-center gap-3">
-        <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-[#DEDEDE]">
-          {authorProfileImage && (
-            <img
-              src={authorProfileImage}
-              alt={comment.authorNickname || "사용자"}
-              className="h-full w-full object-cover"
-            />
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-3">
+          <Avatar src={authorProfileImage} alt={comment.authorNickname || "사용자"} className="h-6 w-6 shrink-0" />
+          <span className="w-[90px] shrink-0 truncate text-[16px] font-semibold text-[#171617]">{comment.authorNickname || "사용자"}</span>
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="text-[12px] text-[#858485]">{formattedDate}</span>
+          {comment.mine ? (
+            <button
+              type="button"
+              onClick={() => onDelete(comment.id)}
+              className="text-[#A2A2A2] cursor-pointer"
+              aria-label="댓글 메뉴"
+            >
+              <IoEllipsisHorizontal size={18} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onReport(comment.id)}
+              className="text-[12px] text-[#858485] cursor-pointer hover:underline"
+            >
+              신고하기
+            </button>
           )}
         </div>
-        <div className="flex min-w-0 flex-1 items-center justify-between">
-          <div className="flex min-w-0 items-center gap-3">
-            <span className="truncate text-[16px] font-semibold text-[#171617]">{comment.authorNickname || "사용자"}</span>
-            <span className="shrink-0 text-[12px] text-[#858485]">{formattedDate}</span>
-          </div>
-        </div>
-        {comment.mine ? (
-          <button
-            type="button"
-            onClick={() => onDelete(comment.id)}
-            className="shrink-0 text-[#A2A2A2] cursor-pointer"
-            aria-label="댓글 메뉴"
-          >
-            <IoEllipsisHorizontal size={18} />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => onReport(comment.id)}
-            className="text-[12px] text-[#858485] cursor-pointer hover:underline shrink-0"
-          >
-            신고하기
-          </button>
-        )}
       </div>
 
       {comment.secret ? (
@@ -276,44 +269,38 @@ export default function CasualPostDetail() {
               onClick={() =>
                 navigate(`/ducktalk/user?id=${postDetail.authorId}`)
               }
-              className="flex min-w-0 cursor-pointer items-center gap-3"
+              className="flex cursor-pointer items-center gap-3"
             >
-              <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-[#DEDEDE]">
-                {authorProfileImage && (
-                  <img
-                    src={authorProfileImage}
-                    alt={postDetail.authorNickname || "사용자"}
-                    className="h-full w-full object-cover"
-                  />
-                )}
-              </div>
+              <Avatar src={authorProfileImage} alt={postDetail.authorNickname || "사용자"} className="h-6 w-6 shrink-0" />
 
-              <span className="truncate text-[16px] font-semibold text-[#171617]">
+              <span className="w-[90px] shrink-0 truncate text-[16px] font-semibold text-[#171617]">
                 {postDetail.authorNickname || "사용자"}
               </span>
             </button>
 
-            <span className="shrink-0 text-[12px] text-[#858485]">
-              {formattedDate}
-            </span>
-            {postDetail.mine ? (
-              <button
-                type="button"
-                onClick={handleDeletePost}
-                className="shrink-0 text-[#A2A2A2] cursor-pointer"
-                aria-label="게시글 메뉴"
-              >
-                <IoEllipsisHorizontal size={20} />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleReportPost}
-                className="shrink-0 text-[12px] text-[#858485] cursor-pointer hover:underline"
-              >
-                신고하기
-              </button>
-            )}
+            <div className="flex shrink-0 items-center gap-3">
+              <span className="text-[12px] text-[#858485]">
+                {formattedDate}
+              </span>
+              {postDetail.mine ? (
+                <button
+                  type="button"
+                  onClick={handleDeletePost}
+                  className="text-[#A2A2A2] cursor-pointer"
+                  aria-label="게시글 메뉴"
+                >
+                  <IoEllipsisHorizontal size={20} />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleReportPost}
+                  className="text-[12px] text-[#858485] cursor-pointer hover:underline"
+                >
+                  신고하기
+                </button>
+              )}
+            </div>
           </div>
 
           <p className="text-[14px] leading-[21px] text-[#545454] whitespace-pre-wrap">{postDetail.content}</p>

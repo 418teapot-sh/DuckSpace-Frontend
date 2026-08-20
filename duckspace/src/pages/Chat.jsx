@@ -3,9 +3,9 @@ import { IoChevronBack } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 
 import NavBar from "../components/NavBar";
+import Avatar from "../components/Avatar";
 import { getChatRooms } from "../apis/chatApi";
 import { getUserProfile } from "../apis/userApi";
-import defaultProfile from "../assets/defaultProfile.png";
 
 function Chat() {
   const navigate = useNavigate();
@@ -113,7 +113,6 @@ function Chat() {
             const lastMsg = room.lastMessage || "대화 내용이 없습니다.";
             const lastTime = room.lastMessageAt;
             const hasUnread = room.hasUnread;
-            const profileImageUrl = profileImages[partnerId] || defaultProfile;
 
             return (
               <button
@@ -123,10 +122,10 @@ function Chat() {
                 className="flex w-full items-center border-b border-[#F4F4F4] px-5 py-4 text-left cursor-pointer hover:bg-gray-50/70 transition-colors"
               >
                 {/* 프로필 이미지 */}
-                <img
-                  src={profileImageUrl}
+                <Avatar
+                  src={profileImages[partnerId]}
                   alt="프로필"
-                  className="h-[40px] w-[40px] shrink-0 rounded-full object-cover bg-gray-100"
+                  className="h-[40px] w-[40px] shrink-0"
                 />
 
                 {/* 채팅 요약 정보 */}
