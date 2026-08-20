@@ -22,6 +22,7 @@ import {
   reportComment,
 } from "../apis/postApi";
 import { getUserProfile } from "../apis/userApi";
+import Avatar from "../components/Avatar";
 
 function CommentItem({ comment, isReply = false, onReply, onDelete, onReport }) {
   const formattedDate = comment.createdAt ? comment.createdAt.slice(0, 10).replace(/-/g, ".") : "";
@@ -40,15 +41,11 @@ function CommentItem({ comment, isReply = false, onReply, onDelete, onReport }) 
   return (
     <div className={isReply ? "flex flex-col gap-3 border-l border-[#F4F4F4] pl-4" : "flex flex-col gap-3"}>
       <div className="flex items-center justify-center gap-3">
-        <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-[#DEDEDE]">
-          {authorProfileImage && (
-            <img
-              src={authorProfileImage}
-              alt={comment.authorNickname || "사용자"}
-              className="h-full w-full object-cover"
-            />
-          )}
-        </div>
+        <Avatar
+          src={authorProfileImage}
+          alt={comment.authorNickname || "사용자"}
+          className="h-6 w-6 shrink-0"
+        />
         <div className="flex flex-1 items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-[16px] font-semibold text-[#171617]">{comment.authorNickname || "사용자"}</span>
@@ -278,15 +275,11 @@ export default function CasualPostDetail() {
               }
               className="flex cursor-pointer items-center gap-3"
             >
-              <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-[#DEDEDE]">
-                {authorProfileImage && (
-                  <img
-                    src={authorProfileImage}
-                    alt={postDetail.authorNickname || "사용자"}
-                    className="h-full w-full object-cover"
-                  />
-                )}
-              </div>
+              <Avatar
+                src={authorProfileImage}
+                alt={postDetail.authorNickname || "사용자"}
+                className="h-6 w-6 shrink-0"
+              />
 
               <span className="text-[16px] font-semibold text-[#171617]">
                 {postDetail.authorNickname || "사용자"}

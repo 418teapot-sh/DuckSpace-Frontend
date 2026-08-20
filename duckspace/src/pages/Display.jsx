@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import DisplayEdit from "../components/DisplayEdit";
 import DisplayGoods from "../components/DisplayGoods";
 import NavBar from "../components/NavBar";
+import Avatar from "../components/Avatar";
 
 import { useDisplayStore } from "../store/displayStore";
 
@@ -262,15 +263,7 @@ function Display() {
       {/* 프로필 영역 */}
       <section className="flex items-center justify-between px-7 py-5">
         <div className="flex items-center gap-3">
-          <div className="h-14 w-14 overflow-hidden rounded-full bg-[#F4F4F4]">
-            {profile?.profileImageUrl && (
-              <img
-                src={profile.profileImageUrl}
-                alt={profile.nickname}
-                className="h-full w-full object-cover"
-              />
-            )}
-          </div>
+          <Avatar src={profile?.profileImageUrl} alt={profile?.nickname} className="h-14 w-14" />
 
           <div>
             <p className="text-[20px] font-semibold text-black">
