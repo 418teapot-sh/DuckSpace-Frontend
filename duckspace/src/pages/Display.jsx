@@ -69,8 +69,6 @@ function Display() {
       try {
         const result = await getMyProfile();
 
-        console.log("내 프로필:", result);
-
         setProfile(result);
       } catch (error) {
         console.error(
@@ -90,8 +88,6 @@ function Display() {
     const fetchMyExhibitions = async () => {
       try {
         const result = await getMyExhibitions();
-
-        console.log("내 장식장 목록:", result.data);
 
         const exhibitionList = result.data || [];
 
@@ -135,14 +131,12 @@ function Display() {
 
   const handleAddExhibition = async () => {
     try {
-      console.log("장식장 추가 버튼 클릭");
       const nextNumber = exhibitions.length + 1;
 
       const result = await createExhibition(
         `장식장 ${nextNumber}`,
         "BASIC"
       );
-      console.log("장식장 생성 응답:", result);
 
       const newExhibition = result.data;
 

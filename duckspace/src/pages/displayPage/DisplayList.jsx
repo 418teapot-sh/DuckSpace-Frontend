@@ -3,7 +3,7 @@ import { useGoodsStore } from "../../store/goodsStore";
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDisplayStore } from "../../store/displayStore";
-import { addExhibitionItem, getExhibitionItem, getExhibitionItems, } from "../../apis/displayApi";
+import { addExhibitionItem, getExhibitionItems, } from "../../apis/displayApi";
 import { useEffect, useState } from "react";
 
 function DisplayList() {
@@ -25,11 +25,6 @@ function DisplayList() {
         try {
           const result = await getExhibitionItems(
             exhibitionId
-          );
-
-          console.log(
-            "전시 굿즈 목록:",
-            result.data
           );
 
           setGoods(result.data.items || []);
@@ -63,14 +58,6 @@ function DisplayList() {
               }
           );
           const item = result.data;
-          console.log("POST 결과:", item);
-
-          const getResult = await getExhibitionItem(
-            exhibitionId,
-            item.itemId
-          );
-
-          console.log("단건 GET 결과:", getResult.data);
 
           addItem({
               id: item.itemId,

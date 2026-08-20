@@ -26,8 +26,6 @@ function DuckTalkProfile({ profile, isMe = true }) {
         // 1. 내 userId 조회
         const myResult = await getMyProfile();
 
-        console.log("내 프로필 응답:", myResult);
-
         const myProfile = myResult?.data ?? myResult;
         const myUserId = myProfile?.userId;
 
@@ -38,11 +36,6 @@ function DuckTalkProfile({ profile, isMe = true }) {
 
         // 2. 내가 팔로우하고 있는 사람들 조회
         const followingResult = await getFollowing(myUserId);
-
-        console.log(
-          "내 팔로잉 목록:",
-          followingResult.data
-        );
 
         // 아래 배열 위치는 실제 GET following 응답에 맞춰야 함
         const followingData =
@@ -75,7 +68,6 @@ function DuckTalkProfile({ profile, isMe = true }) {
     try {
       const result = await getUserProfile(profile.userId);
 
-      console.log("프로필 재조회:",result);
       setCurrentProfile(result);
     } catch (error) {
       console.error(
