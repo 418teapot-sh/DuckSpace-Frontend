@@ -7,7 +7,6 @@ import {
   IoSwapHorizontal,
 } from "react-icons/io5";
 import {
-  reportPost,
   getPostDetail,
   getPostApplications,
   completeExchange,
@@ -93,20 +92,6 @@ function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
     }
   };
 
-  // 게시글 신고
-  const handleReport = async (e) => {
-    e.stopPropagation();
-    const reason = window.prompt("신고 사유를 입력해주세요. (선택 사항)", "");
-    if (reason === null) return;
-    try {
-      await reportPost(post.id, { reason });
-      alert("신고가 접수되었습니다.");
-    } catch (error) {
-      console.error("게시글 신고 실패:", error);
-      alert("신고 접수 중 오류가 발생했습니다.");
-    }
-  };
-
   // 1. 백엔드 필드 매핑 및 기본값 안전 처리
   const authorName = post.authorNickname || post.author || "사용자";
   const title = post.title || post.content || "교환 글";
@@ -156,26 +141,7 @@ function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
           </span>
         </div>
 
-        <div className="flex shrink-0 items-center gap-3">
-          <span className="text-[12px] text-[#858485]">{formattedDate}</span>
-          {mode === "myPage" ? (
-            <button
-              type="button"
-              onClick={(e) => e.stopPropagation()}
-              className="text-[#A2A2A2] cursor-pointer"
-            >
-              <IoEllipsisHorizontal size={20} />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleReport}
-              className="text-[12px] text-[#858485] cursor-pointer hover:underline"
-            >
-              신고하기
-            </button>
-          )}
-        </div>
+        <span className="shrink-0 text-[12px] text-[#858485]">{formattedDate}</span>
       </div>
 
       {/* 2. 교환 제목 / 내용 */}
@@ -239,8 +205,8 @@ function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
         </div>
       )}
 
-      {/* 4. 좋아요 */}
-      <div className="flex items-center gap-3 text-[#545454]">
+      {/* 4. 좋아요 + 신고/메뉴 버튼 */}
+      <div className="flex items-center justify-between gap-3 text-[#545454]">
         <button
           type="button"
           onClick={handleToggleLike}
@@ -254,6 +220,16 @@ function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
           )}
           <span className="text-[13px] font-semibold">{likeCount}</span>
         </button>
+
+        {mode === "myPage" && (
+          <button
+            type="button"
+            onClick={(e) => e.stopPropagation()}
+            className="shrink-0 text-[#A2A2A2] cursor-pointer"
+          >
+            <IoEllipsisHorizontal size={20} />
+          </button>
+        )}
       </div>
 
       {/* 5. 하단 버튼 영역 */}
