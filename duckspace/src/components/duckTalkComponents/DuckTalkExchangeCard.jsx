@@ -13,6 +13,7 @@ import {
   completeExchange,
 } from "../../apis/postApi";
 import { getUserProfile } from "../../apis/userApi";
+import Avatar from "../Avatar";
 
 function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
   const navigate = useNavigate();
@@ -117,17 +118,7 @@ function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
           onClick={handleAuthorClick}
           className="flex items-center gap-3 cursor-pointer"
         >
-          <div className="h-7 w-7 shrink-0 overflow-hidden rounded-full bg-[#E5E5E5] flex items-center justify-center text-xs font-semibold text-[#858485]">
-            {authorProfileImage ? (
-              <img
-                src={authorProfileImage}
-                alt={authorName}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              authorName.slice(0, 1)
-            )}
-          </div>
+          <Avatar src={authorProfileImage} alt={authorName} className="h-7 w-7 shrink-0" />
           <div className="flex items-center gap-3">
             <span className="text-[15px] font-semibold text-[#171617]">
               {authorName}

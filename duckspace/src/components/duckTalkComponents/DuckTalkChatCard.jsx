@@ -8,6 +8,7 @@ import {
 } from "react-icons/io5";
 import { reportPost, deletePost, getPostDetail, likePost, unlikePost } from "../../apis/postApi";
 import { getUserProfile } from "../../apis/userApi";
+import Avatar from "../Avatar";
 
 function DuckTalkChatCard({ post, mode = "feed", onRefresh }) {
   const navigate = useNavigate();
@@ -118,15 +119,7 @@ function DuckTalkChatCard({ post, mode = "feed", onRefresh }) {
           onClick={handleAuthorClick}
           className="flex items-center gap-3 cursor-pointer"
         >
-          <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-[#DEDEDE]">
-            {authorProfileImage && (
-              <img
-                src={authorProfileImage}
-                alt={authorName}
-                className="h-full w-full object-cover"
-              />
-            )}
-          </div>
+          <Avatar src={authorProfileImage} alt={authorName} className="h-6 w-6 shrink-0" />
           <div className="flex items-center gap-3">
             <span className="text-[16px] font-semibold text-[#171617]">
               {/*{post.author} //// 여기!!!! */} 

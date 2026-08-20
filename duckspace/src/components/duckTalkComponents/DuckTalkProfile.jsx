@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { IoCheckmarkCircle } from "react-icons/io5";
 import { followUser, unfollowUser, getFollowing } from "../../apis/followApi";
 import { getUserProfile, getMyProfile, } from "../../apis/userApi";
+import Avatar from "../Avatar";
 
 function DuckTalkProfile({ profile, isMe = true }) {
 
@@ -133,15 +134,7 @@ function DuckTalkProfile({ profile, isMe = true }) {
   return (
     <div className="flex flex-col items-center justify-center pt-5 pb-3 px-5">
       {/* 아바타 원 */}
-      <div className="h-20 w-20 rounded-full bg-[#858485] mb-3 overflow-hidden">
-        {profile.profileImageUrl && (
-          <img
-            src={profile.profileImageUrl}
-            alt={profile.nickname}
-            className="h-full w-full object-cover"
-          />
-        )}
-      </div>
+      <Avatar src={profile.profileImageUrl} alt={profile.nickname} className="h-20 w-20 mb-3" />
 
       {/* 이름 & 파란 체크 */}
       <div className="flex items-center gap-1 mb-1">

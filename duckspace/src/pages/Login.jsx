@@ -11,7 +11,7 @@ import {
 import { login } from "../apis/authApi";
 
 // 로고 이미지 불러오기 (경로 확인)
-import DuckSpaceIcon from "../assets/DuckSpaceIcon.svg";
+import Logo from "../assets/Logo.png";
 
 function Login() {
   const navigate = useNavigate();
@@ -67,7 +67,7 @@ function Login() {
         {/* 2. 로고 및 타이틀 영역 */}
         <div className="mt-8 mb-10 flex flex-col items-center text-center">
           <img
-            src={DuckSpaceIcon}
+            src={Logo}
             alt="DuckSpace Logo"
             className="h-12 w-auto mb-3"
           />
