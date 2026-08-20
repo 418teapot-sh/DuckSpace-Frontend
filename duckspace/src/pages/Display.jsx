@@ -261,7 +261,11 @@ function Display() {
         </div>
 
         {isOwnView && (
-          <button className="cursor-pointer text-2xl text-[#A2A2A2]">
+          <button
+            type = "button" 
+            onClick={() => navigate("/ducktalk/mypage")}
+            className="cursor-pointer text-2xl text-[#A2A2A2]"
+          >
             <IoEllipsisHorizontal />
           </button>
         )}
