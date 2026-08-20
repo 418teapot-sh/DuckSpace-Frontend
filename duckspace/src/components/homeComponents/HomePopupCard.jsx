@@ -3,7 +3,8 @@ import { IoChevronForward } from "react-icons/io5";
 
 function HomePopupCard({ popups = [] }) {
   const navigate = useNavigate();
-  const popupList = popups.slice();
+  // 종료된(ENDED) 팝업은 "다가오는 팝업" 섹션에서 제외
+  const popupList = popups.filter((popup) => popup.status !== "ENDED");
 
   if (popupList.length === 0) return null;
 
