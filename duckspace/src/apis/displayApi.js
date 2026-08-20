@@ -9,15 +9,16 @@ export const createExhibition = async (name, themeCode) => {
   return response.data;
 };
 
-// 검색 탭 기본 화면용 — 필터 없이 최신 등록순 전체 장식장. 비로그인도 호출 가능.
-// 커서 페이지네이션: cursor 없으면 첫 페이지, 응답의 nextCursor를 다음 호출에 그대로 넘기면 됨.
-export const getExhibitionFeed = async ({ cursor, size = 12 } = {}) => {
-  const params = { size };
+// 검색 탭 기본 화면용 — 필터 없이 최신 등록순 커서 페이징. 비로그인도 호출 가능.
+// cursor를 안 보내면 첫 페이지. 응답의 nextCursor를 다음 요청의 cursor로 넣으면 됨.
+export const getExhibitionFeed = async ({ cursor, size } = {}) => {
+  const params = {};
   if (cursor) params.cursor = cursor;
+  if (size) params.size = size;
 
   const res = await api.get("/api/exhibitions", { params });
 
-  return res.data.data; // { items, nextCursor, hasNext }
+  return res.data.data;
 };
 
 
