@@ -28,11 +28,11 @@ function HomeExhibition({ exhibitions = [] }) {
       </div>
 
       {/* 전시장 카드 */}
-      <div className="flex items-start justify-center gap-4">
+      <div className="flex items-start gap-4">
         {/* 왼쪽 큰 카드 */}
         <div
           onClick={() => navigate(`/display?id=${big.exhibitionId}`)}
-          className="aspect-[9/10] w-[230px] shrink-0 overflow-hidden rounded-[8px] cursor-pointer bg-[#CDDCF7]"
+          className="aspect-[9/10] w-[210px] shrink-0 overflow-hidden rounded-[8px] cursor-pointer bg-[#CDDCF7]"
         >
           <ExhibitionCardPreview
             items={big.items}
@@ -48,7 +48,7 @@ function HomeExhibition({ exhibitions = [] }) {
             <div
               key={exhibition.exhibitionId}
               onClick={() => navigate(`/display?id=${exhibition.exhibitionId}`)}
-              className="aspect-[9/10] w-[110px] overflow-hidden rounded-[8px] cursor-pointer bg-[#CDDCF7]"
+              className="aspect-[9/10] w-[100px] overflow-hidden rounded-[8px] cursor-pointer bg-[#CDDCF7]"
             >
               <ExhibitionCardPreview
                 items={exhibition.items}
