@@ -5,6 +5,7 @@ import HomeSlide from "../components/homeComponents/HomeSlide";
 import HomePopupCard from "../components/homeComponents/HomePopupCard";
 import HomeExhibition from "../components/homeComponents/HomeExhibition";
 import DuckSpaceIcon from "../assets/DuckSpaceIcon.svg";
+import Logo from "../assets/Logo.png"
 
 import { useNavigate } from "react-router-dom";
 import { logout } from "../apis/authApi";
@@ -63,9 +64,9 @@ const Home = () => {
       {/* 로고 */}
       <div className="flex items-center justify-between px-5 py-3">
         <img
-          src={DuckSpaceIcon}
+          src={Logo}
           alt="DuckSpace"
-          className="h-9"
+          className="h-9 h-[19px] w-[64px]"
         />
 
         <button
