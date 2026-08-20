@@ -26,8 +26,6 @@ const Home = () => {
   useEffect(() => {
     getBanners()
       .then((data) => {
-        console.log("배너 조회:", data);
-
         const bannerList = data?.banners ?? [];
 
         setBanners(

@@ -57,8 +57,6 @@ function DraggableImage({ item, onChange, isEditing, isSelected, onSelect, }) {
         }}
         onDragEnd={(e) => {
           if (!isEditing) return;
-          console.log("x:", e.target.x());          
-          console.log("y:", e.target.y());
           onChange({
             ...item,
             x: e.target.x(),
@@ -73,11 +71,6 @@ function DraggableImage({ item, onChange, isEditing, isSelected, onSelect, }) {
           const scaleY = node.scaleY();
           node.scaleX(1);
           node.scaleY(1);
-          console.log("x:", node.x());
-          console.log("y:", node.y());
-          console.log("scaleX:", node.scaleX());
-          console.log("scaleY:", node.scaleY());
-          console.log("rotation:", node.rotation());
           onChange({
             ...item,
             x: node.x(),
@@ -411,7 +404,6 @@ function DisplayEdit({ exhibitionId, readOnly = false, themeCode = "BASIC", }) {
                         y={295}
                         icon={addImage}
                         onClick={() => {
-                            console.log("객체 추가");
                             navigate("/display/list", {
                                 state: {  
                                     mode: "select",
