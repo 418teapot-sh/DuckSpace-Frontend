@@ -4,6 +4,7 @@ import { IoSwapHorizontal, IoChevronForward } from "react-icons/io5";
 import { acceptApplication, rejectApplication, cancelApplication, getPostDetail } from "../../apis/postApi";
 import { getUserProfile } from "../../apis/userApi";
 import { createOrGetChatRoom } from "../../apis/chatApi";
+import Avatar from "../Avatar";
 
 function ExchangeListCard({ item, activeTab, myUserId, onRefresh }) {
   const navigate = useNavigate();
@@ -117,13 +118,7 @@ function ExchangeListCard({ item, activeTab, myUserId, onRefresh }) {
       {/* 1. 상대방 프로필 정보 */}
       <div className="flex items-center justify-between rounded-lg border border-[#F4F4F4] px-5 py-2">
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 shrink-0 rounded-full bg-[#858485] overflow-hidden flex items-center justify-center text-white text-xs">
-            {partnerProfileImage ? (
-              <img src={partnerProfileImage} alt={partnerName} className="h-full w-full object-cover" />
-            ) : (
-              partnerName.slice(0, 1)
-            )}
-          </div>
+          <Avatar src={partnerProfileImage} alt={partnerName} className="h-9 w-9 shrink-0" />
           <span className="text-[16px] font-semibold leading-[20.8px] text-[#171617]">
             {partnerName}
           </span>

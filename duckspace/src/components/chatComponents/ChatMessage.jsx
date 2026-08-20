@@ -1,3 +1,5 @@
+import Avatar from "../Avatar";
+
 function ChatMessage({
   message,
   partnerNickname,
@@ -33,10 +35,10 @@ function ChatMessage({
 
   return (
     <div className="flex items-start gap-2 max-w-[80%]">
-      <img
+      <Avatar
         src={profileImage}
         alt="프로필"
-        className="h-[36px] w-[36px] shrink-0 rounded-full object-cover bg-gray-100 mt-1"
+        className="h-[36px] w-[36px] shrink-0 mt-1"
       />
 
       <div>

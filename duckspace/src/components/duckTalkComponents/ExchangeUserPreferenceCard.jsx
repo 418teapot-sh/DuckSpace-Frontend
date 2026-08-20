@@ -1,5 +1,6 @@
 import { IoCheckmarkCircle } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import Avatar from "../Avatar";
 
 function ExchangeUserPreferenceCard({ user, preferences }) {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ function ExchangeUserPreferenceCard({ user, preferences }) {
           }}
           className="flex cursor-pointer items-center gap-3"
         >
-          <div className="h-12 w-12 rounded-full bg-[#858485] overflow-hidden" />
+          <Avatar src={user.profileImageUrl} alt={user.name} className="h-12 w-12" />
 
           <span className="text-[18px] font-semibold leading-[25.2px] text-[#171617]">
             {user.name}

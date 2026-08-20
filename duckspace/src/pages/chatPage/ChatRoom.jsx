@@ -4,7 +4,6 @@ import { IoChevronBack } from "react-icons/io5";
 
 import ChatMessage from "../../components/chatComponents/ChatMessage";
 import ChatInput from "../../components/chatComponents/ChatInput";
-import defaultProfile from "../../assets/defaultProfile.png";
 import { getChatMessages, sendChatMessage } from "../../apis/chatApi";
 
 function ChatRoom() {
@@ -13,7 +12,7 @@ function ChatRoom() {
   const location = useLocation();
 
   const partnerNickname = location.state?.partnerNickname || "대화 상대";
-  const partnerProfileImageUrl = location.state?.partnerProfileImageUrl || defaultProfile;
+  const partnerProfileImageUrl = location.state?.partnerProfileImageUrl || null;
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef(null);
