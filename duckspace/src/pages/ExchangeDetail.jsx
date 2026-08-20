@@ -68,15 +68,12 @@ export default function ExchangeDetail() {
         return;
       }
 
-      console.log("전송할 상대방 ID:", numericPartnerId);
-
       const roomData = await createOrGetChatRoom(numericPartnerId);
-      const targetRoomId =
-        roomData?.roomId || roomData?.id || roomData?.chatRoomId || (typeof roomData === "number" ? roomData : null);
+      const targetRoomId = roomData?.roomId;
 
       if (targetRoomId) {
         const partnerName = postDetail?.authorNickname || "상대방";
-        navigate(`/chat/${targetRoomId}`, { state: { partnerNickname: partnerName } });
+        navigate(`/chat/${targetRoomId}`, { state: { partnerId: numericPartnerId, partnerNickname: partnerName } });
       } else {
         alert("채팅방 번호를 응답받지 못했습니다.");
       }
@@ -123,19 +120,6 @@ export default function ExchangeDetail() {
     }
   };
 
-  // 교환 완료 처리
-  const handleComplete = async () => {
-    if (!window.confirm("교환을 완료 처리하시겠습니까?")) return;
-    try {
-      await completeApplication(applicationId);
-      alert("교환이 완료 처리되었습니다.");
-      navigate("/ducktalk/exchange/list");
-    } catch (error) {
-      console.error("교환 완료 처리 실패:", error);
-      alert("교환 완료 처리 중 오류가 발생했습니다.");
-    }
-  };
-
   // 게시글 신고
   const handleReport = async () => {
     const reason = window.prompt("신고 사유를 입력해주세요. (선택 사항)", "");
@@ -158,6 +142,19 @@ export default function ExchangeDetail() {
     } catch (error) {
       console.error("게시글 삭제 실패:", error);
       alert("게시글 삭제 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 교환 완료 처리
+  const handleComplete = async () => {
+    if (!window.confirm("교환을 완료 처리하시겠습니까?")) return;
+    try {
+      await completeApplication(applicationId);
+      alert("교환이 완료 처리되었습니다.");
+      navigate("/ducktalk/exchange/list");
+    } catch (error) {
+      console.error("교환 완료 처리 실패:", error);
+      alert("교환 완료 처리 중 오류가 발생했습니다.");
     }
   };
 

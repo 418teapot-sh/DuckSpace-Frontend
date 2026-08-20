@@ -41,7 +41,7 @@ function Login() {
 
       navigate("/");
     } catch (error) {
-      console.log("로그인 에러 응답:", error.response?.data);
+      console.error("로그인 에러 응답:", error.response?.data);
       const errorCode = error.response?.data?.error?.code;
       if (errorCode === "INVALID_CREDENTIALS") {
         setErrorMessage(

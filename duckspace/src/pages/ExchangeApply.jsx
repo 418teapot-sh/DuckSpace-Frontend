@@ -115,11 +115,8 @@ export default function ExchangeApply() {
         return;
       }
 
-      console.log("전송할 상대방 ID:", numericPartnerId);
-
       const roomData = await createOrGetChatRoom(numericPartnerId);
-      const targetRoomId =
-        roomData?.roomId || roomData?.id || roomData?.chatRoomId || (typeof roomData === "number" ? roomData : null);
+      const targetRoomId = roomData?.roomId;
 
       if (targetRoomId) {
         const partnerName = postDetail?.authorNickname || "상대방";

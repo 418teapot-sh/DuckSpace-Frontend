@@ -60,8 +60,7 @@ function ExchangeListCard({ item, activeTab, myUserId, onRefresh }) {
       }
 
       const roomData = await createOrGetChatRoom(partner.id);
-      const targetRoomId =
-        roomData?.roomId || roomData?.id || roomData?.chatRoomId || (typeof roomData === "number" ? roomData : null);
+      const targetRoomId = roomData?.roomId;
 
       if (targetRoomId) {
         navigate(`/chat/${targetRoomId}`, { state: { partnerId: partner.id, partnerNickname: partnerName } });
