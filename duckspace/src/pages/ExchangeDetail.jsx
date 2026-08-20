@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { IoChevronBack, IoAlertCircleOutline } from "react-icons/io5";
+import { IoChevronBack } from "react-icons/io5";
 
 import ExchangeUserPreferenceCard from "../components/duckTalkComponents/ExchangeUserPreferenceCard";
 import ExchangeGoodsPair from "../components/duckTalkComponents/ExchangeGoodsPair";
@@ -12,6 +12,7 @@ import {
   cancelApplication,
   completeApplication,
   reportPost,
+  deletePost,
 } from "../apis/postApi";
 // ✅ 채팅 API 추가
 import { createOrGetChatRoom } from "../apis/chatApi";
@@ -148,6 +149,18 @@ export default function ExchangeDetail() {
     }
   };
 
+  // 게시글 삭제 (내 글)
+  const handleDeletePost = async () => {
+    if (!window.confirm("게시글을 삭제하시겠습니까?")) return;
+    try {
+      await deletePost(id);
+      navigate("/ducktalk?tab=exchange");
+    } catch (error) {
+      console.error("게시글 삭제 실패:", error);
+      alert("게시글 삭제 중 오류가 발생했습니다.");
+    }
+  };
+
   // 탭 타입별 헤더 타이틀 및 세부 설정
   const getTabConfig = () => {
     switch (tabType) {
@@ -234,7 +247,12 @@ export default function ExchangeDetail() {
 
       <main className="flex flex-col gap-4 px-5 pt-3">
         {/* 1. 상대방 정보 및 선호 조건 카드 */}
-        <ExchangeUserPreferenceCard user={userObj} preferences={preferencesObj} />
+        <ExchangeUserPreferenceCard
+          user={userObj}
+          preferences={preferencesObj}
+          onReport={!postDetail?.mine ? handleReport : undefined}
+          onDelete={postDetail?.mine ? handleDeletePost : undefined}
+        />
 
         {/* 2. 교환 굿즈 대조 카드 */}
         <ExchangeGoodsPair
@@ -250,20 +268,6 @@ export default function ExchangeDetail() {
             <p className="text-[14px] leading-[22px] text-[#545454] whitespace-pre-wrap">
               {postDetail.content}
             </p>
-          </div>
-        )}
-
-        {/* 4. 신고 (잡담 게시글 상세와 동일하게 좋아요/댓글 줄 위치에 해당하는 하단 우측에 배치) */}
-        {!postDetail?.mine && (
-          <div className="flex items-center justify-end">
-            <button
-              type="button"
-              onClick={handleReport}
-              className="shrink-0 text-[#A2A2A2] cursor-pointer"
-              aria-label="게시글 신고"
-            >
-              <IoAlertCircleOutline size={18} />
-            </button>
           </div>
         )}
       </main>
