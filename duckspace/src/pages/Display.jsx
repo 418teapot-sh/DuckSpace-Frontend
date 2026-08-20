@@ -1,4 +1,4 @@
-import { IoChevronBack, IoEllipsisHorizontal, IoHeart, IoHeartOutline } from "react-icons/io5";
+import { IoChevronBack, IoHeart, IoHeartOutline } from "react-icons/io5";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -12,6 +12,8 @@ import { useDisplayStore } from "../store/displayStore";
 import { createExhibition , getMyExhibitions, getUserExhibitions, getExhibitionDetail, likeExhibition, unlikeExhibition } from "../apis/displayApi";
 
 import { getMyProfile, getUserProfile } from "../apis/userApi";
+import userIcon from "../assets/ducktalkIcon/userIcon.svg";
+
 
 
 function Display() {
@@ -262,7 +264,15 @@ function Display() {
 
       {/* 프로필 영역 */}
       <section className="flex items-center justify-between px-7 py-5">
-        <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() =>
+            navigate(
+              isOwnView ? "/ducktalk/mypage" : `/ducktalk/user?id=${profile?.userId}`
+            )
+          }
+          className="flex cursor-pointer items-center gap-3"
+        >
           <Avatar src={profile?.profileImageUrl} alt={profile?.nickname} className="h-14 w-14" />
 
           <div>
@@ -274,15 +284,15 @@ function Display() {
               팔로워 {profile?.followerCount ?? 0} | 팔로잉 {profile?.followingCount ?? 0}
             </p>
           </div>
-        </div>
+        </button>
 
         {isOwnView && (
           <button
-            type="button"
+            type = "button" 
             onClick={() => navigate("/ducktalk/mypage")}
             className="cursor-pointer text-2xl text-[#A2A2A2]"
           >
-            <IoEllipsisHorizontal />
+            <img src={userIcon} alt="프로필" className="h-6 w-6 object-contain" />
           </button>
         )}
       </section>
