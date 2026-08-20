@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { IoChevronBack } from "react-icons/io5";
+import { IoChevronBack, IoAlertCircleOutline } from "react-icons/io5";
 
 import ExchangeUserPreferenceCard from "../components/duckTalkComponents/ExchangeUserPreferenceCard";
 import ExchangeGoodsPair from "../components/duckTalkComponents/ExchangeGoodsPair";
@@ -11,6 +11,7 @@ import {
   rejectApplication,
   cancelApplication,
   completeApplication,
+  reportPost,
 } from "../apis/postApi";
 // ✅ 채팅 API 추가
 import { createOrGetChatRoom } from "../apis/chatApi";
@@ -134,6 +135,19 @@ export default function ExchangeDetail() {
     }
   };
 
+  // 게시글 신고
+  const handleReport = async () => {
+    const reason = window.prompt("신고 사유를 입력해주세요. (선택 사항)", "");
+    if (reason === null) return;
+    try {
+      await reportPost(id, { reason });
+      alert("신고가 접수되었습니다.");
+    } catch (error) {
+      console.error("게시글 신고 실패:", error);
+      alert("신고 접수 중 오류가 발생했습니다.");
+    }
+  };
+
   // 탭 타입별 헤더 타이틀 및 세부 설정
   const getTabConfig = () => {
     switch (tabType) {
@@ -236,6 +250,20 @@ export default function ExchangeDetail() {
             <p className="text-[14px] leading-[22px] text-[#545454] whitespace-pre-wrap">
               {postDetail.content}
             </p>
+          </div>
+        )}
+
+        {/* 4. 신고 (잡담 게시글 상세와 동일하게 좋아요/댓글 줄 위치에 해당하는 하단 우측에 배치) */}
+        {!postDetail?.mine && (
+          <div className="flex items-center justify-end">
+            <button
+              type="button"
+              onClick={handleReport}
+              className="shrink-0 text-[#A2A2A2] cursor-pointer"
+              aria-label="게시글 신고"
+            >
+              <IoAlertCircleOutline size={18} />
+            </button>
           </div>
         )}
       </main>
