@@ -3,7 +3,7 @@ function ChatMessage({
   partnerNickname,
   profileImage,
 }) {
-  const isMine = message.mine ?? message.isMine ?? false;
+  const isMine = message.mine ?? false;
 
   const formatTime = (dateString) => {
     if (!dateString) return "";
