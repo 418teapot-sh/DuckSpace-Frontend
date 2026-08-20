@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import {
   IoHeart,
   IoHeartOutline,
-  IoChatbubbleOutline,
   IoEllipsisHorizontal,
   IoSwapHorizontal,
 } from "react-icons/io5";
@@ -249,7 +248,7 @@ function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
         </div>
       )}
 
-      {/* 4. 좋아요 / 댓글 수 */}
+      {/* 4. 좋아요 */}
       <div className="flex items-center gap-3 text-[#545454]">
         <button
           type="button"
@@ -264,10 +263,6 @@ function DuckTalkExchangeCard({ post, mode = "feed", onRefresh }) {
           )}
           <span className="text-[13px] font-semibold">{likeCount}</span>
         </button>
-        <div className="flex items-center gap-1.5">
-          <IoChatbubbleOutline size={17} className="text-[#545454]" />
-          <span className="text-[13px] font-semibold">{post.commentCount ?? 0}</span>
-        </div>
       </div>
 
       {/* 5. 하단 버튼 영역 */}
