@@ -35,8 +35,6 @@ function DuckTalkFollowPage() {
           result = await getFollowers(userId);
         }
 
-        console.log("팔로우 목록 조회:", result);
-
         const data = result?.data ?? result;
 
         const list =
