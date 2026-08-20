@@ -5,7 +5,7 @@ import {
   IoHeart,
   IoHeartOutline,
   IoChatbubbleOutline,
-  IoEllipsisHorizontal,
+  IoTrashOutline,
   IoLockClosedOutline,
   IoSend,
   IoAlertCircleOutline,
@@ -44,7 +44,7 @@ function CommentItem({ comment, isReply = false, onReply, onDelete, onReport }) 
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-3">
           <Avatar src={authorProfileImage} alt={comment.authorNickname || "사용자"} className="h-6 w-6 shrink-0" />
-          <span className="w-[90px] shrink-0 truncate text-[16px] font-semibold text-[#171617]">{comment.authorNickname || "사용자"}</span>
+          <span className="w-[110px] sm:w-[160px] md:w-[200px] shrink-0 truncate text-[16px] font-semibold text-[#171617]">{comment.authorNickname || "사용자"}</span>
         </div>
         <span className="shrink-0 text-[12px] text-[#858485]">{formattedDate}</span>
       </div>
@@ -76,9 +76,9 @@ function CommentItem({ comment, isReply = false, onReply, onDelete, onReport }) 
             type="button"
             onClick={() => onDelete(comment.id)}
             className="ml-auto text-[#A2A2A2] cursor-pointer"
-            aria-label="댓글 메뉴"
+            aria-label="댓글 삭제"
           >
-            <IoEllipsisHorizontal size={18} />
+            <IoTrashOutline size={18} />
           </button>
         ) : (
           <button
@@ -276,7 +276,7 @@ export default function CasualPostDetail() {
             >
               <Avatar src={authorProfileImage} alt={postDetail.authorNickname || "사용자"} className="h-6 w-6 shrink-0" />
 
-              <span className="w-[90px] shrink-0 truncate text-[16px] font-semibold text-[#171617]">
+              <span className="w-[110px] sm:w-[160px] md:w-[200px] shrink-0 truncate text-[16px] font-semibold text-[#171617]">
                 {postDetail.authorNickname || "사용자"}
               </span>
             </button>
@@ -335,9 +335,9 @@ export default function CasualPostDetail() {
                 type="button"
                 onClick={handleDeletePost}
                 className="shrink-0 text-[#A2A2A2] cursor-pointer"
-                aria-label="게시글 메뉴"
+                aria-label="게시글 삭제"
               >
-                <IoEllipsisHorizontal size={20} />
+                <IoTrashOutline size={20} />
               </button>
             ) : (
               <button
