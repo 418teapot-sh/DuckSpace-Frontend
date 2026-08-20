@@ -4,7 +4,7 @@ import {
   IoHeart,
   IoHeartOutline,
   IoChatbubbleOutline,
-  IoEllipsisHorizontal,
+  IoTrashOutline,
 } from "react-icons/io5";
 import { deletePost, getPostDetail, likePost, unlikePost } from "../../apis/postApi";
 import { getUserProfile } from "../../apis/userApi";
@@ -106,7 +106,7 @@ function DuckTalkChatCard({ post, mode = "feed", onRefresh }) {
           className="flex items-center gap-3 cursor-pointer"
         >
           <Avatar src={authorProfileImage} alt={authorName} className="h-6 w-6 shrink-0" />
-          <span className="w-[90px] shrink-0 truncate text-[16px] font-semibold text-[#171617]">
+          <span className="w-[110px] sm:w-[160px] md:w-[200px] shrink-0 truncate text-[16px] font-semibold text-[#171617]">
             {/*{post.author} //// 여기!!!! */}
             {authorName}
           </span>
@@ -163,7 +163,7 @@ function DuckTalkChatCard({ post, mode = "feed", onRefresh }) {
             className="shrink-0 text-[#A2A2A2] cursor-pointer"
             aria-label="게시글 삭제"
           >
-            <IoEllipsisHorizontal size={20} />
+            <IoTrashOutline size={13} />
           </button>
         )}
       </div>
